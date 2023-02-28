@@ -32,7 +32,7 @@ BIN_DIR			:= bin
 OBJS		= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
 #INCLUDES
-INCLUDES 		:= includes/ 
+INCLUDES 		:= src/ 
 INC			= $(addprefix -I , $(INCLUDES))
 
 # DEPENDECES
