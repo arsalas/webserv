@@ -1,0 +1,232 @@
+execve
+    Ejecuta el programa al que hace referencia el pathname
+    Por tanto, el proceso se reemplaza con un nuevo programa (new stack, heap and data segments)
+    El pathname tiene que ser un binario ejecutable o un script
+    #include <unistd.h>
+    int execve(const char *pathname, char *const argv[], char *const envp[]);
+
+dup
+    Duplica un fd 
+    Asigna un nuevo fd que se refiere al mismo archivo que el oldfd 
+    Se garantiza qe el número de fd sea el número más bajo
+    #include <unistd.h>
+    int dup(int oldfd);
+
+dup2
+    Duplica un fd 
+    Hace lo mismo que dup() ero en vez de utilizar el número de fd más bajo, utiliza el fd especificado en newfd
+    #include <unistd.h>
+    int dup2(int oldfd, int newfd);
+
+pipe
+    Crea un pipe, un canal de datos unidireccional
+    pipefd[0] es la lectura
+    pipefd[1] es la escritura
+    #include <unistd.h>
+    int pipe(int pipefd[2]);
+
+strerror
+    Devuelve un puntero a la descripción del código de error del sistema errnum, igual a la descripción que imprimiría std::perror()
+    <cstring>
+    char* strerror( int errnum );
+
+gai_strerror
+    Traduce el código de error a una cadena legible adecuada para el informe de errores
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+    const char *gai_strerror(int errcode);
+
+errno
+    Es un macro procesador utilizado en la indicación de errores
+    Es del tipo int, por lo que puede ser leído y modificado por un programa (es 0 al inicio)
+    Su valor se suele establecer en uno de los códigos de error (cerrno)
+    #include errno.h
+    int errno;
+
+fork
+    Es una llamada del sistema que crea un proceso hijo a partir del proceso padre
+    #include<unistd.h>
+    pid_t fork(void);
+
+htons
+    Conviere el unsigned short int de bytes del host a bytes de la red
+    #include <arpa/inet.h>
+    uint16_t htons(uint16_t hostshort);
+
+htonl
+    Convierte el unsigned int hostlong de bytes del host a bytes de la red
+    #include <arpa/inet.h>
+    uint32_t htonl(uint32_t hostlong);
+
+ntohs
+    Convierte el unsigned short int netshort de bytes del host a bytes de la red
+    #include <arpa/inet.h>
+    uint16_t ntohs(uint16_t netshort);
+
+ntohl
+    Convierte el unsigned int netlong de bytes del host a bytes de la red
+    #include <arpa/inet.h>
+    uint32_t ntohl(uint32_t netlong);
+
+
+select
+    Se utiliza para manejar más de un fd simultáneamente
+    Sus argumentos son 3 arrays de descriptores de fichero: readfds, writefds, exceptfds
+    #include <sys/select.h>
+    int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds, fd_set *restrict exceptfds, struct timeval *restrict timeout);
+
+poll
+    Se queda a la espera de cualquier evento en un fd, de que algún archivo esté listo para realizar alguna operaciòn
+    #include <poll.h>
+    int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+
+
+epoll (epoll_create, epoll_ctl, epoll_wait)
+
+epoll_create
+    Crea un epoll. Retorna un fd que se refiere a la nueva instancia de epoll
+    El size es la cantidad de fd que la persona que llaba espera agregar a la instancia poll
+    #include <sys/epoll.h>
+    int epoll_create(int size)
+
+epoll_ctl
+    Agrega, modifica o elimina las entradas en la lista de intereses de poll 
+    Solicita que se realice una operación para el fd especificado
+    #include <sys/epoll.h>
+    int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+
+epoll_wait
+    Espera a eventos en el fd especificado por epoll 
+    Puede devolver hasta maxevents (mayor a 0)
+    #include <sys/epoll.h>
+    int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+
+kqueue
+    Mecanismo de notidicacion de eventos kernel
+    Un evento se identifica por el pair (identificador filtro), y solo puede aber un kevent por kqueue
+    El filtro se ejecuuta al inicio de un kevent para detectar si una condición preexistente también está presente
+    Si el filtro determina que se debe reportar, el kevent se coloca en la cola para que el usuario lo recupere
+    OJO!!! Múltiples eventos que activan el filtro no dan como resultado múltiples keventos, sino que habrá una sola estructura kevent
+    #include <sys/event.h>
+    int kqueue(void);
+
+kevent
+    Mecanismo de notidicacion de eventos kernel
+    Registra los eventos en la cola y develve cualquier evento pendiente al usuario
+    El argumento nchanges da el tamaño de lista de cambios
+    El argumento eventlist es un puntero a una matriz de kevent
+    El argumento nevents determina el tamaño de la lista de eventos
+    #include <sys/event.h>
+    int kevent(int	kq, const struct kevent	*changelist, int nchanges, struct	kevent *eventlist, int nevents, const struct timespec *timeout);
+
+socket
+    https://www.bogotobogo.com/cplusplus/sockets_server_client.php
+    Un socket es un mecanismo para intercambiar información entre dos procesos
+    Es una manera de conectar dos nodos en una red para comunicarse entre ellas
+    Un socket (nodo) escucha un puerto en una IP, mientras qe el otro se acerca para formar una conexión
+    domain es un int, especificado por el dominio de comunicación (AF_ LOCAL)
+    type es el tipo de comunicación: SOCK_STREAM: TCP(reliable, connection oriented) o SOCK_DGRAM: UDP(unreliable, connectionless)
+    protocol: valor del protocolo para la IP
+    #include <sys/socket.h> 
+    int sockfd = socket(int domain, int type, int protocol)
+
+accept
+    Se extrae la primera solicitud de conexión en la cola de conexiones pendientes para el contenedor de escucha
+    El socket original no se ve afectado
+    addr: puntero a una estructura sockaddr (se rellena con la dirección del socket par)
+    addrlen: se debe inicializar para que contenga el tamaño en bytes de la estructura señalada por addr
+    #include <sys/socket.h>
+    int accept(int sockfd, struct sockaddr *restrict addr, socklen_t *restrict addrlen);
+
+listen
+    Marca al socket indicado como pasivo, es decir, se utilizará para aceptar solicitudes entrantes
+    sockfd hace referencia a SOCK_STREAM o SOCK_SEQPACKET
+    backlog define la longitud máxima
+    #include <sys/socket.h>
+    int listen(int sockfd, int backlog);
+
+send
+    Solo se puede usar cuando el socker está conectado
+    La diferencia entre send y write es la presencia de flags
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+
+recv
+    Recibe mensajes de un socket 
+    Primero describe las características comunes de las 3 llamadas al sistema y luego describe las diferencias entre las llamadas
+    La diferencia entre recv y read es la presencia de flags
+    #include <sys/socket.h>
+    ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+
+bind
+    Genera un forwading call wrapper para f (un envoltorio de llamada de reenvío)
+    Si llamas a este envoltoro, es como invocar f con alguno de us argumentos
+    Por tanto, devuelve un objeto de función basado en fn , pero con sus argumentos vinculados a args
+    #include <functional>
+    template <class Fn, class... Args>  /* unspecified */ bind (Fn&& fn, Args&&... args);
+    template <class Ret, class Fn, class... Args>  /* unspecified */ bind (Fn&& fn, Args&&... args);
+
+connect
+    https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
+    Intenta hacer una conexión en un socket
+    socket: especifica el fd del archivo
+    address: apunta a la estructura de un sockaddr
+    address_len: longitud de la estructura sockaddr
+    #include <sys/socket.h>
+    int connect(int socket, const struct sockaddr *address, socklen_t address_len);
+
+getaddrinfo
+    Identifican un host de internet y un servicio
+    Retorna una o más estructuras addrinfo, cada una tiene una dirección de internet
+    Addrinfo contiene:
+        struct addrinfo {
+            int              ai_flags;
+            int              ai_family;
+            int              ai_socktype;
+            int              ai_protocol;
+            socklen_t        ai_addrlen;
+            struct sockaddr *ai_addr;
+            char            *ai_canonname;
+            struct addrinfo *ai_next;
+           };
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+    int getaddrinfo(const char *restrict node, const char *restrict service, const struct addrinfo *restrict hints, struct addrinfo **restrict res);
+
+freeaddrinfo
+    Libera una o más estructuras addrinfo devueltas por getaddringo()
+    Si el campo ai_next de la estructura no es nulo, se liberará toda la lista de estructuras
+    #include <sys/socket.h>
+    #include <netdb.h>
+    void freeaddrinfo(struct addrinfo *ai);
+
+setsockopt
+    No he entendido nada
+    Establece la opción especificada por el argumento option_name
+    Para establecer opciones a nivel de socket, especifique el argumento de nivel como SOL_SOCKET
+    #include <sys/socket.h>
+    int setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len);
+
+getsockname
+    Devuelve la dirección actual en la que está conectado el socket
+    La dirección devuelta se trunca si el búfer proporcionado es demasiado pequeño
+    #include <sys/socket.h>
+    int getsockname(int sockfd, struct sockaddr *restrict addr, socklen_t *restrict addrlen);
+
+    getprotobyname
+    Devuelve una estructura protoent para la entrada de la base de datos que coincide con el nombre del protocolo
+    Se abre una conexión a la base de datos si es necesario
+    #include <netdb.h>
+    struct protoent *getprotobyname(const char *name);
+
+fcntl
+    https://manpages.ubuntu.com/manpages/xenial/es/man2/fcntl.2.html
+    Realiza las operaciones descritas en el archivo fd
+    La operación se determina mediante cmd
+    El 3r argumento es opcional
+    #include <fcntl.h>
+    int fcntl(int fd, int cmd, ... /* arg */ );
+
