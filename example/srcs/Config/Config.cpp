@@ -28,7 +28,7 @@ void Config::tokenize() {
   int line_idx = 1;
   char *line_c;
 
-  while (get_next_line(fd_, &line_c)) {
+  while (std::getline(fd_, &line_c)) {
     line = line_c;
     file_content_ += line + "\n";
     last = 0;

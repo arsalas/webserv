@@ -15,14 +15,16 @@ W_FLAGS			:= -Wall -Wextra -Werror
 PTH_FLAGS		:=  -pthread
 VERSION			:= -std=c++98 
 SANITIZER		:= -g -fsanitize=address
-FDEBUG			:=  -D DEBUG=$(DEBUG_MSG)
-FLAGS			:= $(W_FLAGS) $(PTH_FLAGS) $(VERSION) $(SANITIZER) $(FDEBUG)
+# FDEBUG			:=  -D DEBUG=$(DEBUG_MSG)
+FLAGS			:= $(W_FLAGS) $(PTH_FLAGS) $(VERSION) $(SANITIZER) # $(FDEBUG)
 
 RM 				:= rm -f
 
 # SRC
-SRCS 			=  main.cpp 
-
+SRCS 			=  main.cpp \
+					Config.cpp InputArgs.cpp RequestConfig.cpp ServerConfig.cpp \
+					CGI.cpp Client.cpp Request.cpp Response.cpp Server.cpp \
+					Base64.cpp File.cpp Logger.cpp MimeTypes.cpp StatusCode.cpp StringUtils.cpp Utils.cpp
 
 # FOLDERS
 OBJS_DIR		:= obj
@@ -32,7 +34,7 @@ BIN_DIR			:= bin
 OBJS		= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
 #INCLUDES
-INCLUDES 		:= src/ 
+INCLUDES 		:= src/ src/config src/http src/utils
 INC			= $(addprefix -I , $(INCLUDES))
 
 # DEPENDECES
@@ -45,7 +47,7 @@ NAME 				:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src
+vpath %.cpp src src/http src/config src/utils
 
 .SECONDEXPANSION:
 

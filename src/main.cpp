@@ -2,7 +2,6 @@
 #include "Config.hpp"
 #include "Server.hpp"
 #include "Logger.hpp"
-
 #include <pthread.h>
 
 pthread_mutex_t g_accept;
@@ -31,10 +30,6 @@ int main(int argc, char **argv)
 {
   try
   {
-    // TODO Parsear config file
-  
-    // Clase que reciba el filename del config y parse el contenido
-    // La clase debe lanzar una excepcion dependiendo si falla algo, archivo no encontrado, formato incorrecto, etc..
     InputArgs options(argc, argv);
 
     options.parse();
