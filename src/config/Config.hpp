@@ -5,10 +5,9 @@
 # include <string>
 # include <vector>
 # include <stack>
-
+#include <fstream>
 # include <fcntl.h>
 
-# include "get_next_line.hpp"
 # include "Server.hpp"
 # include "ServerConfig.hpp"
 # include "StringUtils.hpp"
@@ -33,6 +32,7 @@ class Config {
  private:
   std::string path_;
   int fd_;
+  std::ifstream fdStream_;
 
   int workers_;
 

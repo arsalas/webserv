@@ -26,9 +26,12 @@ void Config::tokenize() {
   std::stack<bool> brackets;
 
   int line_idx = 1;
-  char *line_c;
+  char *line_c = NULL;
+  std::string line2;
 
-  while (get_next_line(fd_, &line_c)) {
+  std::ifstream myfile( path_.c_str());
+
+  while (std::getline(myfile, line2)) {
     line = line_c;
     file_content_ += line + "\n";
     last = 0;
