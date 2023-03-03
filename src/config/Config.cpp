@@ -26,13 +26,10 @@ void Config::tokenize() {
   std::stack<bool> brackets;
 
   int line_idx = 1;
-  char *line_c = NULL;
-  std::string line2;
 
   std::ifstream myfile( path_.c_str());
 
-  while (std::getline(myfile, line2)) {
-    line = line_c;
+  while (std::getline(myfile, line)) {
     file_content_ += line + "\n";
     last = 0;
     while ((first = line.find_first_not_of(" \t", last)) != std::string::npos) {
@@ -58,9 +55,7 @@ void Config::tokenize() {
         tokens_.push_back(tmp);
     }
     line_idx++;
-    free(line_c);
   }
-  free(line_c);
 }
 
 void Config::parse() {
