@@ -47,7 +47,19 @@ std::string Config::trim(const std::string &s)
 void Config::endOfLine(std::string &tmp)
 {
 	tmp.erase(tmp.length() - 1, 1);
+	size_t pos = 0;
+	std::string token;
+	while ((pos = tmp.find(" ")) != std::string::npos)
+	{
+		token = tmp.substr(0, pos);
+		std::cout << "token: ->" << token << "<-" << std::endl;
+		_tokens.push_back(token);
+		tmp.erase(0, pos + 1);
+	}
 	_tokens.push_back(tmp);
+	std::cout << "token: ->" << tmp << "<-" << std::endl;
+
+	//_tokens.push_back(tmp);
 	_tokens.push_back(";");
 }
 
@@ -99,7 +111,6 @@ void Config::tokenize()
 				std::string token;
 				if (!(tmp.find(' ') < tmp.length()))
 				{
-
 				}
 				while ((pos = tmp.find(" ")) != std::string::npos)
 				{
@@ -108,8 +119,8 @@ void Config::tokenize()
 					_tokens.push_back(token);
 					tmp.erase(0, pos + 1);
 				}
-					_tokens.push_back(tmp);
-					std::cout << "token: ->" << tmp << "<-" << std::endl;
+				_tokens.push_back(tmp);
+				std::cout << "token: ->" << tmp << "<-" << std::endl;
 			}
 			// std::cout << "estoy metiendo: " << tmp << std::endl;
 		}
