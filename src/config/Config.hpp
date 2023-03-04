@@ -32,7 +32,7 @@ class Config {
   std::string trim(const std::string &s);
   std::string rtrim(const std::string &s);
   std::string ltrim(const std::string &s);
-  void        endOfLine(std::string tmp);
+  void        endOfLine(std::string &tmp);
 
 
  private:

@@ -44,7 +44,7 @@ std::string Config::trim(const std::string &s)
   return (rtrim(ltrim(s)));
 }
 
-void Config::endOfLine(std::string tmp)
+void Config::endOfLine(std::string &tmp)
 {
   tmp.erase(tmp.length() - 1, 1);
   tokens_.push_back(tmp);
@@ -95,7 +95,6 @@ void Config::tokenize()
         endOfLine(tmp);
       else
         tokens_.push_back(tmp);
-      std::cout << "tokens are: " << tokens_.size() << std::endl;
     }
     line_idx++;
   }
