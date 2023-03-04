@@ -29,6 +29,11 @@ class Config {
 
   std::string &getFileContent();
 
+  std::string trim(const std::string &s);
+  std::string rtrim(const std::string &s);
+  std::string ltrim(const std::string &s);
+
+
  private:
   std::string path_;
   int fd_;
