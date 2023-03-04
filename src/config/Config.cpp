@@ -41,6 +41,12 @@ std::string Config::trim(const std::string &s)
   return (rtrim(ltrim(s)));
 }
 
+void  Config::endOfLine(std::string tmp)
+{
+  tmp.erase(tmp.length() - 1, 1);
+  tokens_.push_back(tmp);
+  tokens_.push_back(";");
+}
 
 /**
  * @brief 
@@ -49,7 +55,7 @@ std::string Config::trim(const std::string &s)
  * Primero hacemos un trim de lo que hay delante
  * 
  */
-void Config::tokenize()
+void  Config::tokenize()
 {
   std::string line, tmp;
   std::stack<bool> brackets;
@@ -62,8 +68,6 @@ void Config::tokenize()
   {
     file_content_ += line + "\n";
     // si no nos encontramos con una línea con solo espacios o tabs
-    // while ('}' != std::string::npos)
-    // {
       std::cout << line << std::endl;
       // hacemos un trim
       tmp = rtrim(line);
@@ -83,11 +87,7 @@ void Config::tokenize()
         if (isValidDirective(tmp) && line[line.length()] != ';')
           throw webserv_exception("missing ';' on line %", 0, ft::to_string(line_idx));
         if (tmp.find(';', tmp.length() - 1) != std::string::npos)
-        {
-          tmp.erase(tmp.length() - 1, 1);
-          tokens_.push_back(tmp);
-          tokens_.push_back(";");
-        }
+          endOfLine(tmp);
         else
           tokens_.push_back(tmp);
       }
