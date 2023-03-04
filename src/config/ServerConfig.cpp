@@ -41,6 +41,7 @@ void ServerConfig::server(std::vector<std::string>::iterator &it) {
   if (*it != "{")
     throw std::runtime_error("missing opening bracket in server block");
   while (*(++it) != "}") {
+	std::cout << "direc: " << *it << std::endl;
     if (ServerConfig::directive_[*it])
       (this->*(ServerConfig::directive_[*it]))(++it);
     else
