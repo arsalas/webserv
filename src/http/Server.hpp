@@ -59,7 +59,7 @@ class Server {
   int worker_id_;
 
  private:
-  std::vector<ServerConfig> &servers_;
+  std::vector<ServerConfig> &_servers;
   InputArgs &options_;
   std::map<int, Listen> running_server_;
   std::map<int, Client*> clients_;

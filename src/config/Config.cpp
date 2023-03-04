@@ -23,7 +23,7 @@ void Config::clear()
     close(fd_);
     fd_ = 0;
   }
-  tokens_.clear();
+  _tokens.clear();
   file_content_.clear();
 }
 
@@ -47,8 +47,8 @@ std::string Config::trim(const std::string &s)
 void Config::endOfLine(std::string &tmp)
 {
   tmp.erase(tmp.length() - 1, 1);
-  tokens_.push_back(tmp);
-  tokens_.push_back(";");
+  _tokens.push_back(tmp);
+  _tokens.push_back(";");
 }
 
 /**
@@ -94,7 +94,7 @@ void Config::tokenize()
       if (tmp.find(';', tmp.length() - 1) != std::string::npos)
         endOfLine(tmp);
       else
-        tokens_.push_back(tmp);
+        _tokens.push_back(tmp);
     }
     line_idx++;
   }
@@ -127,12 +127,12 @@ void Config::tokenize()
 //         throw webserv_exception("missing ';' on line %", 0, ft::to_string(line_idx));
 //       if (tmp.find(';', tmp.length() - 1) != std::string::npos) {
 //         tmp.erase(tmp.length() - 1, 1);
-//         tokens_.push_back(tmp);
-//         tokens_.push_back(";");
+//         _tokens.push_back(tmp);
+//         _tokens.push_back(";");
 //       }
 //       else
-//         tokens_.push_back(tmp);
-//         std::cout << "tokens are: " << tokens_.size() << std::endl;
+//         _tokens.push_back(tmp);
+//         std::cout << "tokens are: " << _tokens.size() << std::endl;
 //     }
 //     line_idx++;
 //   }
@@ -144,7 +144,7 @@ void Config::parse()
   std::vector<std::string>::iterator it;
 
   tokenize();
-  for (it = tokens_.begin(); it != tokens_.end(); ++it)
+  for (it = _tokens.begin(); it != _tokens.end(); ++it)
   {
     // SERVER
     if (*it == "server")
@@ -153,7 +153,7 @@ void Config::parse()
 
       serv.id_ = i++;
       serv.server(++it);
-      servers_.push_back(serv);
+      _servers.push_back(serv);
     }
     // WORKERS
     else if (*it == "workers")
@@ -167,7 +167,7 @@ void Config::parse()
     else
       throw webserv_exception("invalid directive % in main block", 0, *it);
   }
-  if (servers_.empty())
+  if (_servers.empty())
     throw webserv_exception("missing server block");
 }
 
@@ -178,7 +178,7 @@ std::string &Config::getPath()
 
 std::vector<ServerConfig> &Config::getServers()
 {
-  return servers_;
+  return _servers;
 }
 
 int Config::getWorkers()

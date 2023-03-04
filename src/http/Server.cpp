@@ -11,18 +11,18 @@ static void interruptHandler(int sig_int) {
 	Server::running_ = false;
 }
 
-Server::Server(const Server &copy) : servers_(copy.servers_), options_(copy.options_) {
+Server::Server(const Server &copy) : _servers(copy._servers), options_(copy.options_) {
   *this = copy;
 }
 
-Server::Server(std::vector<ServerConfig> &servers, InputArgs &options) : servers_(servers), options_(options), max_fd_(0) {
+Server::Server(std::vector<ServerConfig> &servers, InputArgs &options) : _servers(servers), options_(options), max_fd_(0) {
   FD_ZERO(&master_fds_);
   FD_ZERO(&read_fds_);
   FD_ZERO(&write_fds_);
 }
 
 Server	&Server::operator=(const Server &copy) {
-  servers_ = copy.servers_;
+  _servers = copy._servers;
   options_ = copy.options_;
   running_server_ = copy.running_server_;
   clients_ = copy.clients_;
@@ -41,7 +41,7 @@ void Server::setup() {
 
   std::vector<Listen> is_bind;
 
-  for (std::vector<ServerConfig>::iterator it = servers_.begin(); it != servers_.end(); it++) {
+  for (std::vector<ServerConfig>::iterator it = _servers.begin(); it != _servers.end(); it++) {
     if (it->getListens().empty())
       it->getListens().push_back(Listen("0.0.0.0", 80));
     for (std::vector<Listen>::iterator list = it->getListens().begin(); list != it->getListens().end(); list++) {
@@ -129,9 +129,9 @@ bool Server::recv(int fd) {
   int ret = req->parse(buffer);
 
   if (ret >= 1) {
-    clients_[fd]->setupConfig(servers_, options_);
+    clients_[fd]->setupConfig(_servers, options_);
     Log.print(INFO, head_ + "<< " + clients_[fd]->getConfig()->log(Log.getLogLevel()));
-    clients_[fd]->setupResponse(servers_, options_, ret);
+    clients_[fd]->setupResponse(_servers, options_, ret);
   }
   return true;
 }
@@ -183,11 +183,11 @@ void Server::remove_from_fd_set(int fd) {
 
 void Server::check_timeout_disconnect(Client *client) {
   if (client->timeout()) {
-    client->setupResponse(servers_, options_, 408);
+    client->setupResponse(_servers, options_, 408);
   }
 
   if (client->disconnect()) {
-    client->setupResponse(servers_, options_, 503);
+    client->setupResponse(_servers, options_, 503);
   }
 }
 

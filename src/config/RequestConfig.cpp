@@ -7,14 +7,14 @@
 RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client) :
   request_(request),
   host_port_(host_port),
-  servers_(servers),
+  _servers(servers),
   client_(client) {}
 
 RequestConfig::~RequestConfig() {
 }
 
 void RequestConfig::setup(InputArgs &options) {
-  ServerConfig *server = getServerForRequest(servers_);
+  ServerConfig *server = getServerForRequest(_servers);
   ServerConfig *location = NULL;
 
   if (request_.getStatus() > 2)

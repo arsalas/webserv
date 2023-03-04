@@ -43,8 +43,8 @@ class Config {
   int workers_;
 
   std::string file_content_;
-  std::vector<std::string> tokens_;
-  std::vector<ServerConfig> servers_;
+  std::vector<std::string> _tokens;
+  std::vector<ServerConfig> _servers;
 };
 
 #endif

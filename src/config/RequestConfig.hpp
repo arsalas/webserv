@@ -57,7 +57,7 @@ class RequestConfig {
  private:
   Request &request_;
   Listen &host_port_;
-  std::vector<ServerConfig> &servers_;
+  std::vector<ServerConfig> &_servers;
   Client &client_;
   ServerConfig *server_;
   ServerConfig *location_;
