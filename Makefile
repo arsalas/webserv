@@ -23,7 +23,7 @@ RM 				:= rm -f
 # SRC
 SRCS 			=  main.cpp \
 					Config.cpp InputArgs.cpp RequestConfig.cpp ServerConfig.cpp \
-					CGI.cpp Client.cpp Request.cpp Response.cpp Server.cpp \
+					CGI.cpp Client.cpp Request.cpp Response.cpp Server.cpp get_next_line.cpp \
 					Base64.cpp File.cpp Logger.cpp MimeTypes.cpp StatusCode.cpp StringUtils.cpp Utils.cpp
 
 # FOLDERS

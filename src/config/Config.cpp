@@ -51,8 +51,10 @@ void Config::tokenize() {
         tokens_.push_back(tmp);
         tokens_.push_back(";");
       }
-      else
+      else{
+std::cout << "token: " << tmp << std::endl;
         tokens_.push_back(tmp);
+	  }
     }
     line_idx++;
     free(line_c);
