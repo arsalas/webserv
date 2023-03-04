@@ -95,6 +95,7 @@ void Config::tokenize()
         endOfLine(tmp);
       else
         _tokens.push_back(tmp);
+        std::cout << "estoy metiendo: " << tmp << std::endl;
     }
     line_idx++;
   }
@@ -147,6 +148,7 @@ void Config::parse()
   for (it = _tokens.begin(); it != _tokens.end(); ++it)
   {
     // SERVER
+    // std::cout << "tokens begin is: " << *_tokens.begin() << std::endl;
     if (*it == "server")
     {
       ServerConfig serv;
