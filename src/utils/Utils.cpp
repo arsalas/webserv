@@ -8,7 +8,15 @@ bool isValidMethod(std::string const &str) {
           str == "DELETE");
 }
 
-bool isValidDirective(std::string const &str) {
+/**
+ * @brief Devuelve true si la string enviado (viene de default.conf) es alguno de los nombres de la lista
+ * 
+ * @param str 
+ * @return true 
+ * @return false 
+ */
+bool isValidDirective(std::string const &str)
+{
   return (str == "listen" ||
           str == "server_name" ||
           str == "root" ||
@@ -21,8 +29,10 @@ bool isValidDirective(std::string const &str) {
           str == "cgi_bin");
 }
 
-namespace ft {
-  std::string inet_ntop(const void *s) {
+namespace ft
+{
+  std::string inet_ntop(const void *s)
+  {
     const u_char *src = (const u_char*)s;
     std::ostringstream oss;
 
