@@ -184,7 +184,7 @@ std::string &RequestConfig::getRoot() {
 }
 
 std::string &RequestConfig::getAuth() {
-  return location_->credentials_;
+  return location_->_credentials;
 }
 
 std::string &RequestConfig::getUri() {
@@ -196,7 +196,7 @@ std::map<std::string, std::string> &RequestConfig::getCGI() {
 }
 
 std::string &RequestConfig::getCGIBin() {
-  return location_->cgi_bin_;
+  return location_->_cgiBin;
 }
 
 size_t &RequestConfig::getClientMaxBodySize() {
@@ -204,7 +204,7 @@ size_t &RequestConfig::getClientMaxBodySize() {
 }
 
 bool RequestConfig::getAutoindex() {
-  return location_->autoindex_;
+  return location_->_autoindex;
 }
 
 std::string &RequestConfig::getUpload() {
@@ -212,11 +212,11 @@ std::string &RequestConfig::getUpload() {
 }
 
 std::vector<std::string> &RequestConfig::getIndexes() {
-  return location_->index_;
+  return location_->_index;
 }
 
 std::map<int, std::string> &RequestConfig::getErrorPages() {
-  return location_->error_codes_;
+  return location_->_error_codes;
 }
 
 std::vector<std::string> &RequestConfig::getMethods() {

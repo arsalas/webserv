@@ -2,57 +2,57 @@
 
 StatusCode::StatusCode() {
   // Informational 1xx
-  error_codes_[100] = "Continue";
-  error_codes_[101] = "Switching Protocols";
+  _error_codes[100] = "Continue";
+  _error_codes[101] = "Switching Protocols";
 
   // Successful 2xx
-  error_codes_[200] = "OK";
-  error_codes_[201] = "Created";
-  error_codes_[202] = "Accepted";
-  error_codes_[203] = "Non-Authoritative Information";
-  error_codes_[204] = "No Content";
-  error_codes_[205] = "Reset Content";
-  error_codes_[206] = "Partial Content";
+  _error_codes[200] = "OK";
+  _error_codes[201] = "Created";
+  _error_codes[202] = "Accepted";
+  _error_codes[203] = "Non-Authoritative Information";
+  _error_codes[204] = "No Content";
+  _error_codes[205] = "Reset Content";
+  _error_codes[206] = "Partial Content";
 
   // Redirection 3xx
-  error_codes_[300] = "Multiple Choices";
-  error_codes_[301] = "Moved Permanently";
-  error_codes_[302] = "Found";
-  error_codes_[303] = "See Other";
-  error_codes_[304] = "Not Modified";
-  error_codes_[305] = "Use Proxy";
-  error_codes_[307] = "Temporary Redirect";
+  _error_codes[300] = "Multiple Choices";
+  _error_codes[301] = "Moved Permanently";
+  _error_codes[302] = "Found";
+  _error_codes[303] = "See Other";
+  _error_codes[304] = "Not Modified";
+  _error_codes[305] = "Use Proxy";
+  _error_codes[307] = "Temporary Redirect";
 
   // Client Error 4xx
-  error_codes_[400] = "Bad Request";
-  error_codes_[401] = "Unauthorized";
-  error_codes_[402] = "Payment Required";
-  error_codes_[403] = "Forbidden";
-  error_codes_[404] = "Not Found";
-  error_codes_[405] = "Method Not Allowed";
-  error_codes_[406] = "Not Acceptable";
-  error_codes_[407] = "Proxy Authentication Required";
-  error_codes_[408] = "Request Timeout";
-  error_codes_[409] = "Conflict";
-  error_codes_[410] = "Gone";
-  error_codes_[411] = "Length Required";
-  error_codes_[412] = "Precondition Failed";
-  error_codes_[413] = "Payload Too Large";
-  error_codes_[414] = "URI Too Long";
-  error_codes_[415] = "Unsupported Media Type";
-  error_codes_[416] = "Range Not Satisfiable";
-  error_codes_[417] = "Expectation Failed";
-  error_codes_[426] = "Upgrade Required";
+  _error_codes[400] = "Bad Request";
+  _error_codes[401] = "Unauthorized";
+  _error_codes[402] = "Payment Required";
+  _error_codes[403] = "Forbidden";
+  _error_codes[404] = "Not Found";
+  _error_codes[405] = "Method Not Allowed";
+  _error_codes[406] = "Not Acceptable";
+  _error_codes[407] = "Proxy Authentication Required";
+  _error_codes[408] = "Request Timeout";
+  _error_codes[409] = "Conflict";
+  _error_codes[410] = "Gone";
+  _error_codes[411] = "Length Required";
+  _error_codes[412] = "Precondition Failed";
+  _error_codes[413] = "Payload Too Large";
+  _error_codes[414] = "URI Too Long";
+  _error_codes[415] = "Unsupported Media Type";
+  _error_codes[416] = "Range Not Satisfiable";
+  _error_codes[417] = "Expectation Failed";
+  _error_codes[426] = "Upgrade Required";
 
   // Server Error 5xx
-  error_codes_[500] = "Internal Server Error";
-  error_codes_[501] = "Not Implemented";
-  error_codes_[502] = "Bad Gateway";
-  error_codes_[503] = "Service Unavailable";
-  error_codes_[504] = "Gateway Timeout";
-  error_codes_[505] = "HTTP Version Not Supported";
+  _error_codes[500] = "Internal Server Error";
+  _error_codes[501] = "Not Implemented";
+  _error_codes[502] = "Bad Gateway";
+  _error_codes[503] = "Service Unavailable";
+  _error_codes[504] = "Gateway Timeout";
+  _error_codes[505] = "HTTP Version Not Supported";
 }
 
 std::string &StatusCode::operator[](int status_code) {
-  return error_codes_[status_code];
+  return _error_codes[status_code];
 }

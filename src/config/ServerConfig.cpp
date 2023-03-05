@@ -1,6 +1,6 @@
 #include "ServerConfig.hpp"
 
-ServerConfig::ServerConfig() : credentials_("off"), autoindex_(false), client_max_body_size_(0), cgi_bin_("cgi-bin")
+ServerConfig::ServerConfig() : _credentials("off"), _autoindex(false), client_max_body_size_(0), _cgiBin("cgi-bin")
 {
 	_modifier = NONE;
 	initDirectiveMap();
@@ -14,12 +14,12 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &copy)
 {
 	client_max_body_size_ = copy.client_max_body_size_;
 	_root = copy._root;
-	error_codes_ = copy.error_codes_;
-	index_ = copy.index_;
 	cgi_ = copy.cgi_;
-	cgi_bin_ = copy.cgi_bin_;
-	autoindex_ = copy.autoindex_;
-	credentials_ = copy.credentials_;
+	_index = copy._index;
+	_cgiBin = copy._cgiBin;
+	_error_codes = copy._error_codes;
+	_credentials = copy._credentials;
+	_autoindex = copy._autoindex;
 	return (*this);
 }
 
@@ -31,18 +31,18 @@ std::map<std::string, ServerConfig::type> ServerConfig::_directive;
 void ServerConfig::initDirectiveMap()
 {
 	ServerConfig::_directive["listen"] = &ServerConfig::listen;
-	ServerConfig::_directive["location"] = &ServerConfig::location;
 	ServerConfig::_directive["server_name"] = &ServerConfig::serverName;
-	ServerConfig::_directive["error_page"] = &ServerConfig::error_page;
-	ServerConfig::_directive["auth"] = &ServerConfig::auth;
-	ServerConfig::_directive["client_max_body_size"] = &ServerConfig::client_max_body_size;
 	ServerConfig::_directive["root"] = &ServerConfig::root;
-	ServerConfig::_directive["limit_except"] = &ServerConfig::limit_except;
-	ServerConfig::_directive["autoindex"] = &ServerConfig::autoindex;
-	ServerConfig::_directive["index"] = &ServerConfig::index;
-	ServerConfig::_directive["upload"] = &ServerConfig::upload;
 	ServerConfig::_directive["cgi"] = &ServerConfig::cgi;
+	ServerConfig::_directive["index"] = &ServerConfig::index;
 	ServerConfig::_directive["cgi_bin"] = &ServerConfig::cgi_bin;
+	ServerConfig::_directive["location"] = &ServerConfig::location;
+	ServerConfig::_directive["limit_except"] = &ServerConfig::limitExcept;
+	ServerConfig::_directive["upload"] = &ServerConfig::upload;
+	ServerConfig::_directive["client_max_body_size"] = &ServerConfig::client_max_body_size;
+	ServerConfig::_directive["auth"] = &ServerConfig::auth;
+	ServerConfig::_directive["error_page"] = &ServerConfig::errorPage;
+	ServerConfig::_directive["autoindex"] = &ServerConfig::autoindex;
 }
 
 /**
@@ -188,13 +188,13 @@ void	ServerConfig::cgi(std::vector<std::string>::iterator &it)
 void	ServerConfig::index(std::vector<std::string>::iterator &it)
 {
 	while (*it != ";")
-		index_.push_back(*it++);
+		_index.push_back(*it++);
 };
 
 /** ALBERTO, NO HE VISTO NADA QUE PONGA CGI_BIN, NO SE QUE ES ESTO **/
 void ServerConfig::cgi_bin(std::vector<std::string>::iterator &it)
 {
-	cgi_bin_ = *it;
+	_cgiBin = *it;
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'cgi_bin'");
 };
@@ -204,14 +204,13 @@ void ServerConfig::cgi_bin(std::vector<std::string>::iterator &it)
  * @brief LOCATIONS
  * Guardamos "locations"
  * Podemos encontrar varios "locations", por lo que vamos a necesitar guardarlos con _locationsloop
- * 
+ * Location es la ubicación del directorio
  * @param it 
  */
 void	ServerConfig::location(std::vector<std::string>::iterator &it)
 {
-	ServerConfig loc;
+	ServerConfig loc = *this;
 
-	loc = *this;
 	loc.locationLoop(it, _locations);
 };
 
@@ -252,6 +251,11 @@ void	ServerConfig::modificateLocation(std::string &str)
 		throw std::runtime_error("unknown modifier in location");
 }
 
+/**
+ * @brief Checkeamos si la dirección que envian en el "location" es válida
+ * 
+ * @param it 
+ */
 void	ServerConfig::checkValidDir(std::vector<std::string>::iterator &it)
 {
 	if (ServerConfig::_directive[*it])
@@ -287,13 +291,14 @@ void	ServerConfig::locationLoop(std::vector<std::string>::iterator &it, std::vec
 
 /**
  * @brief LIMIT EXCEPT
- * Guardamos el "limit_except".
- * Después de limit_except solo puede venir una palabra.
- * Si no hay limit_except + 1 palabra + ';', es incorrecto.
+ * Guardamos el "limitExcept".
+ * Después de limitExcept solo puede venir una palabra.
+ * Si no hay limitExcept + 1 palabra + ';', es incorrecto.
+ * limitExcept nos va a dar la orden: PUT, GET, POST, etc.
  * 
  * @param it 
  */
-void	ServerConfig::limit_except(std::vector<std::string>::iterator &it)
+void	ServerConfig::limitExcept(std::vector<std::string>::iterator &it)
 {
 	while (*it != ";")
 		methods_.push_back(*it++);
@@ -332,47 +337,68 @@ void	ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
 };
 
 
-void	ServerConfig::error_page(std::vector<std::string>::iterator &it)
-{
-	std::vector<int> codes;
-
-	while (it->find_first_not_of("0123456789") == std::string::npos)
-	{
-		codes.push_back(ft::stoi(*it++));
-	}
-	for (std::vector<int>::iterator it2 = codes.begin(); it2 != codes.end(); it2++)
-	{
-		error_codes_[*it2] = *it;
-	}
-	if (*++it != ";")
-		throw std::runtime_error("double value in 'listen'");
-};
-
+/**
+ * @brief AUTH
+ * Guardamos el "auth".
+ * Después de auth solo puede venir una palabra.
+ * Si no hay auth + 1 palabra + ';', es incorrecto.
+ * Lo podemos encontrar en Workers 8
+ * 
+ * @param it 
+ */
 void	ServerConfig::auth(std::vector<std::string>::iterator &it)
 {
-	credentials_ = *it;
+	_credentials = *it;
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'auth'");
 };
 
+
+/**
+ * @brief ERROR_PAGE
+ * Guardamos el "error_page"
+ * Tienen que dar el código de error y el path
+ * El código de error solo pueden ser números
+ * Ej.: error_page 404 /my_errors/404.html;
+ * 
+ * @param it 
+ */
+void	ServerConfig::errorPage(std::vector<std::string>::iterator &it)
+{
+	std::vector<int> codes;
+
+	while (it->find_first_not_of("0123456789") == std::string::npos)
+		codes.push_back(ft::stoi(*it++));
+	for (std::vector<int>::iterator it2 = codes.begin(); it2 != codes.end(); it2++)
+		_error_codes[*it2] = *it;
+	if (*++it != ";")
+		throw std::runtime_error("double value in 'listen'");
+};
+
+/**
+ * @brief AUTOINDEX
+ * procesa las solicitudes que terminan con el carácter de slash (' /')
+ * y produce una lista de directorios
+ * Tenemos que saber si está en on o off, ninguna otra y que después haya un ';'
+ * 
+ * @param it 
+ */
 void	ServerConfig::autoindex(std::vector<std::string>::iterator &it)
 {
 	if (*it == "on")
-		autoindex_ = true;
+		_autoindex = true;
 	else if (*it == "off")
-		autoindex_ = false;
+		_autoindex = false;
 	else
 		throw std::runtime_error("unknown value in 'autoindex'");
-
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'autoindex'");
 };
 
 
 
-/*
-** Getter Functions
-*/
+
+/**			GETTERS			**/
 
 std::string &ServerConfig::getUri()
 {

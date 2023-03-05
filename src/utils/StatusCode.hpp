@@ -10,7 +10,7 @@ class StatusCode {
   std::string &operator[](int status_code);
 
  private:
-  std::map<int, std::string> error_codes_;
+  std::map<int, std::string> _error_codes;
 };
 
 #endif

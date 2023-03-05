@@ -59,16 +59,16 @@ public:
 	void	modificateLocation(std::string &str);
 	void	checkValidDir(std::vector<std::string>::iterator &it);
 
-	void	limit_except(std::vector<std::string>::iterator &it);
+	void	limitExcept(std::vector<std::string>::iterator &it);
 
 	void	upload(std::vector<std::string>::iterator &it);
 
 	void	client_max_body_size(std::vector<std::string>::iterator &it);
 
-	/* hasta aqui */
 	void 	auth(std::vector<std::string>::iterator &it);
 
-	void	error_page(std::vector<std::string>::iterator &it);
+	void	errorPage(std::vector<std::string>::iterator &it);
+
 	void	autoindex(std::vector<std::string>::iterator &it);
 
 	std::string					&getUri();
@@ -93,16 +93,16 @@ private:
 	std::vector<ServerConfig>	_locations;
 	std::string					_uri;
 	LocationModifier			_modifier;
-	std::string					credentials_;
-	bool						autoindex_;
+	std::string					_credentials;
+	bool						_autoindex;
 	size_t						client_max_body_size_;
 	std::string					_root;
 	std::string					upload_;
 	std::vector<std::string>	methods_;
-	std::map<int, std::string>	error_codes_;
-	std::vector<std::string>	index_;
+	std::map<int, std::string>	_error_codes;
+	std::vector<std::string>	_index;
 	std::map<std::string, std::string>	cgi_;
-	std::string					cgi_bin_;
+	std::string					_cgiBin;
 };
 
 #endif
