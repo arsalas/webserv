@@ -1,6 +1,6 @@
 # include "InputArgs.hpp"
 
-InputArgs::InputArgs(int argc, char **argv) : argc_(argc), argv_(argv), path_("./config/default.conf"), log_level_(INFO) {
+InputArgs::InputArgs(int argc, char **argv) : argc_(argc), argv_(argv), _path("./config/default.conf"), log_level_(INFO) {
   options_["h"];
   options_["-help"];
   options_["t"];
@@ -36,7 +36,7 @@ void InputArgs::parse() {
       else
         throw webserv_exception("invalid option -%\n\n" + helpText(), 0, opt);
     } else {
-      path_ = arg;
+      _path = arg;
       if (i != argc_ - 1)
         throw webserv_exception("too many arguments\n\n" + helpText(), 0, "test");
     }
@@ -57,7 +57,7 @@ std::string InputArgs::helpText() {
 }
 
 std::string &InputArgs::getPath() {
-  return path_;
+  return _path;
 }
 
 bool InputArgs::help() {

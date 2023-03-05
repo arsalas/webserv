@@ -11,7 +11,7 @@ File::~File() {
 }
 
 void File::set_path(std::string path, bool negociation) {
-  path_ = ft::unique_char(path);
+  _path = ft::unique_char(path);
 
   if (negociation)
     parseExtensionsNegociation();
@@ -23,9 +23,9 @@ bool File::open(bool create) {
   close();
 
   if (create)
-    fd_ = ::open(path_.c_str(), O_CREAT | O_RDWR | O_TRUNC, 00755);
+    fd_ = ::open(_path.c_str(), O_CREAT | O_RDWR | O_TRUNC, 00755);
   else
-    fd_ = ::open(path_.c_str(), O_RDONLY);
+    fd_ = ::open(_path.c_str(), O_RDONLY);
   return fd_ > 0;
 }
 
@@ -39,27 +39,27 @@ void File::close() {
 
 void File::create(std::string &body) {
   if (!open(true)) {
-    Log.print(DEBUG, "create : " + std::string(strerror(errno)) + " of " + path_, RED, true);
+    Log.print(DEBUG, "create : " + std::string(strerror(errno)) + " of " + _path, RED, true);
     return ;
   }
   if (body.length() && write(fd_, body.c_str(), body.length()) <= 0)
-    Log.print(DEBUG, "create : " + std::string(strerror(errno)) + " of " + path_, RED, true);
+    Log.print(DEBUG, "create : " + std::string(strerror(errno)) + " of " + _path, RED, true);
 }
 
 void File::append(std::string &body) {
   close();
-  fd_ = ::open(path_.c_str(), O_RDWR | O_APPEND);
+  fd_ = ::open(_path.c_str(), O_RDWR | O_APPEND);
   if (fd_ < 0)
     return ;
   if (body.length() && write(fd_, body.c_str(), body.length()) <= 0)
-    Log.print(DEBUG, "append : " + std::string(strerror(errno)) + " of " + path_, RED, true);
+    Log.print(DEBUG, "append : " + std::string(strerror(errno)) + " of " + _path, RED, true);
 }
 
 void File::unlink() {
   if (!exists())
     return ;
-  if (::unlink(path_.c_str()) == -1)
-    Log.print(DEBUG, "unlink : " + std::string(strerror(errno)) + " of " + path_, RED, true);
+  if (::unlink(_path.c_str()) == -1)
+    Log.print(DEBUG, "unlink : " + std::string(strerror(errno)) + " of " + _path, RED, true);
 }
 
 std::string set_width(size_t width, std::string str) {
@@ -92,7 +92,7 @@ std::string File::autoIndex(std::string &target) {
   struct stat statbuf;
   struct dirent *ent;
 
-  dir = opendir(path_.c_str());
+  dir = opendir(_path.c_str());
   body += "<html>\r\n";
   body += "<head><title>Index of " + target + "</title></head>\r\n";
   body += "<body>\r\n";
@@ -108,7 +108,7 @@ std::string File::autoIndex(std::string &target) {
       li.name_.erase(47);
       li.name_ += "..>";
     }
-    std::string path(path_ + "/" + ent->d_name);
+    std::string path(_path + "/" + ent->d_name);
     stat(path.c_str(), &statbuf);
 
     if (S_ISDIR(statbuf.st_mode)) {
@@ -145,13 +145,13 @@ std::string File::autoIndex(std::string &target) {
 
 bool File::is_directory() {
   struct stat statbuf;
-  stat(path_.c_str(), &statbuf);
+  stat(_path.c_str(), &statbuf);
   return S_ISDIR(statbuf.st_mode);
 }
 
 bool File::exists() {
   struct stat statbuf;
-  return stat(path_.c_str(), &statbuf) == 0;
+  return stat(_path.c_str(), &statbuf) == 0;
 }
 
 bool File::exists(std::string &path) {
@@ -164,7 +164,7 @@ std::string File::last_modified() {
   struct tm	*tm;
   char buf[32];
 
-  stat(path_.c_str(), &statbuf);
+  stat(_path.c_str(), &statbuf);
   tm = gmtime(&statbuf.st_mtime);
   int ret = strftime(buf, 32, "%a, %d %b %Y %T GMT", tm);
   return std::string(buf, ret);
@@ -174,7 +174,7 @@ std::string File::find_index(std::vector<std::string> &indexes) {
   DIR *dir;
   struct dirent *ent;
 
-  if ((dir = opendir(path_.c_str()))) {
+  if ((dir = opendir(_path.c_str()))) {
     while ((ent = readdir(dir))) {
       for (std::vector<std::string>::iterator it = indexes.begin(); it != indexes.end(); it++) {
         if (*it == ent->d_name) {
@@ -186,7 +186,7 @@ std::string File::find_index(std::vector<std::string> &indexes) {
     }
     closedir(dir);
   } else {
-    Log.print(DEBUG, "opendir : " + std::string(strerror(errno)) + " of " + path_, RED, true);
+    Log.print(DEBUG, "opendir : " + std::string(strerror(errno)) + " of " + _path, RED, true);
     return "";
   }
   return "";
@@ -217,7 +217,7 @@ void File::parse_match() {
   DIR *dir;
   struct dirent *ent;
 
-  std::string path = path_.substr(0, path_.find_last_of("/"));
+  std::string path = _path.substr(0, _path.find_last_of("/"));
   if (!matches_.empty())
     matches_.clear();
   if ((dir = opendir(path.c_str()))) {
@@ -230,12 +230,12 @@ void File::parse_match() {
     }
     closedir(dir);
   } else {
-    Log.print(DEBUG, "opendir : " + std::string(strerror(errno)) + " of " + path_, RED, true);
+    Log.print(DEBUG, "opendir : " + std::string(strerror(errno)) + " of " + _path, RED, true);
   }
 }
 
 void File::parseExtensions() {
-  std::string file = path_.substr(path_.find_last_of("/") + 1);
+  std::string file = _path.substr(_path.find_last_of("/") + 1);
 
   if (file.empty())
     return;
@@ -251,7 +251,7 @@ void File::parseExtensions() {
 }
 
 void File::parseExtensionsNegociation() {
-  std::string file = path_.substr(path_.find_last_of("/") + 1);
+  std::string file = _path.substr(_path.find_last_of("/") + 1);
 
   if (file.empty())
     return;
@@ -286,5 +286,5 @@ std::vector<std::string> &File::getMatches() {
 }
 
 std::string &File::getPath() {
-  return path_;
+  return _path;
 }

@@ -69,7 +69,7 @@ class File {
   std::string file_name_full_;
   std::string mime_ext_;
   std::vector<std::string> matches_;
-  std::string path_;
+  std::string _path;
 };
 
 #endif

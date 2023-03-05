@@ -25,17 +25,17 @@ void CGI::init(int worker_id) {
   extension_ = file_.getMimeExtension();
   cgi_exe_ = config_.getCGI()[extension_];
   if (config_.getCGIBin()[0] == '/') {
-    cgi_path_ = config_.getCGIBin() + "/" + cgi_exe_;
+    cgi__path = config_.getCGIBin() + "/" + cgi_exe_;
   } else {
-    cgi_path_ = cwd_ + "/" + config_.getCGIBin() + "/" + cgi_exe_;
+    cgi__path = cwd_ + "/" + config_.getCGIBin() + "/" + cgi_exe_;
   }
   std::string cgi_path = "/tmp/webserv_cgi_tmp_" + ft::to_string(worker_id);
   tmp_file_.set_path(cgi_path.c_str());
   tmp_file_.open(true);
   if (worker_id)
-    Log.print(DEBUG, "worker[" + ft::to_string(worker_id) + "] : CGI -> " + cgi_path_);
+    Log.print(DEBUG, "worker[" + ft::to_string(worker_id) + "] : CGI -> " + cgi__path);
   else
-    Log.print(DEBUG, "server : CGI -> " + cgi_path_);
+    Log.print(DEBUG, "server : CGI -> " + cgi__path);
 }
 
 CGI::~CGI() {
@@ -48,13 +48,13 @@ CGI::~CGI() {
 }
 
 int CGI::execute() {
-  file_path_ = cwd_ + "/" + file_.getPath();
+  file__path = cwd_ + "/" + file_.getPath();
 
   if (!setCGIEnv())
     return 500;
-  if (!(argv_[0] = ft::strdup(cgi_path_.c_str())))
+  if (!(argv_[0] = ft::strdup(cgi__path.c_str())))
     return 500;
-  if (!(argv_[1] = ft::strdup(file_path_.c_str())))
+  if (!(argv_[1] = ft::strdup(file__path.c_str())))
     return 500;
   argv_[2] = NULL;
 
@@ -66,7 +66,7 @@ int CGI::execute() {
   pid_t pid = fork();
 
   if (pid == 0) {
-    if (chdir(file_path_.substr(0, file_path_.find_last_of('/')).c_str()) == -1)
+    if (chdir(file__path.substr(0, file__path.find_last_of('/')).c_str()) == -1)
       return 500;
     close(pip[1]);
     if (dup2(pip[0], 0) == -1)
@@ -130,8 +130,8 @@ bool CGI::setCGIEnv() {
 		cgi_env_["CONTENT_LENGTH"] = ft::to_string(req_body_.length());
 	}
 	cgi_env_["GATEWAY_INTERFACE"] = "CGI/1.1";
-  cgi_env_["PATH_INFO"] = file_path_;
-	cgi_env_["PATH_TRANSLATED"] = file_path_;
+  cgi_env_["_pathINFO"] = file__path;
+	cgi_env_["_pathTRANSLATED"] = file__path;
   cgi_env_["QUERY_STRING"] = config_.getQuery();
   cgi_env_["REMOTE_ADDR"] = config_.getClient().getAddr();
 
@@ -142,9 +142,9 @@ bool CGI::setCGIEnv() {
   }
 
   cgi_env_["REQUEST_METHOD"] = config_.getMethod();
-	cgi_env_["REQUEST_URI"] = file_path_;
+	cgi_env_["REQUEST_URI"] = file__path;
 
-  cgi_env_["SCRIPT_NAME"] = cgi_path_;
+  cgi_env_["SCRIPT_NAME"] = cgi__path;
 	cgi_env_["SERVER_NAME"] = config_.getHost();
 	cgi_env_["SERVER_PROTOCOL"] = config_.getProtocol();
 	cgi_env_["SERVER_PORT"] = ft::to_string(config_.getPort());

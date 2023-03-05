@@ -29,11 +29,11 @@ class CGI {
   File &file_;
   RequestConfig &config_;
   std::map<std::string, std::string, ft::comp> &req_headers_;
-  std::string cgi_path_;
+  std::string cgi__path;
   std::string cgi_exe_;
   std::string extension_;
   std::string cwd_;
-  std::string file_path_;
+  std::string file__path;
   std::string body_;
   std::string req_body_;
   File tmp_file_;

@@ -32,11 +32,17 @@ class Config {
   std::string trim(const std::string &s);
   std::string rtrim(const std::string &s);
   std::string ltrim(const std::string &s);
+  void	      openBrackets(std::stack<bool> &brackets, std::string &tmp);
+  void	      closeBrackets(std::stack<bool> &brackets, std::string &tmp, int line_idx);
   void        endOfLine(std::string &tmp);
+  void        pushToken(std::string &tmp);
+
+  void	      serverToken(int i, std::vector<std::string>::iterator &it);
+  void	      workersToken(std::vector<std::string>::iterator &it);
 
 
  private:
-  std::string path_;
+  std::string _path;
   int fd_;
   std::ifstream fdStream_;
 

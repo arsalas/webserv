@@ -23,7 +23,7 @@ class InputArgs {
   private:
     int argc_;
     char **argv_;
-    std::string path_;
+    std::string _path;
     LogLevel log_level_;
     std::map<std::string, bool> options_;
 };
