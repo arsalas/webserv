@@ -2,7 +2,7 @@
 
 ServerConfig::ServerConfig() : credentials_("off"), autoindex_(false), client_max_body_size_(0), cgi_bin_("cgi-bin")
 {
-	modifier_ = NONE;
+	_modifier = NONE;
 	initDirectiveMap();
 }
 
@@ -13,7 +13,7 @@ ServerConfig::~ServerConfig()
 ServerConfig &ServerConfig::operator=(const ServerConfig &copy)
 {
 	client_max_body_size_ = copy.client_max_body_size_;
-	root_ = copy.root_;
+	_root = copy._root;
 	error_codes_ = copy.error_codes_;
 	index_ = copy.index_;
 	cgi_ = copy.cgi_;
@@ -49,6 +49,7 @@ void ServerConfig::initDirectiveMap()
  * @brief SERVER
  * Checkeamos si la palabra "server" del principio del archivo de configuración es correcta.
  * Debe aparecer "{".
+ * ALBERTO, no entiendo más allá
  * 
  * @param it 
  */
@@ -65,6 +66,7 @@ void ServerConfig::server(std::vector<std::string>::iterator &it)
 			throw std::runtime_error("invalid directive '" + *it + "' in 'server'");
 	}
 }
+
 
 /**
  * @brief Guardamos la ip y el puerto y checkeamos que sean correctos
@@ -112,7 +114,7 @@ void	ServerConfig::saveListen(std::vector<std::string>::iterator &it, std::strin
  * 
  * @param it 
  */
-void ServerConfig::listen(std::vector<std::string>::iterator &it)
+void	ServerConfig::listen(std::vector<std::string>::iterator &it)
 {
 	std::string	str = *it;
 	std::string	ip = "0.0.0.0";
@@ -151,7 +153,7 @@ void	ServerConfig::serverName(std::vector<std::string>::iterator &it)
  */
 void	ServerConfig::root(std::vector<std::string>::iterator &it)
 {
-	root_ = *it;
+	_root = *it;
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'root'");
 };
@@ -165,7 +167,7 @@ void	ServerConfig::root(std::vector<std::string>::iterator &it)
  * 
  * @param it 
  */
-void ServerConfig::cgi(std::vector<std::string>::iterator &it)
+void	ServerConfig::cgi(std::vector<std::string>::iterator &it)
 {
 	std::string &ext = *it++;
 	std::string &exec = *it++;
@@ -175,7 +177,115 @@ void ServerConfig::cgi(std::vector<std::string>::iterator &it)
 };
 
 
-void ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
+/**
+ * @brief INDEX
+ * Guardamos el "index".
+ * Después de index solo puede venir una palabra.
+ * Si no hay index + 1 palabra + ';', es incorrecto.
+ * 
+ * @param it 
+ */
+void	ServerConfig::index(std::vector<std::string>::iterator &it)
+{
+	while (*it != ";")
+		index_.push_back(*it++);
+};
+
+/** ALBERTO, NO HE VISTO NADA QUE PONGA CGI_BIN, NO SE QUE ES ESTO **/
+void ServerConfig::cgi_bin(std::vector<std::string>::iterator &it)
+{
+	cgi_bin_ = *it;
+	if (*++it != ";")
+		throw std::runtime_error("double value in 'cgi_bin'");
+};
+
+
+/**
+ * @brief LOCATIONS
+ * Guardamos "locations"
+ * Podemos encontrar varios "locations", por lo que vamos a necesitar guardarlos con _locationsloop
+ * 
+ * @param it 
+ */
+void	ServerConfig::location(std::vector<std::string>::iterator &it)
+{
+	ServerConfig loc;
+
+	loc = *this;
+	loc.locationLoop(it, _locations);
+};
+
+
+/**
+ * @brief Miramos si el string es alguno de la lista.
+ * Función auxiliar en locationLoop.
+ * 
+ * @param str 
+ * @return true 
+ * @return false 
+ */
+bool	ServerConfig::isLocationModifier(std::string &str)
+{
+	return (str == "=" ||
+		str == "~" ||
+		str == "~*" ||
+		str == "^~");
+}
+
+/**
+ * @brief Checkeamos si el modificador que nos han pasado se puede aplicar a nuestro location
+ * Si no es válido, mandamos excepción
+ * 
+ * @param str 
+ */
+void	ServerConfig::modificateLocation(std::string &str)
+{
+	if (str == "=")
+		_modifier = EXACT;
+	else if (str == "~")
+		_modifier = CASE_SENSITIVE_REG;
+	else if (str == "~*")
+		_modifier = CASE_INSENSITIVE_REG;
+	else if (str == "^~")
+		_modifier = LONGEST;
+	else
+		throw std::runtime_error("unknown modifier in location");
+}
+
+void	ServerConfig::checkValidDir(std::vector<std::string>::iterator &it)
+{
+	if (ServerConfig::_directive[*it])
+		(this->*(ServerConfig::_directive[*it]))(++it);
+	else
+		throw std::runtime_error("invalid directive '" + *it + "' in 'location'");
+}
+
+/**
+ * @brief Miramos en bucle lo que tenemos dentro de location
+ * Si encontramos algún modificador, checkeamos que sea correcto
+ * 
+ * @param it 
+ * @param locations 
+ */
+void	ServerConfig::locationLoop(std::vector<std::string>::iterator &it, std::vector<ServerConfig> &locations)
+{
+	if (isLocationModifier(*it))
+	{
+		modificateLocation(*it);
+		it++;
+	}
+	else
+		_modifier = NONE;
+	_uri = *it++;
+	if (*it != "{")
+		throw std::runtime_error("missing opening bracket in server block");
+	while (*(++it) != "}")
+		checkValidDir(it);
+	locations.push_back(*this);
+}
+
+
+void	ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
 {
 	if (it->find_first_not_of("0123456789") != std::string::npos)
 		throw std::runtime_error("unexpected symbols in client_max_body_size");
@@ -184,7 +294,7 @@ void ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
 		throw std::runtime_error("double value in 'client_max_body_size_'");
 };
 
-void ServerConfig::error_page(std::vector<std::string>::iterator &it)
+void	ServerConfig::error_page(std::vector<std::string>::iterator &it)
 {
 	std::vector<int> codes;
 
@@ -200,26 +310,20 @@ void ServerConfig::error_page(std::vector<std::string>::iterator &it)
 		throw std::runtime_error("double value in 'listen'");
 };
 
-void ServerConfig::auth(std::vector<std::string>::iterator &it)
+void	ServerConfig::auth(std::vector<std::string>::iterator &it)
 {
 	credentials_ = *it;
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'auth'");
 };
 
-void ServerConfig::index(std::vector<std::string>::iterator &it)
-{
-	while (*it != ";")
-		index_.push_back(*it++);
-};
-
-void ServerConfig::limit_except(std::vector<std::string>::iterator &it)
+void	ServerConfig::limit_except(std::vector<std::string>::iterator &it)
 {
 	while (*it != ";")
 		methods_.push_back(*it++);
 };
 
-void ServerConfig::autoindex(std::vector<std::string>::iterator &it)
+void	ServerConfig::autoindex(std::vector<std::string>::iterator &it)
 {
 	if (*it == "on")
 		autoindex_ = true;
@@ -232,67 +336,13 @@ void ServerConfig::autoindex(std::vector<std::string>::iterator &it)
 		throw std::runtime_error("double value in 'autoindex'");
 };
 
-void ServerConfig::upload(std::vector<std::string>::iterator &it)
+void	ServerConfig::upload(std::vector<std::string>::iterator &it)
 {
 	upload_ = *it;
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'upload'");
 };
 
-void ServerConfig::cgi_bin(std::vector<std::string>::iterator &it)
-{
-	cgi_bin_ = *it;
-	if (*++it != ";")
-		throw std::runtime_error("double value in 'cgi_bin'");
-};
-
-bool is_loc_modifier(std::string &str)
-{
-	return (str == "=" ||
-					str == "~" ||
-					str == "~*" ||
-					str == "^~");
-}
-
-void ServerConfig::location_loop(std::vector<std::string>::iterator &it, std::vector<ServerConfig> &locations)
-{
-	if (is_loc_modifier(*it))
-	{
-		if (*it == "=")
-			modifier_ = EXACT;
-		else if (*it == "~")
-			modifier_ = CASE_SENSITIVE_REG;
-		else if (*it == "~*")
-			modifier_ = CASE_INSENSITIVE_REG;
-		else if (*it == "^~")
-			modifier_ = LONGEST;
-		else
-			throw std::runtime_error("unknown modifier in location");
-		it++;
-	}
-	else
-		modifier_ = NONE;
-	uri_ = *it++;
-	if (*it != "{")
-		throw std::runtime_error("missing opening bracket in server block");
-	while (*(++it) != "}")
-	{
-		if (ServerConfig::_directive[*it])
-			(this->*(ServerConfig::_directive[*it]))(++it);
-		else
-			throw std::runtime_error("invalid directive '" + *it + "' in 'location'");
-	}
-	locations.push_back(*this);
-	;
-}
-
-void ServerConfig::location(std::vector<std::string>::iterator &it)
-{
-	ServerConfig loc;
-
-	loc = *this;
-	loc.location_loop(it, locations_);
-};
 
 /*
 ** Getter Functions
@@ -300,7 +350,7 @@ void ServerConfig::location(std::vector<std::string>::iterator &it)
 
 std::string &ServerConfig::getUri()
 {
-	return uri_;
+	return _uri;
 }
 
 std::vector<Listen> &ServerConfig::getListens()
@@ -315,5 +365,5 @@ std::vector<std::string> &ServerConfig::getServerNames()
 
 std::vector<ServerConfig> &ServerConfig::getLocations()
 {
-	return locations_;
+	return _locations;
 };

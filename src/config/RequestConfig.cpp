@@ -27,8 +27,8 @@ void RequestConfig::setup(InputArgs &options) {
 
   if (location) {
     location_ = location;
-    if (!options.location() && request_.target_.find(location->uri_) != std::string::npos)
-      target_.erase(0, location_->uri_.length());
+    if (!options.location() && request_.target_.find(location->_uri) != std::string::npos)
+      target_.erase(0, location_->_uri.length());
   }
 }
 
@@ -41,8 +41,8 @@ void RequestConfig::redirectLocation(std::string target) {
   target_ = target;
   if (location) {
     location_ = location;
-    if (target_.find(location->uri_) != std::string::npos)
-      target_.erase(0, location_->uri_.length());
+    if (target_.find(location->_uri) != std::string::npos)
+      target_.erase(0, location_->_uri.length());
   }
 }
 
@@ -85,10 +85,10 @@ ServerConfig *RequestConfig::match_regexp(std::vector<ServerConfig*> &locations,
   for (std::vector<ServerConfig*>::iterator it = locations.begin(); it != locations.end(); it++) {
     int flag = REG_NOSUB | REG_EXTENDED;
 
-    if ((*it)->modifier_ == 3)
+    if ((*it)->_modifier == 3)
       flag |= REG_ICASE;
 
-    int err = regcomp(&reg, (*it)->uri_.c_str(), flag);
+    int err = regcomp(&reg, (*it)->_uri.c_str(), flag);
 
     if (err == 0) {
       int match = regexec(&reg, target.c_str(), 0, NULL, 0);
@@ -105,12 +105,12 @@ ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::st
 
   std::vector<ServerConfig*> reg_locations;
 
-  for (std::vector<ServerConfig>::iterator it = server->locations_.begin(); it != server->locations_.end(); it++) {
-    if (it->modifier_ != 2 && it->modifier_ != 3) {
-      if (it->modifier_ == 1 && it->uri_ == target)
+  for (std::vector<ServerConfig>::iterator it = server->_locations.begin(); it != server->_locations.end(); it++) {
+    if (it->_modifier != 2 && it->_modifier != 3) {
+      if (it->_modifier == 1 && it->_uri == target)
         return &(*it);
-      else if (target.find(it->uri_) == 0) {
-        if (location && location->uri_.length() < it->uri_.length())
+      else if (target.find(it->_uri) == 0) {
+        if (location && location->_uri.length() < it->_uri.length())
           location = &(*it);
         else if (!location)
           location = &(*it);
@@ -120,12 +120,12 @@ ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::st
       reg_locations.push_back(&(*it));
   }
 
-  if (location && location->modifier_ == 4)
+  if (location && location->_modifier == 4)
     return location;
 
-  if (location && !location->locations_.empty()) {
-    for (std::vector<ServerConfig>::iterator it = location->locations_.begin(); it != location->locations_.end(); it++) {
-      if (it->modifier_ == 2 || it->modifier_ == 3) {
+  if (location && !location->_locations.empty()) {
+    for (std::vector<ServerConfig>::iterator it = location->_locations.begin(); it != location->_locations.end(); it++) {
+      if (it->_modifier == 2 || it->_modifier == 3) {
         reg_locations.insert(reg_locations.begin(), &(*it));
       }
     }
@@ -180,7 +180,7 @@ Client &RequestConfig::getClient() {
 }
 
 std::string &RequestConfig::getRoot() {
-  return location_->root_;
+  return location_->_root;
 }
 
 std::string &RequestConfig::getAuth() {
@@ -188,7 +188,7 @@ std::string &RequestConfig::getAuth() {
 }
 
 std::string &RequestConfig::getUri() {
-  return location_->uri_;
+  return location_->_uri;
 }
 
 std::map<std::string, std::string> &RequestConfig::getCGI() {
