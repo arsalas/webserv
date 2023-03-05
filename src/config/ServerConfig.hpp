@@ -60,12 +60,16 @@ public:
 	void	checkValidDir(std::vector<std::string>::iterator &it);
 
 	void	limit_except(std::vector<std::string>::iterator &it);
-	void 	auth(std::vector<std::string>::iterator &it);
+
+	void	upload(std::vector<std::string>::iterator &it);
 
 	void	client_max_body_size(std::vector<std::string>::iterator &it);
+
+	/* hasta aqui */
+	void 	auth(std::vector<std::string>::iterator &it);
+
 	void	error_page(std::vector<std::string>::iterator &it);
 	void	autoindex(std::vector<std::string>::iterator &it);
-	void	upload(std::vector<std::string>::iterator &it);
 
 	std::string					&getUri();
 	std::vector<Listen>			&getListens();

@@ -285,6 +285,43 @@ void	ServerConfig::locationLoop(std::vector<std::string>::iterator &it, std::vec
 }
 
 
+/**
+ * @brief LIMIT EXCEPT
+ * Guardamos el "limit_except".
+ * Después de limit_except solo puede venir una palabra.
+ * Si no hay limit_except + 1 palabra + ';', es incorrecto.
+ * 
+ * @param it 
+ */
+void	ServerConfig::limit_except(std::vector<std::string>::iterator &it)
+{
+	while (*it != ";")
+		methods_.push_back(*it++);
+};
+
+
+/**
+ * @brief UPLOAD
+ * Guardamos el "upload".
+ * Después de upload solo puede venir una palabra.
+ * Si no hay upload + 1 palabra + ';', es incorrecto.
+ * 
+ * @param it 
+ */
+void	ServerConfig::upload(std::vector<std::string>::iterator &it)
+{
+	upload_ = *it;
+	if (*++it != ";")
+		throw std::runtime_error("double value in 'upload'");
+};
+
+
+/**
+ * @brief CLIENT MAX BODY SIZE
+ * Checkeamos que client max body size sea solo un número
+ * 
+ * @param it 
+ */
 void	ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
 {
 	if (it->find_first_not_of("0123456789") != std::string::npos)
@@ -293,6 +330,7 @@ void	ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'client_max_body_size_'");
 };
+
 
 void	ServerConfig::error_page(std::vector<std::string>::iterator &it)
 {
@@ -317,12 +355,6 @@ void	ServerConfig::auth(std::vector<std::string>::iterator &it)
 		throw std::runtime_error("double value in 'auth'");
 };
 
-void	ServerConfig::limit_except(std::vector<std::string>::iterator &it)
-{
-	while (*it != ";")
-		methods_.push_back(*it++);
-};
-
 void	ServerConfig::autoindex(std::vector<std::string>::iterator &it)
 {
 	if (*it == "on")
@@ -336,12 +368,6 @@ void	ServerConfig::autoindex(std::vector<std::string>::iterator &it)
 		throw std::runtime_error("double value in 'autoindex'");
 };
 
-void	ServerConfig::upload(std::vector<std::string>::iterator &it)
-{
-	upload_ = *it;
-	if (*++it != ";")
-		throw std::runtime_error("double value in 'upload'");
-};
 
 
 /*
