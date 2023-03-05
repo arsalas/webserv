@@ -4,255 +4,314 @@
 ** Constructors & Deconstructors
 */
 
-RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client) :
-  request_(request),
-  host_port_(host_port),
-  _servers(servers),
-  client_(client) {}
-
-RequestConfig::~RequestConfig() {
+RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client) : _request(request),
+																														host_port_(host_port),
+																														client_(client), _servers(servers)
+{
 }
 
-void RequestConfig::setup(InputArgs &options) {
-  ServerConfig *server = getServerForRequest(_servers);
-  ServerConfig *location = NULL;
-
-  if (request_.getStatus() > 2)
-    location = getLocationForRequest(server, request_.target_);
-
-  server_ = server;
-  location_ = server;
-
-  target_ = request_.target_;
-
-  if (location) {
-    location_ = location;
-    if (!options.location() && request_.target_.find(location->_uri) != std::string::npos)
-      target_.erase(0, location_->_uri.length());
-  }
+RequestConfig::~RequestConfig()
+{
 }
 
-void RequestConfig::redirectLocation(std::string target) {
-  ServerConfig *location = NULL;
+void RequestConfig::setup(InputArgs &options)
+{
+	ServerConfig *server = getServerForRequest(_servers);
+	ServerConfig *location = NULL;
 
-  if (request_.getStatus() > 2)
-    location = getLocationForRequest(server_, target);
+	if (_request.getStatus() > 2)
+		location = getLocationForRequest(server, _request._target);
 
-  target_ = target;
-  if (location) {
-    location_ = location;
-    if (target_.find(location->_uri) != std::string::npos)
-      target_.erase(0, location_->_uri.length());
-  }
+	server_ = server;
+	_location = server;
+
+	_target = _request._target;
+
+	if (location)
+	{
+		_location = location;
+		if (!options.location() && _request._target.find(location->_uri) != std::string::npos)
+			_target.erase(0, _location->_uri.length());
+	}
 }
 
-ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &servers) {
-  std::vector<ServerConfig*> matching_servers;
+void RequestConfig::redirectLocation(std::string target)
+{
+	ServerConfig *location = NULL;
 
-  // Match server based on request ip + port
-  for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++) {
-    for (std::vector<Listen>::iterator list = it->_listens.begin(); list != it->_listens.end(); list++) {
-      if ((list->ip_ == host_port_.ip_ || list->ip_ == "0.0.0.0") && list->port_ == host_port_.port_) {
-        matching_servers.push_back(&(*it));
-        break;
-      }
-    }
-  }
+	if (_request.getStatus() > 2)
+		location = getLocationForRequest(server_, target);
 
-  // If only one match, it's our server
-  if (matching_servers.size() == 1)
-    return matching_servers.front();
-
-  std::string host = request_.headers_["Host"].substr(0, request_.headers_["Host"].find(':'));
-
-  // We match based on server names
-  for (std::vector<ServerConfig*>::iterator it = matching_servers.begin(); it != matching_servers.end(); it++) {
-    std::vector<std::string> server_names = (*it)->getServerNames();
-
-    for (std::vector<std::string>::iterator server_name = server_names.begin(); server_name != server_names.end(); server_name++) {
-      if (host == *server_name)
-        return *it;
-    }
-  }
-
-  // We use default server (first one)
-  return matching_servers.front();
+	_target = target;
+	if (location)
+	{
+		_location = location;
+		if (_target.find(location->_uri) != std::string::npos)
+			_target.erase(0, _location->_uri.length());
+	}
 }
 
-ServerConfig *RequestConfig::match_regexp(std::vector<ServerConfig*> &locations, std::string &target) {
-  regex_t reg;
+ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &servers)
+{
+	std::vector<ServerConfig *> matching_servers;
 
-  for (std::vector<ServerConfig*>::iterator it = locations.begin(); it != locations.end(); it++) {
-    int flag = REG_NOSUB | REG_EXTENDED;
+	// Match server based on request ip + port
+	for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		for (std::vector<Listen>::iterator list = it->_listens.begin(); list != it->_listens.end(); list++)
+		{
+			if ((list->_ip == host_port_._ip || list->_ip == "0.0.0.0") && list->port_ == host_port_.port_)
+			{
+				matching_servers.push_back(&(*it));
+				break;
+			}
+		}
+	}
 
-    if ((*it)->_modifier == 3)
-      flag |= REG_ICASE;
+	// If only one match, it's our server
+	if (matching_servers.size() == 1)
+		return matching_servers.front();
 
-    int err = regcomp(&reg, (*it)->_uri.c_str(), flag);
+	std::string host = _request._headers["Host"].substr(0, _request._headers["Host"].find(':'));
 
-    if (err == 0) {
-      int match = regexec(&reg, target.c_str(), 0, NULL, 0);
-      regfree(&reg);
-      if (match == 0)
-        return *it;
-    }
-  }
-  return NULL;
+	// We match based on server names
+	for (std::vector<ServerConfig *>::iterator it = matching_servers.begin(); it != matching_servers.end(); it++)
+	{
+		std::vector<std::string> server_names = (*it)->getServerNames();
+
+		for (std::vector<std::string>::iterator server_name = server_names.begin(); server_name != server_names.end(); server_name++)
+		{
+			if (host == *server_name)
+				return (*it);
+		}
+	}
+
+	// We use default server (first one)
+	return matching_servers.front();
 }
 
-ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::string &target) {
-  ServerConfig *location = NULL;
+ServerConfig *RequestConfig::match_regexp(std::vector<ServerConfig *> &locations, std::string &target)
+{
+	regex_t reg;
 
-  std::vector<ServerConfig*> reg_locations;
+	for (std::vector<ServerConfig *>::iterator it = locations.begin(); it != locations.end(); it++)
+	{
+		int flag = REG_NOSUB | REG_EXTENDED;
 
-  for (std::vector<ServerConfig>::iterator it = server->_locations.begin(); it != server->_locations.end(); it++) {
-    if (it->_modifier != 2 && it->_modifier != 3) {
-      if (it->_modifier == 1 && it->_uri == target)
-        return &(*it);
-      else if (target.find(it->_uri) == 0) {
-        if (location && location->_uri.length() < it->_uri.length())
-          location = &(*it);
-        else if (!location)
-          location = &(*it);
-      }
-    }
-    else
-      reg_locations.push_back(&(*it));
-  }
+		if ((*it)->_modifier == 3)
+			flag |= REG_ICASE;
 
-  if (location && location->_modifier == 4)
-    return location;
+		int err = regcomp(&reg, (*it)->_uri.c_str(), flag);
 
-  if (location && !location->_locations.empty()) {
-    for (std::vector<ServerConfig>::iterator it = location->_locations.begin(); it != location->_locations.end(); it++) {
-      if (it->_modifier == 2 || it->_modifier == 3) {
-        reg_locations.insert(reg_locations.begin(), &(*it));
-      }
-    }
-  }
-
-  ServerConfig *reg = match_regexp(reg_locations, target);
-
-  if (reg)
-    return reg;
-
-  return location;
+		if (err == 0)
+		{
+			int match = regexec(&reg, target.c_str(), 0, NULL, 0);
+			regfree(&reg);
+			if (match == 0)
+				return (*it);
+		}
+	}
+	return (NULL);
 }
 
-bool RequestConfig::methodAccepted(std::string &method) {
-  std::vector<std::string> methods = location_->methods_;
+/**
+ * @brief 
+ * Recorremos _locations. Si no hay modificadores y _uri es el target, retornamos el iterador
+ * 
+ * @param server 
+ * @param target 
+ * @return ServerConfig* 
+ */
+ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::string &target)
+{
+	ServerConfig	*location = NULL;
+	std::vector<ServerConfig *>	reg_locations;
 
-  if (methods.empty())
-    return true;
-  if (std::find(methods.begin(), methods.end(), method) != methods.end())
-    return true;
-  return false;
+	for (std::vector<ServerConfig>::iterator it = server->_locations.begin(); it != server->_locations.end(); it++)
+	{
+		if (it->_modifier != 2 && it->_modifier != 3)
+		{
+			if (it->_modifier == 1 && it->_uri == target)
+				return &(*it);
+			else if (target.find(it->_uri) == 0)
+			{
+				if (location && location->_uri.length() < it->_uri.length())
+					location = &(*it);
+				else if (!location)
+					location = &(*it);
+			}
+		}
+		else
+			reg_locations.push_back(&(*it));
+	}
+
+	if (location && location->_modifier == 4)
+		return location;
+
+	if (location && !location->_locations.empty())
+	{
+		for (std::vector<ServerConfig>::iterator it = location->_locations.begin(); it != location->_locations.end(); it++)
+		{
+			if (it->_modifier == 2 || it->_modifier == 3)
+			{
+				reg_locations.insert(reg_locations.begin(), &(*it));
+			}
+		}
+	}
+
+	ServerConfig *reg = match_regexp(reg_locations, target);
+
+	if (reg)
+		return (reg);
+
+	return (location);
 }
 
-/* GETTERS ! */
+bool RequestConfig::methodAccepted(std::string &method)
+{
+	std::vector<std::string> methods = _location->_methods;
 
-std::string &RequestConfig::getTarget() {
-  return target_;
+	if (methods.empty())
+		return (true);
+	if (std::find(methods.begin(), methods.end(), method) != methods.end())
+		return (true);
+	return (false);
 }
 
-std::string &RequestConfig::getRequestTarget() {
-  return request_.target_;
+
+/*		SETTERS		*/
+
+void RequestConfig::setTarget(std::string target)
+{
+	_target = target;
 }
 
-std::string &RequestConfig::getQuery() {
-  return request_.query_string_;
+/*		GETTERS		*/
+
+std::string &RequestConfig::getTarget()
+{
+	return _target;
 }
 
-void RequestConfig::setTarget(std::string target) {
-  target_ = target;
+std::string &RequestConfig::getRequestTarget()
+{
+	return _request._target;
 }
 
-std::string &RequestConfig::getHost() {
-  return host_port_.ip_;
+std::string &RequestConfig::getQuery()
+{
+	return _request.query_string_;
 }
 
-uint32_t &RequestConfig::getPort() {
-  return host_port_.port_;
+std::string &RequestConfig::getHost()
+{
+	return host_port_._ip;
 }
 
-Client &RequestConfig::getClient() {
-  return client_;
+uint32_t &RequestConfig::getPort()
+{
+	return host_port_.port_;
 }
 
-std::string &RequestConfig::getRoot() {
-  return location_->_root;
+Client &RequestConfig::getClient()
+{
+	return (client_);
 }
 
-std::string &RequestConfig::getAuth() {
-  return location_->_credentials;
+std::string &RequestConfig::getRoot()
+{
+	return (_location->_root);
 }
 
-std::string &RequestConfig::getUri() {
-  return location_->_uri;
+std::string &RequestConfig::getAuth()
+{
+	return (_location->_credentials);
 }
 
-std::map<std::string, std::string> &RequestConfig::getCGI() {
-  return location_->cgi_;
+std::string &RequestConfig::getUri()
+{
+	return (_location->_uri);
 }
 
-std::string &RequestConfig::getCGIBin() {
-  return location_->_cgiBin;
+std::map<std::string, std::string> &RequestConfig::getCGI()
+{
+	return (_location->cgi_);
 }
 
-size_t &RequestConfig::getClientMaxBodySize() {
-  return location_->client_max_body_size_;
+std::string &RequestConfig::getCGIBin()
+{
+	return (_location->_cgiBin);
 }
 
-bool RequestConfig::getAutoindex() {
-  return location_->_autoindex;
+size_t &RequestConfig::getClientMaxBodySize()
+{
+	return (_location->_client_max_body_size);
 }
 
-std::string &RequestConfig::getUpload() {
-  return location_->upload_;
+bool RequestConfig::getAutoindex()
+{
+	return (_location->_autoindex);
 }
 
-std::vector<std::string> &RequestConfig::getIndexes() {
-  return location_->_index;
+std::string &RequestConfig::getUpload()
+{
+	return (_location->_upload);
 }
 
-std::map<int, std::string> &RequestConfig::getErrorPages() {
-  return location_->_error_codes;
+std::vector<std::string> &RequestConfig::getIndexes()
+{
+	return (_location->_index);
 }
 
-std::vector<std::string> &RequestConfig::getMethods() {
-  return location_->methods_;
+std::map<int, std::string> &RequestConfig::getErrorPages()
+{
+	return (_location->_error_codes);
 }
 
-std::string &RequestConfig::getBody() {
-  return request_.req_body_;
+std::vector<std::string> &RequestConfig::getMethods()
+{
+	return (_location->_methods);
 }
 
-std::string &RequestConfig::getMethod() {
-  return request_.method_;
+std::string &RequestConfig::getBody()
+{
+	return (_request._req_body);
 }
 
-std::string &RequestConfig::getHeader(std::string key) {
-  return request_.headers_[key];
+std::string &RequestConfig::getMethod()
+{
+	return (_request._method);
 }
 
-std::map<std::string, std::string, ft::comp> &RequestConfig::getHeaders() {
-  return request_.headers_;
+std::string &RequestConfig::getHeader(std::string key)
+{
+	return (_request._headers[key]);
 }
 
-std::string &RequestConfig::getProtocol() {
-  return request_.protocol_;
+std::map<std::string, std::string, ft::comp> &RequestConfig::getHeaders()
+{
+	return (_request._headers);
 }
 
-std::string RequestConfig::log(LogLevel level) {
-  std::string ret;
+std::string &RequestConfig::getProtocol()
+{
+	return (_request._protocol);
+}
 
-  ret = ret + "[method: " + getMethod() + "]";
-  ret = ret + " [target: " + getRequestTarget() + "]";
-  ret = ret + " [server: " + ft::to_string(server_->id_) + "]";
-  ret = ret + " [location: " + getUri() + "]";
-  if (level > INFO) {
-    for (std::map<std::string, std::string>::iterator it = getHeaders().begin(); it != getHeaders().end(); it++)
-      ret = ret + "\n" + it->first + ": " + it->second;
-  }
-  return ret;
+/*		AUX		*/
+
+std::string RequestConfig::log(LogLevel level)
+{
+	std::string ret;
+
+	ret = ret + "[method: " + getMethod() + "]";
+	ret = ret + " [target: " + getRequestTarget() + "]";
+	ret = ret + " [server: " + ft::to_string(server_->id_) + "]";
+	ret = ret + " [location: " + getUri() + "]";
+	if (level > INFO)
+	{
+		for (std::map<std::string, std::string>::iterator it = getHeaders().begin(); it != getHeaders().end(); it++)
+			ret = ret + "\n" + it->first + ": " + it->second;
+	}
+	return ret;
 }

@@ -1,6 +1,6 @@
 #include "ServerConfig.hpp"
 
-ServerConfig::ServerConfig() : _credentials("off"), _autoindex(false), client_max_body_size_(0), _cgiBin("cgi-bin")
+ServerConfig::ServerConfig() : _credentials("off"), _autoindex(false), _client_max_body_size(0), _cgiBin("cgi-bin")
 {
 	_modifier = NONE;
 	initDirectiveMap();
@@ -12,7 +12,7 @@ ServerConfig::~ServerConfig()
 
 ServerConfig &ServerConfig::operator=(const ServerConfig &copy)
 {
-	client_max_body_size_ = copy.client_max_body_size_;
+	_client_max_body_size = copy._client_max_body_size;
 	_root = copy._root;
 	cgi_ = copy.cgi_;
 	_index = copy._index;
@@ -301,7 +301,7 @@ void	ServerConfig::locationLoop(std::vector<std::string>::iterator &it, std::vec
 void	ServerConfig::limitExcept(std::vector<std::string>::iterator &it)
 {
 	while (*it != ";")
-		methods_.push_back(*it++);
+		_methods.push_back(*it++);
 };
 
 
@@ -315,7 +315,7 @@ void	ServerConfig::limitExcept(std::vector<std::string>::iterator &it)
  */
 void	ServerConfig::upload(std::vector<std::string>::iterator &it)
 {
-	upload_ = *it;
+	_upload = *it;
 	if (*++it != ";")
 		throw std::runtime_error("double value in 'upload'");
 };
@@ -331,9 +331,9 @@ void	ServerConfig::client_max_body_size(std::vector<std::string>::iterator &it)
 {
 	if (it->find_first_not_of("0123456789") != std::string::npos)
 		throw std::runtime_error("unexpected symbols in client_max_body_size");
-	client_max_body_size_ = ft::stoi(*it);
+	_client_max_body_size = ft::stoi(*it);
 	if (*++it != ";")
-		throw std::runtime_error("double value in 'client_max_body_size_'");
+		throw std::runtime_error("double value in '_client_max_body_size'");
 };
 
 

@@ -1,14 +1,14 @@
 #include "CGI.hpp"
 
-CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers) : file_(file), config_(config), req_headers_(req_headers) {
-  req_body_ = file_.getContent();
+CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers) : file_(file), config_(config), req__headers(req_headers) {
+  _req_body = file_.getContent();
 }
 
-CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers, std::string &req_body) : file_(file), config_(config), req_headers_(req_headers) {
+CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers, std::string &req_body) : file_(file), config_(config), req__headers(req_headers) {
   if (req_body.empty() && config_.getMethod() != "POST")
-    req_body_ = file_.getContent();
+    _req_body = file_.getContent();
   else
-    req_body_ = req_body;
+    _req_body = req_body;
 }
 
 void CGI::init(int worker_id) {
@@ -79,7 +79,7 @@ int CGI::execute() {
   }
   else if (pid > 0) {
     close(pip[0]);
-    if (req_body_.length() && write(pip[1], req_body_.c_str(), req_body_.length()) <= 0)
+    if (_req_body.length() && write(pip[1], _req_body.c_str(), _req_body.length()) <= 0)
       return 500;
     close(pip[1]);
 
@@ -126,8 +126,8 @@ std::string &CGI::getBody() {
 
 bool CGI::setCGIEnv() {
   if (config_.getMethod() == "POST") {
-		cgi_env_["CONTENT_TYPE"] = req_headers_["Content-Type"];
-		cgi_env_["CONTENT_LENGTH"] = ft::to_string(req_body_.length());
+		cgi_env_["CONTENT_TYPE"] = req__headers["Content-Type"];
+		cgi_env_["CONTENT_LENGTH"] = ft::to_string(_req_body.length());
 	}
 	cgi_env_["GATEWAY_INTERFACE"] = "CGI/1.1";
   cgi_env_["_pathINFO"] = file__path;
@@ -141,8 +141,8 @@ bool CGI::setCGIEnv() {
     cgi_env_["REMOTE_USER"] = config_.getAuth().substr(0, config_.getAuth().find(':'));
   }
 
-  cgi_env_["REQUEST_METHOD"] = config_.getMethod();
-	cgi_env_["REQUEST_URI"] = file__path;
+  cgi_env_["_requestMETHOD"] = config_.getMethod();
+	cgi_env_["_requestURI"] = file__path;
 
   cgi_env_["SCRIPT_NAME"] = cgi__path;
 	cgi_env_["SERVER_NAME"] = config_.getHost();
@@ -153,7 +153,7 @@ bool CGI::setCGIEnv() {
 	if (extension_ == ".php")
 		cgi_env_["REDIRECT_STATUS"] = "200";
 
-  for (std::map<std::string, std::string, ft::comp>::iterator it = req_headers_.begin(); it != req_headers_.end(); it++) {
+  for (std::map<std::string, std::string, ft::comp>::iterator it = req__headers.begin(); it != req__headers.end(); it++) {
     if (!it->second.empty()) {
       std::string header = "HTTP_" + ft::to_upper(it->first);
       std::replace(header.begin(), header.end(), '-', '_');

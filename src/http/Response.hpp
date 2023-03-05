@@ -60,13 +60,13 @@ class Response {
   std::string response_;
   std::string body_;
   bool redirect_;
-  std::string redirect_target_;
+  std::string redirect__target;
   int redirect_code_;
   size_t header_size_;
   size_t body_size_;
   std::string charset_;
-  std::map<std::string, Response::type> methods_;
-  std::map<std::string, std::string> headers_;
+  std::map<std::string, Response::type> _methods;
+  std::map<std::string, std::string> _headers;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "Client.hpp"
 
 Client::Client(int fd, std::string &addr, Listen &host_port, int worker_id, bool disconnect) : fd_(fd), addr_(addr), host_port_(host_port), worker_id_(worker_id), disconnect_(disconnect) {
-  request_ = NULL;
+  _request = NULL;
   config_ = NULL;
   response_ = NULL;
 }
@@ -12,19 +12,19 @@ Client::~Client() {
 }
 
 void Client::clear() {
-  ft::delete_(request_);
+  ft::delete_(_request);
   ft::delete_(config_);
   ft::delete_(response_);
 }
 
 void Client::setupConfig(std::vector<ServerConfig> &servers, InputArgs &options) {
-  config_ = new RequestConfig(*request_, host_port_, servers, *this);
+  config_ = new RequestConfig(*_request, host_port_, servers, *this);
   config_->setup(options);
 }
 
 void Client::setupResponse(std::vector<ServerConfig> &servers, InputArgs &options, int error_code) {
-  if (!request_)
-    request_ = getRequest(true);
+  if (!_request)
+    _request = getRequest(true);
 
   if (!config_)
     setupConfig(servers, options);
@@ -52,15 +52,15 @@ void Client::setupResponse(std::vector<ServerConfig> &servers, InputArgs &option
     }
   }
 
-  ft::delete_(request_);
+  ft::delete_(_request);
 }
 
 bool Client::timeout() {
-  if (request_) {
+  if (_request) {
     time_t current_time = ft::get_current_time_in_sec();
-    if (current_time - request_->get_start_timer_in_sec() > START_TIMEOUT
-      || current_time - request_->get_last_timer_in_sec() > LAST_TIMEOUT) {
-      if (request_->timeout())
+    if (current_time - _request->get_start_timer_in_sec() > START_TIMEOUT
+      || current_time - _request->get_last_timer_in_sec() > LAST_TIMEOUT) {
+      if (_request->timeout())
         return true;
     }
   }
@@ -82,9 +82,9 @@ std::string &Client::getAddr() {
 }
 
 Request *Client::getRequest(bool force) {
-  if (!request_ && force)
-    request_ = new Request();
-  return request_;
+  if (!_request && force)
+    _request = new Request();
+  return _request;
 }
 
 RequestConfig *Client::getConfig() {

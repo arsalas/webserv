@@ -54,20 +54,20 @@ void Server::setup() {
         struct sockaddr_in address;
         memset(&address, 0, sizeof(address));
         address.sin_family = AF_INET;
-        address.sin_addr.s_addr = inet_addr(list->ip_.c_str());
+        address.sin_addr.s_addr = inet_addr(list->_ip.c_str());
         address.sin_port = htons(list->port_);
 
         setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
 
         if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-          throw webserv_exception("bind() to % failed", errno, list->ip_ + ":" + ft::to_string(list->port_));
+          throw webserv_exception("bind() to % failed", errno, list->_ip + ":" + ft::to_string(list->port_));
 
         if (listen(server_fd, MAX_CONNECTION) < 0)
           throw webserv_exception("listen() failed", errno);
 
-        running_server_[server_fd] = Listen(list->ip_, list->port_);
+        running_server_[server_fd] = Listen(list->_ip, list->port_);
 
-        Log.print(INFO, "listening on " + ft::to_string(list->ip_) + ":" + ft::to_string(list->port_), GREEN);
+        Log.print(INFO, "listening on " + ft::to_string(list->_ip) + ":" + ft::to_string(list->port_), GREEN);
 
         add_to_fd_set(server_fd);
         is_bind.push_back(*list);
@@ -90,7 +90,7 @@ void Server::newConnection(int fd) {
   if (clientFd == -1)
     return ;
 
-  Log.print(INFO, head_ + "new connection on " + ft::to_string(running_server_[fd].ip_) + ":" + ft::to_string(running_server_[fd].port_), GREEN);
+  Log.print(INFO, head_ + "new connection on " + ft::to_string(running_server_[fd]._ip) + ":" + ft::to_string(running_server_[fd].port_), GREEN);
 
   fcntl(clientFd, F_SETFL, O_NONBLOCK);
 

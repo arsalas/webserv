@@ -28,14 +28,14 @@ class CGI {
  private:
   File &file_;
   RequestConfig &config_;
-  std::map<std::string, std::string, ft::comp> &req_headers_;
+  std::map<std::string, std::string, ft::comp> &req__headers;
   std::string cgi__path;
   std::string cgi_exe_;
   std::string extension_;
   std::string cwd_;
   std::string file__path;
   std::string body_;
-  std::string req_body_;
+  std::string _req_body;
   File tmp_file_;
   std::map<std::string, std::string> cgi_env_;
   char **env_;

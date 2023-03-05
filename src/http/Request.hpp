@@ -1,5 +1,5 @@
-#ifndef REQUEST_HPP
-# define REQUEST_HPP
+#ifndef _requestHPP
+# define _requestHPP
 
 # include <iostream>
 # include <sstream>
@@ -23,7 +23,7 @@ class Request {
 
   int parse(std::string &buffer);
   int parse(char buffer[], int nbytes);
-  int method_line();
+  int _methodline();
   int headers();
   int prebody();
   int body();
@@ -54,12 +54,12 @@ class Request {
  private:
   std::string buffer_;
 
-  std::string method_;
-  std::string target_;
+  std::string _method;
+  std::string _target;
   std::string query_string_;
-  std::string protocol_;
-  std::string req_body_;
-  std::map<std::string, std::string, ft::comp> headers_;
+  std::string _protocol;
+  std::string _req_body;
+  std::map<std::string, std::string, ft::comp> _headers;
 
   int body_offset_;
   int chunk_size_;

@@ -12,16 +12,16 @@
 
 struct Listen
 {
-	std::string ip_;
+	std::string _ip;
 	uint32_t port_;
 
-	Listen() : ip_(""), port_(0){};
-	Listen(std::string ip, uint32_t port) : ip_(ip), port_(port){};
+	Listen() : _ip(""), port_(0){};
+	Listen(std::string ip, uint32_t port) : _ip(ip), port_(port){};
 };
 
 inline bool operator==(const Listen &lhs, const Listen &rhs)
 {
-	return lhs.ip_ == rhs.ip_ && lhs.port_ == rhs.port_;
+	return lhs._ip == rhs._ip && lhs.port_ == rhs.port_;
 }
 
 class ServerConfig
@@ -95,10 +95,10 @@ private:
 	LocationModifier			_modifier;
 	std::string					_credentials;
 	bool						_autoindex;
-	size_t						client_max_body_size_;
+	size_t						_client_max_body_size;
 	std::string					_root;
-	std::string					upload_;
-	std::vector<std::string>	methods_;
+	std::string					_upload;
+	std::vector<std::string>	_methods;
 	std::map<int, std::string>	_error_codes;
 	std::vector<std::string>	_index;
 	std::map<std::string, std::string>	cgi_;

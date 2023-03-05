@@ -27,15 +27,15 @@ void Response::clear() {
   redirect_ = false;
   response_.clear();
   body_.clear();
-  headers_.clear();
+  _headers.clear();
 }
 
 void Response::initMethodMap() {
-  methods_["GET"] = &Response::GET;
-  methods_["HEAD"] = &Response::GET;
-  methods_["POST"] = &Response::POST;
-  methods_["PUT"] = &Response::PUT;
-  methods_["DELETE"] = &Response::DELETE;
+  _methods["GET"] = &Response::GET;
+  _methods["HEAD"] = &Response::GET;
+  _methods["POST"] = &Response::POST;
+  _methods["PUT"] = &Response::PUT;
+  _methods["DELETE"] = &Response::DELETE;
 }
 
 bool Response::isCGI(std::string extension) {
@@ -66,7 +66,7 @@ int Response::buildErrorPage(int status_code) {
 
       redirect_ = true;
       redirect_code_ = status_code;
-      redirect_target_ = target;
+      redirect__target = target;
 
       return 0;
     }
@@ -75,17 +75,17 @@ int Response::buildErrorPage(int status_code) {
   body_ += "<head><title>" + ft::to_string(status_code) + " " + g_status[status_code] + "</title></head>\r\n";
   body_ += "<body>\r\n";
   body_ += "<center><h1>" + ft::to_string(status_code) + " " + g_status[status_code] + "</h1></center>\r\n";
-  body_ += "<hr><center>" + headers_["Server"] + "</center>\r\n";
+  body_ += "<hr><center>" + _headers["Server"] + "</center>\r\n";
   body_ += "</body>\r\n";
   body_ += "</html>\r\n";
-  headers_["Content-Type"] = g_mimes.getType(".html");
-  headers_["Content-Length"] = ft::to_string(body_.length());
+  _headers["Content-Type"] = g_mimes.getType(".html");
+  _headers["Content-Length"] = ft::to_string(body_.length());
   if (status_code == 401)
-    headers_["WWW-Authenticate"] = "Basic realm=\"Access to restricted area\"";
+    _headers["WWW-Authenticate"] = "Basic realm=\"Access to restricted area\"";
   if (status_code == 408 || status_code == 503)
-    headers_["Connection"] = "close";
+    _headers["Connection"] = "close";
   if (status_code == 503)
-    headers_["Retry-After"] = "30";
+    _headers["Retry-After"] = "30";
   return status_code;
 }
 
@@ -113,7 +113,7 @@ void Response::build() {
     status_code_ = error_code_;
   else if (!config_.methodAccepted(method)) {
     status_code_ = 405;
-    headers_["Allow"] = buildMethodList();
+    _headers["Allow"] = buildMethodList();
   }
   else if (config_.getClientMaxBodySize() > 0 && config_.getBody().length() > config_.getClientMaxBodySize()) {
     status_code_ = 413;
@@ -139,7 +139,7 @@ int Response::handleMethods() {
       std::string index = file_.find_index(config_.getIndexes());
       if (index.length()) {
         redirect_ = true;
-        redirect_target_ = ft::unique_char("/" + config_.getRequestTarget() + "/" + index);
+        redirect__target = ft::unique_char("/" + config_.getRequestTarget() + "/" + index);
         return 200;
       }
       else if (!config_.getAutoindex())
@@ -165,7 +165,7 @@ int Response::handleMethods() {
       if (!file_.open())
         return 403;
 
-      headers_["Last-Modified"] = file_.last_modified();
+      _headers["Last-Modified"] = file_.last_modified();
     }
   }
 
@@ -174,9 +174,9 @@ int Response::handleMethods() {
     cgi.init(worker_id_);
     if ((status_code_ = cgi.execute()) > 400)
       return status_code_;
-    cgi.parseHeaders(headers_);
+    cgi.parseHeaders(_headers);
     body_ = cgi.getBody();
-    headers_["Content-Length"] = ft::to_string(body_.length());
+    _headers["Content-Length"] = ft::to_string(body_.length());
     return status_code_;
   }
 
@@ -197,14 +197,14 @@ int Response::handleMethods() {
       }
       file_.set_path(dir.getPath() + "/" + config_.getTarget());
     }
-    headers_["Location"] = ft::unique_char(path);
+    _headers["Location"] = ft::unique_char(path);
   }
 
-  return (this->*(Response::methods_[method]))();
+  return (this->*(Response::_methods[method]))();
 }
 
 void Response::createResponse() {
-  headers_["Server"] = "webserv/1.0";
+  _headers["Server"] = "webserv/1.0";
 
   if (config_.getMethod() == "HEAD")
     body_.clear();
@@ -214,18 +214,18 @@ void Response::createResponse() {
 
   std::string status_code;
 
-  if (headers_.count("Status")) {
-    status_code = headers_["Status"];
-    headers_.erase("Status");
+  if (_headers.count("Status")) {
+    status_code = _headers["Status"];
+    _headers.erase("Status");
   }
   else
     status_code = ft::to_string(status_code_) + " " + g_status[status_code_];
 
   response_ = response_ + config_.getProtocol() + " " + status_code + "\r\n";
 
-  headers_["Date"] = ft::get_http_date();
+  _headers["Date"] = ft::get_http_date();
 
-  for (std::map<std::string, std::string>::iterator it = headers_.begin(); it != headers_.end(); it++)
+  for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
     response_ += it->first + ": " + it->second + "\r\n";
 
   response_ += "\r\n";
@@ -243,16 +243,16 @@ void Response::createResponse() {
 
 int Response::GET() {
   if (config_.getAutoindex() && file_.is_directory()) {
-    headers_["Content-Type"] = g_mimes.getType(".html");
+    _headers["Content-Type"] = g_mimes.getType(".html");
     body_ = file_.autoIndex(config_.getRequestTarget());
-    headers_["Content-Length"] = ft::to_string(body_.length());
+    _headers["Content-Length"] = ft::to_string(body_.length());
   }
   else {
-    headers_["Content-Type"] = g_mimes.getType(file_.getMimeExtension());
+    _headers["Content-Type"] = g_mimes.getType(file_.getMimeExtension());
     if (!charset_.empty())
-      headers_["Content-Type"] += "; charset=" + charset_;
+      _headers["Content-Type"] += "; charset=" + charset_;
     body_ = file_.getContent();
-    headers_["Content-Length"] = ft::to_string(body_.length());
+    _headers["Content-Length"] = ft::to_string(body_.length());
   }
   return 200;
 }
@@ -275,7 +275,7 @@ int Response::POST() {
 
   pthread_mutex_unlock(&g_write);
 
-  headers_["Content-Length"] = ft::to_string(body_.length());
+  _headers["Content-Length"] = ft::to_string(body_.length());
   return status_code;
 }
 
@@ -286,7 +286,7 @@ int Response::PUT() {
 
   if (!file_.exists()) {
     file_.create(config_.getBody());
-    headers_["Content-Length"] = "0";
+    _headers["Content-Length"] = "0";
     status_code = 201;
   }
   else
@@ -309,8 +309,8 @@ int Response::DELETE() {
               <h1>File deleted</h1>\n\
             </body>\n\
             </html>";
-  headers_["Content-Type"] = g_mimes.getType(".html");
-  headers_["Content-Length"] = ft::to_string(body_.length());
+  _headers["Content-Type"] = g_mimes.getType(".html");
+  _headers["Content-Length"] = ft::to_string(body_.length());
   return 200;
 }
 
@@ -324,7 +324,7 @@ bool Response::localization(std::vector<std::string> &matches){
   std::vector<std::string> new_matches;
   std::vector<std::string> select_matches;
 
-  headers_["Content-Language"] = "fr";
+  _headers["Content-Language"] = "fr";
   while (1) {
     std::string str = all.substr(0, all.find_first_of(" ,;\0"));
     new_matches.clear();
@@ -338,7 +338,7 @@ bool Response::localization(std::vector<std::string> &matches){
     if (!new_matches.empty() && (q > max)) {
       select_matches = new_matches;
       if (str[0] != '*')
-        headers_["Content-Language"] = str;
+        _headers["Content-Language"] = str;
       max = q;
     }
     if (all.find(".") != std::string::npos)
@@ -395,7 +395,7 @@ std::string Response::accept_charset(std::vector<std::string> &matches){
 }
 
 bool Response::shouldDisconnect() {
-  if (headers_.find("Connection") != headers_.end() && headers_["Connection"] == "close")
+  if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "close")
     return true;
   return false;
 }
@@ -405,7 +405,7 @@ bool Response::redirect() {
 }
 
 std::string Response::redirect_target() {
-  return redirect_target_;
+  return redirect__target;
 }
 
 /* Send */
@@ -428,8 +428,8 @@ std::string Response::response_log(LogLevel level) {
 
   if (level == INFO) {
     ret = "[status: " + ft::to_string(status_code_) + " " + g_status[status_code_] + "]";
-    if (headers_.count("Content-Length"))
-      ret = ret + " [length: " + headers_["Content-Length"] + "]";
+    if (_headers.count("Content-Length"))
+      ret = ret + " [length: " + _headers["Content-Length"] + "]";
   } else if (level > INFO) {
     ret = "\n\n" + response_.substr(0, header_size_ - 4) + "\n";
     if (body_size_) {

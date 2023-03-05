@@ -41,7 +41,7 @@ class Client {
   Listen &host_port_;
   int worker_id_;
   int disconnect_;
-  Request *request_;
+  Request *_request;
   RequestConfig *config_;
   Response *response_;
 };
