@@ -51,7 +51,7 @@ ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &serv
 
   // Match server based on request ip + port
   for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++) {
-    for (std::vector<Listen>::iterator list = it->listens_.begin(); list != it->listens_.end(); list++) {
+    for (std::vector<Listen>::iterator list = it->_listens.begin(); list != it->_listens.end(); list++) {
       if ((list->ip_ == host_port_.ip_ || list->ip_ == "0.0.0.0") && list->port_ == host_port_.port_) {
         matching_servers.push_back(&(*it));
         break;

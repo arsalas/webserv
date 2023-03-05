@@ -32,22 +32,31 @@ class ServerConfig {
   ServerConfig	&operator=(const ServerConfig &copy);
 
   typedef void (ServerConfig::*type)(std::vector<std::string>::iterator &);
-  static std::map<std::string, type> directive_;
+  static std::map<std::string, type> _directive;
   static void initDirectiveMap();
 
   void server(std::vector<std::string>::iterator &it);
   void location(std::vector<std::string>::iterator &it);
   void location_loop(std::vector<std::string>::iterator &it, std::vector<ServerConfig> &locations);
-  void listen(std::vector<std::string>::iterator &it);
-  void server_name(std::vector<std::string>::iterator &it);
+
+  void  listen(std::vector<std::string>::iterator &it);
+  void	savePort(std::string &str, std::string &ip, uint32_t &port);
+  void	saveListen(std::vector<std::string>::iterator &it, std::string &ip, uint32_t &port);
+  
+  void serverName(std::vector<std::string>::iterator &it);
+
+  void root(std::vector<std::string>::iterator &it);
+
+  void cgi(std::vector<std::string>::iterator &it);
+
+
+
   void limit_except(std::vector<std::string>::iterator &it);
   void auth(std::vector<std::string>::iterator &it);
 
   void client_max_body_size(std::vector<std::string>::iterator &it);
   void error_page(std::vector<std::string>::iterator &it);
-  void root(std::vector<std::string>::iterator &it);
   void index(std::vector<std::string>::iterator &it);
-  void cgi(std::vector<std::string>::iterator &it);
   void cgi_bin(std::vector<std::string>::iterator &it);
   void autoindex(std::vector<std::string>::iterator &it);
   void upload(std::vector<std::string>::iterator &it);
@@ -68,7 +77,7 @@ class ServerConfig {
   int id_;
 
  private:
-  std::vector<Listen> listens_;
+  std::vector<Listen> _listens;
   std::vector<std::string> server_name_;
   std::vector<ServerConfig> locations_;
   std::string uri_;
