@@ -5,7 +5,7 @@
 
 Config::Config(std::string &path) : _path(path)
 {
-	workers_ = 0;
+	_workers = 0;
 	fd_ = open(_path.c_str(), O_RDONLY);
 	if (fd_ < 0)
 		throw webserv_exception("could not open configuration file : %", 0, _path);
@@ -24,7 +24,7 @@ void Config::clear()
 		fd_ = 0;
 	}
 	_tokens.clear();
-	file_content_.clear();
+	_fileContent.clear();
 }
 
 std::string Config::ltrim(const std::string &s)
@@ -61,7 +61,6 @@ void Config::endOfLine(std::string &tmp)
 		tmp.erase(0, pos + 1);
 	}
 	_tokens.push_back(tmp);
-	// std::cout << "token: ->" << tmp << "<-" << std::endl;
 	_tokens.push_back(";");
 }
 
@@ -132,14 +131,12 @@ void Config::tokenize()
 	std::string line, tmp;
 	std::stack<bool> brackets;
 	std::vector<int>::iterator it;
-
 	int line_idx = 1;
-
 	std::ifstream myfile(_path.c_str());
 
 	while (std::getline(myfile, line))
 	{
-		file_content_ += line + "\n";
+		_fileContent += line + "\n";
 		tmp = trim(line);
 		if (tmp[0] != '#' && tmp.length() > 0)
 		{
@@ -184,8 +181,8 @@ void	Config::serverToken(int i, std::vector<std::string>::iterator &it)
  */
 void	Config::workersToken(std::vector<std::string>::iterator &it)
 {
-	workers_ = ft::stoi(*(++it));
-	if (workers_ > 16 || workers_ < 0)
+	_workers = ft::stoi(*(++it));
+	if (_workers > 16 || _workers < 0)
 		throw std::runtime_error("workers must be between [0-16]range");
 	if (*++it != ";")
 		throw std::runtime_error("missing ';' in 'workers'");
@@ -227,10 +224,10 @@ std::vector<ServerConfig> &Config::getServers()
 
 int Config::getWorkers()
 {
-	return (workers_);
+	return (_workers);
 }
 
 std::string &Config::getFileContent()
 {
-	return (file_content_);
+	return (_fileContent);
 }
