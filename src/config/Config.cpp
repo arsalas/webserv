@@ -1,7 +1,8 @@
-#include "Config.hpp"
 #include <algorithm>
 #include <cctype>
 #include <locale>
+#include "Config.hpp"
+#include "Utils.hpp"
 
 Config::Config(std::string &path) : _path(path)
 {
@@ -9,6 +10,7 @@ Config::Config(std::string &path) : _path(path)
 	fd_ = open(_path.c_str(), O_RDONLY);
 	if (fd_ < 0)
 		throw webserv_exception("could not open configuration file : %", 0, _path);
+	parse();
 }
 
 Config::~Config()
@@ -25,23 +27,6 @@ void Config::clear()
 	}
 	_tokens.clear();
 	_fileContent.clear();
-}
-
-std::string Config::ltrim(const std::string &s)
-{
-	size_t start = s.find_first_not_of(" \t");
-	return (start == std::string::npos) ? "" : s.substr(start);
-}
-
-std::string Config::rtrim(const std::string &s)
-{
-	size_t end = s.find_last_not_of(" \t");
-	return (end == std::string::npos) ? "" : s.substr(0, end + 1);
-}
-
-std::string Config::trim(const std::string &s)
-{
-	return (rtrim(ltrim(s)));
 }
 
 /**
@@ -137,7 +122,7 @@ void Config::tokenize()
 	while (std::getline(myfile, line))
 	{
 		_fileContent += line + "\n";
-		tmp = trim(line);
+		tmp = Utils::trim(line);
 		if (tmp[0] != '#' && tmp.length() > 0)
 		{
 			openBrackets(brackets, tmp);

@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
     Config config(options.getPath());
 
-    config.parse();
+    // config.parse();
 
     if (options.test())
     {

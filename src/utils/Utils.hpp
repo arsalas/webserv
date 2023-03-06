@@ -14,6 +14,18 @@
 
 # include "StringUtils.hpp"
 
+
+class Utils
+{
+
+private:
+	static std::string rtrim(const std::string &s);
+	static std::string ltrim(const std::string &s);
+
+  public:
+  static std::string	trim(const std::string &s);
+};
+
 bool isValidMethod(std::string const &str);
 bool isValidDirective(std::string const &str);
 

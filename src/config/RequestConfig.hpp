@@ -17,6 +17,16 @@ struct Listen;
 
 class RequestConfig
 {
+
+private:
+	Request	&_request;
+	Listen	&host_port_;
+	Client	&client_;
+	std::vector<ServerConfig> &_servers;
+	ServerConfig	*server_;
+	ServerConfig	*_location;
+	std::string		_target;
+
 public:
 	RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client);
 	~RequestConfig();
@@ -27,7 +37,7 @@ public:
 	ServerConfig	*getLocationForRequest(ServerConfig *server, std::string &target);
 	void			redirectLocation(std::string target);
 
-	ServerConfig	*match_regexp(std::vector<ServerConfig *> &locations, std::string &target);
+	ServerConfig	*matchRegexp(std::vector<ServerConfig *> &locations, std::string &target);
 	bool			methodAccepted(std::string &method);
 
 
@@ -61,14 +71,9 @@ public:
 	Client &getClient();
 	std::string log(LogLevel level);
 
+
 private:
-	Request	&_request;
-	Listen	&host_port_;
-	Client	&client_;
-	std::vector<ServerConfig> &_servers;
-	ServerConfig	*server_;
-	ServerConfig	*_location;
-	std::string		_target;
+	std::vector<ServerConfig *> matchServer(std::vector<ServerConfig> &servers);
 };
 
 #endif

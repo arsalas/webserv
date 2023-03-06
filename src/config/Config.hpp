@@ -34,9 +34,6 @@ public:
 	void	endOfLine(std::string &tmp);
 	void	pushToken(std::string &tmp);
 
-	void	parse();
-	void	serverToken(int i, std::vector<std::string>::iterator &it);
-	void	workersToken(std::vector<std::string>::iterator &it);
 
 	int							getWorkers();
 	std::vector<ServerConfig>	&getServers();
@@ -44,9 +41,11 @@ public:
 	std::string					&getFileContent();
 
 	void		clear();
-	std::string	trim(const std::string &s);
-	std::string rtrim(const std::string &s);
-	std::string ltrim(const std::string &s);
+
+private:
+	void	parse();
+	void	serverToken(int i, std::vector<std::string>::iterator &it);
+	void	workersToken(std::vector<std::string>::iterator &it);
 };
 
 #endif

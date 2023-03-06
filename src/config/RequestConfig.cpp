@@ -1,12 +1,8 @@
 #include "RequestConfig.hpp"
 
-/*
-** Constructors & Deconstructors
-*/
 
-RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client) : _request(request),
-																														host_port_(host_port),
-																														client_(client), _servers(servers)
+RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client) 
+	: _request(request), host_port_(host_port), client_(client), _servers(servers)
 {
 }
 
@@ -51,11 +47,10 @@ void RequestConfig::redirectLocation(std::string target)
 	}
 }
 
-ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &servers)
+std::vector<ServerConfig *> RequestConfig::matchServer(std::vector<ServerConfig> &servers)
 {
 	std::vector<ServerConfig *> matching_servers;
 
-	// Match server based on request ip + port
 	for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
 		for (std::vector<Listen>::iterator list = it->_listens.begin(); list != it->_listens.end(); list++)
@@ -67,10 +62,26 @@ ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &serv
 			}
 		}
 	}
+	return (matching_servers);
+}
+
+/**
+ * @brief Queremo saber qué servidores hacen match con el request
+ * Recorremos con dos vectores servers y _listens y cuando haya coincidencia hacemos push_back
+ * Si solo encontramos 1 server, lo devolvemos  
+ * En caso contratio, hacemos un match de servver_name
+ * Si no ha encontrado ninguno, utiliza el default
+ * 
+ * @param servers : es el archivo de configuración del server
+ * @return ServerConfig* 
+ */
+ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &servers)
+{
+	std::vector<ServerConfig *> matching_servers = matchServer(servers);
 
 	// If only one match, it's our server
 	if (matching_servers.size() == 1)
-		return matching_servers.front();
+		return (matching_servers.front());
 
 	std::string host = _request._headers["Host"].substr(0, _request._headers["Host"].find(':'));
 
@@ -85,12 +96,20 @@ ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &serv
 				return (*it);
 		}
 	}
-
 	// We use default server (first one)
-	return matching_servers.front();
+	return (matching_servers.front());
 }
 
-ServerConfig *RequestConfig::match_regexp(std::vector<ServerConfig *> &locations, std::string &target)
+/**
+ * @brief 
+ * regex_t es una expresión regular que tiene sus propias funciones 
+ * |= es como un +=
+ *
+ * @param locations 
+ * @param target 
+ * @return ServerConfig* 
+ */
+ServerConfig *RequestConfig::matchRegexp(std::vector<ServerConfig *> &locations, std::string &target)
 {
 	regex_t reg;
 
@@ -159,7 +178,7 @@ ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::st
 		}
 	}
 
-	ServerConfig *reg = match_regexp(reg_locations, target);
+	ServerConfig *reg = matchRegexp(reg_locations, target);
 
 	if (reg)
 		return (reg);
@@ -167,13 +186,21 @@ ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::st
 	return (location);
 }
 
+/**
+ * @brief 
+ * Creamos un vector de métodos
+ * 
+ * @param method 
+ * @return true 
+ * @return false 
+ */
 bool RequestConfig::methodAccepted(std::string &method)
 {
-	std::vector<std::string> methods = _location->_methods;
+	// std::vector<std::string> methods = _location->_methods;
 
-	if (methods.empty())
+	if (_location->_methods.empty())
 		return (true);
-	if (std::find(methods.begin(), methods.end(), method) != methods.end())
+	if (std::find(_location->_methods.begin(), _location->_methods.end(), method) != _location->_methods.end())
 		return (true);
 	return (false);
 }
@@ -300,18 +327,26 @@ std::string &RequestConfig::getProtocol()
 
 /*		AUX		*/
 
+/**
+ * @brief Devolvemos el method, target, server y location
+ * method es el http
+ * target es la URL
+ * server es el servidor al que estamos llamando en las coniguraciones
+ * location es /
+ * 
+ * @param level 
+ * @return std::string 
+ */
 std::string RequestConfig::log(LogLevel level)
 {
 	std::string ret;
 
-	ret = ret + "[method: " + getMethod() + "]";
-	ret = ret + " [target: " + getRequestTarget() + "]";
-	ret = ret + " [server: " + ft::to_string(server_->id_) + "]";
-	ret = ret + " [location: " + getUri() + "]";
+	ret = ret + "method: " + getMethod();
+	ret = ret + " | location: " + getUri();
 	if (level > INFO)
 	{
 		for (std::map<std::string, std::string>::iterator it = getHeaders().begin(); it != getHeaders().end(); it++)
 			ret = ret + "\n" + it->first + ": " + it->second;
 	}
-	return ret;
+	return (ret);
 }
