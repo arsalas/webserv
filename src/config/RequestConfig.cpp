@@ -1,8 +1,7 @@
 #include "RequestConfig.hpp"
 
-
-RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client) 
-	: _request(request), host_port_(host_port), client_(client), _servers(servers)
+RequestConfig::RequestConfig(Request &request, Listen &host_port, std::vector<ServerConfig> &servers, Client &client)
+	: _request(request), host_port_(host_port), _client(client), _servers(servers)
 {
 }
 
@@ -68,24 +67,24 @@ std::vector<ServerConfig *> RequestConfig::matchServer(std::vector<ServerConfig>
 /**
  * @brief Queremo saber qué servidores hacen match con el request
  * Recorremos con dos vectores servers y _listens y cuando haya coincidencia hacemos push_back
- * Si solo encontramos 1 server, lo devolvemos  
+ * Si solo encontramos 1 server, lo devolvemos
  * En caso contratio, hacemos un match de servver_name
  * Si no ha encontrado ninguno, utiliza el default
- * 
+ *
  * @param servers : es el archivo de configuración del server
- * @return ServerConfig* 
+ * @return ServerConfig*
  */
 ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &servers)
 {
 	std::vector<ServerConfig *> matching_servers = matchServer(servers);
 
-	// If only one match, it's our server
+	// Si solo hay un match, es el nuestro
 	if (matching_servers.size() == 1)
 		return (matching_servers.front());
 
 	std::string host = _request._headers["Host"].substr(0, _request._headers["Host"].find(':'));
 
-	// We match based on server names
+	// Hacemos match en función del basename
 	for (std::vector<ServerConfig *>::iterator it = matching_servers.begin(); it != matching_servers.end(); it++)
 	{
 		std::vector<std::string> server_names = (*it)->getServerNames();
@@ -96,18 +95,18 @@ ServerConfig *RequestConfig::getServerForRequest(std::vector<ServerConfig> &serv
 				return (*it);
 		}
 	}
-	// We use default server (first one)
+	// Si no nos pasan ninguno, utilizamos el default
 	return (matching_servers.front());
 }
 
 /**
- * @brief 
- * regex_t es una expresión regular que tiene sus propias funciones 
+ * @brief
+ * regex_t es una expresión regular que tiene sus propias funciones
  * |= es como un +=
  *
- * @param locations 
- * @param target 
- * @return ServerConfig* 
+ * @param locations
+ * @param target
+ * @return ServerConfig*
  */
 ServerConfig *RequestConfig::matchRegexp(std::vector<ServerConfig *> &locations, std::string &target)
 {
@@ -134,17 +133,17 @@ ServerConfig *RequestConfig::matchRegexp(std::vector<ServerConfig *> &locations,
 }
 
 /**
- * @brief 
+ * @brief
  * Recorremos _locations. Si no hay modificadores y _uri es el target, retornamos el iterador
- * 
- * @param server 
- * @param target 
- * @return ServerConfig* 
+ *
+ * @param server
+ * @param target
+ * @return ServerConfig*
  */
 ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::string &target)
 {
-	ServerConfig	*location = NULL;
-	std::vector<ServerConfig *>	reg_locations;
+	ServerConfig *location = NULL;
+	std::vector<ServerConfig *> reg_locations;
 
 	for (std::vector<ServerConfig>::iterator it = server->_locations.begin(); it != server->_locations.end(); it++)
 	{
@@ -187,12 +186,12 @@ ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::st
 }
 
 /**
- * @brief 
+ * @brief
  * Creamos un vector de métodos
- * 
- * @param method 
- * @return true 
- * @return false 
+ *
+ * @param method
+ * @return true
+ * @return false
  */
 bool RequestConfig::methodAccepted(std::string &method)
 {
@@ -204,7 +203,6 @@ bool RequestConfig::methodAccepted(std::string &method)
 		return (true);
 	return (false);
 }
-
 
 /*		SETTERS		*/
 
@@ -242,7 +240,7 @@ uint32_t &RequestConfig::getPort()
 
 Client &RequestConfig::getClient()
 {
-	return (client_);
+	return (_client);
 }
 
 std::string &RequestConfig::getRoot()
@@ -333,9 +331,9 @@ std::string &RequestConfig::getProtocol()
  * target es la URL
  * server es el servidor al que estamos llamando en las coniguraciones
  * location es /
- * 
- * @param level 
- * @return std::string 
+ *
+ * @param level
+ * @return std::string
  */
 std::string RequestConfig::log(LogLevel level)
 {

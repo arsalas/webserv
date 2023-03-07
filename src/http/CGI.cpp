@@ -1,12 +1,13 @@
 #include "CGI.hpp"
 
-CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers) : file_(file), config_(config), req__headers(req_headers) {
-  _req_body = file_.getContent();
+CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers) : _file(file), config_(config), req__headers(req_headers) {
+  _req_body = _file.getContent();
+  std::cout << "CGI:     " << _req_body;
 }
 
-CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers, std::string &req_body) : file_(file), config_(config), req__headers(req_headers) {
+CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers, std::string &req_body) : _file(file), config_(config), req__headers(req_headers) {
   if (req_body.empty() && config_.getMethod() != "POST")
-    _req_body = file_.getContent();
+    _req_body = _file.getContent();
   else
     _req_body = req_body;
 }
@@ -22,7 +23,7 @@ void CGI::init(int worker_id) {
   argv_[0] = NULL;
   argv_[1] = NULL;
   argv_[2] = NULL;
-  extension_ = file_.getMimeExtension();
+  extension_ = _file.getMimeExtension();
   cgi_exe_ = config_.getCGI()[extension_];
   if (config_.getCGIBin()[0] == '/') {
     cgi__path = config_.getCGIBin() + "/" + cgi_exe_;
@@ -48,7 +49,7 @@ CGI::~CGI() {
 }
 
 int CGI::execute() {
-  file__path = cwd_ + "/" + file_.getPath();
+  file__path = cwd_ + "/" + _file.getPath();
 
   if (!setCGIEnv())
     return 500;
