@@ -195,11 +195,11 @@ ServerConfig *RequestConfig::getLocationForRequest(ServerConfig *server, std::st
  */
 bool RequestConfig::methodAccepted(std::string &method)
 {
-	// std::vector<std::string> methods = _location->_methods;
+	std::vector<std::string> methods = _location->_methods;
 
-	if (_location->_methods.empty())
+	if (methods.empty())
 		return (true);
-	if (std::find(_location->_methods.begin(), _location->_methods.end(), method) != _location->_methods.end())
+	if (std::find(methods.begin(), methods.end(), method) != methods.end())
 		return (true);
 	return (false);
 }

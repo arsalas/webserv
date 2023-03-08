@@ -31,8 +31,8 @@ void Config::clear()
 
 /**
  * @brief Encontramos un ';', por lo que es final de linea
- * 
- * @param tmp 
+ *
+ * @param tmp
  */
 void Config::endOfLine(std::string &tmp)
 {
@@ -43,18 +43,22 @@ void Config::endOfLine(std::string &tmp)
 	{
 		token = tmp.substr(0, pos);
 		_tokens.push_back(token);
+		// std::cout << "token: " << token << std::endl;
 		tmp.erase(0, pos + 1);
 	}
+	// std::cout << "token: " << tmp << std::endl;
 	_tokens.push_back(tmp);
+	// std::cout << "token: " << tmp << std::endl;
+	// std::cout << "token: " << ";" << std::endl;
 	_tokens.push_back(";");
 }
 
 /**
  * @brief Split por palabras y push del token
- * 
- * @param tmp 
+ *
+ * @param tmp
  */
-void	Config::pushToken(std::string &tmp)
+void Config::pushToken(std::string &tmp)
 {
 	size_t pos = 0;
 	std::string token;
@@ -73,11 +77,11 @@ void	Config::pushToken(std::string &tmp)
 
 /**
  * @brief Si encontramos "{", hacemos un push de true
- * 
- * @param brackets 
- * @param tmp 
+ *
+ * @param brackets
+ * @param tmp
  */
-void	Config::openBrackets(std::stack<bool> &brackets, std::string &tmp)
+void Config::openBrackets(std::stack<bool> &brackets, std::string &tmp)
 {
 	if (tmp.find('{') < tmp.length())
 		brackets.push(true);
@@ -85,14 +89,14 @@ void	Config::openBrackets(std::stack<bool> &brackets, std::string &tmp)
 
 /**
  * @brief Si encontramos "}", checkeamos si está vacío
- * Y hacemos pop de brackets para saber si al final del 
+ * Y hacemos pop de brackets para saber si al final del
  * archivo se cierran todos los brackets abiertos
- * 
- * @param brackets 
- * @param tmp 
- * @param line_idx 
+ *
+ * @param brackets
+ * @param tmp
+ * @param line_idx
  */
-void	Config::closeBrackets(std::stack<bool> &brackets, std::string &tmp, int line_idx)
+void Config::closeBrackets(std::stack<bool> &brackets, std::string &tmp, int line_idx)
 {
 	if (tmp.find('}') < tmp.length())
 	{
@@ -132,20 +136,29 @@ void Config::tokenize()
 			if (tmp.find(';', tmp.length() - 1) != std::string::npos)
 				endOfLine(tmp);
 			else
+			{
+				// std::cout << "token: " << tmp << std::endl;
 				pushToken(tmp);
+			}
+			// std::cout << "token: " << tmp << std::endl;
 		}
 		line_idx++;
+	}
+
+	for (std::size_t i = 0; i < _tokens.size(); i++)
+	{
+		std::cout << "token: " << _tokens[i] << "\n";
 	}
 }
 
 /**
  * @brief El token es "server"
  * Le asignamos un id y hacemos un push_back en _servers
- * 
- * @param i 
- * @param it 
+ *
+ * @param i
+ * @param it
  */
-void	Config::serverToken(int i, std::vector<std::string>::iterator &it)
+void Config::serverToken(int i, std::vector<std::string>::iterator &it)
 {
 	ServerConfig serv;
 
@@ -157,14 +170,14 @@ void	Config::serverToken(int i, std::vector<std::string>::iterator &it)
 /**
  * @brief El token es "workers"
  * Workers tiene que estar entre 0 y 16 y tiene que acabar en ';'
- * Un service worker es un servicio intermedio entre nuestro navegador 
- * e internet que actúa a modo de proxy y que intercepta toda la 
+ * Un service worker es un servicio intermedio entre nuestro navegador
+ * e internet que actúa a modo de proxy y que intercepta toda la
  * comunicación que se produce entre el dispositivo y la red
  * Básicamente es para que funcione la web sin conexión, utiliza el contenido de caché
- * 
- * @param it 
+ *
+ * @param it
  */
-void	Config::workersToken(std::vector<std::string>::iterator &it)
+void Config::workersToken(std::vector<std::string>::iterator &it)
 {
 	_workers = ft::stoi(*(++it));
 	if (_workers > 16 || _workers < 0)
@@ -176,7 +189,7 @@ void	Config::workersToken(std::vector<std::string>::iterator &it)
 /**
  * @brief Recogemos los tokens
  * Guardamos la información de server y workers en su respectiva estructura
- * 
+ *
  */
 void Config::parse()
 {
