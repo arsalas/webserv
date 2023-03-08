@@ -1,5 +1,7 @@
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "Config.hpp"
-
 Config::Config(std::string &path) : path_(path)
 {
 	workers_ = 0;
@@ -31,11 +33,13 @@ void Config::tokenize()
 	std::stack<bool> brackets;
 
 	int line_idx = 1;
-	char *line_c;
-
-	while (get_next_line(fd_, &line_c))
+	// char *line_c;
+	std::ifstream myfile; 
+	myfile.open(path_);
+	while (myfile)
 	{
-		line = line_c;
+		std::getline (myfile, line);
+		// line = line_c;
 		file_content_ += line + "\n";
 		last = 0;
 		while ((first = line.find_first_not_of(" \t", last)) != std::string::npos)
@@ -68,9 +72,9 @@ void Config::tokenize()
 			}
 		}
 		line_idx++;
-		free(line_c);
+		// free(line_c);
 	}
-	free(line_c);
+	// free(line_c);
 }
 
 void Config::parse()
