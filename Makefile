@@ -6,7 +6,6 @@ BLUE			:= \033[34m
 NC				:= \033[m
 
 
-
 CXX				:= c++
 DEBUG_MSG		:= false
 
