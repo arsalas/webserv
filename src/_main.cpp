@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 {
     int sockfd, newsockfd, portno;
     socklen_t clilen;
-    char buffer[256];
+    char buffer[9000];
     struct sockaddr_in serv_addr, cli_addr;
     int n;
     if (argc < 2)
@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
                        &clilen);
     if (newsockfd < 0)
         error("ERROR on accept");
-    bzero(buffer, 256);
-    n = read(newsockfd, buffer, 255);
+    bzero(buffer, 9000);
+    n = read(newsockfd, buffer, 8999);
     if (n < 0)
         error("ERROR reading from socket");
     printf("Here is the message: %s\n", buffer);
