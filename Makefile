@@ -20,7 +20,7 @@ FLAGS			:= $(W_FLAGS) $(PTH_FLAGS) $(VERSION) $(SANITIZER) # $(FDEBUG)
 RM 				:= rm -f
 
 # SRC
-SRCS 			=  main.cpp
+SRCS 			=  main.cpp Server.cpp
 
 # FOLDERS
 OBJS_DIR		:= obj
@@ -30,7 +30,7 @@ BIN_DIR			:= bin
 OBJS		= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
 #INCLUDES
-INCLUDES 		:= src/ src/config src/http src/utils
+INCLUDES 		:= src/  
 INC			= $(addprefix -I , $(INCLUDES))
 
 # DEPENDECES
@@ -43,7 +43,7 @@ NAME 				:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src src/http src/config src/utils
+vpath %.cpp src
 
 .SECONDEXPANSION:
 
