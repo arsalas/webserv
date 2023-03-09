@@ -1,21 +1,24 @@
 #include "CGI.hpp"
 
-CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers) : _file(file), config_(config), req__headers(req_headers) {
+CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers) : _file(file), config_(config), req__headers(req_headers)
+{
   _req_body = _file.getContent();
   std::cout << "CGI:     " << _req_body;
 }
 
-CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers, std::string &req_body) : _file(file), config_(config), req__headers(req_headers) {
+CGI::CGI(File &file, RequestConfig &config, std::map<std::string, std::string, ft::comp> &req_headers, std::string &req_body) : _file(file), config_(config), req__headers(req_headers)
+{
   if (req_body.empty() && config_.getMethod() != "POST")
     _req_body = _file.getContent();
   else
     _req_body = req_body;
 }
 
-void CGI::init(int worker_id) {
+void CGI::init(int worker_id)
+{
   char *cwd = getcwd(NULL, 0);
   if (!cwd)
-    return ;
+    return;
   cwd_ = cwd;
   free(cwd);
 
@@ -25,9 +28,12 @@ void CGI::init(int worker_id) {
   argv_[2] = NULL;
   extension_ = _file.getMimeExtension();
   cgi_exe_ = config_.getCGI()[extension_];
-  if (config_.getCGIBin()[0] == '/') {
+  if (config_.getCGIBin()[0] == '/')
+  {
     cgi__path = config_.getCGIBin() + "/" + cgi_exe_;
-  } else {
+  }
+  else
+  {
     cgi__path = cwd_ + "/" + config_.getCGIBin() + "/" + cgi_exe_;
   }
   std::string cgi_path = "/tmp/webserv_cgi_tmp_" + ft::to_string(worker_id);
@@ -39,7 +45,8 @@ void CGI::init(int worker_id) {
     Log.print(DEBUG, "server : CGI -> " + cgi__path);
 }
 
-CGI::~CGI() {
+CGI::~CGI()
+{
   free(argv_[0]);
   free(argv_[1]);
   if (env_)
@@ -48,7 +55,8 @@ CGI::~CGI() {
   tmp_file_.unlink();
 }
 
-int CGI::execute() {
+int CGI::execute()
+{
   file__path = cwd_ + "/" + _file.getPath();
 
   if (!setCGIEnv())
@@ -66,7 +74,8 @@ int CGI::execute() {
 
   pid_t pid = fork();
 
-  if (pid == 0) {
+  if (pid == 0)
+  {
     if (chdir(file__path.substr(0, file__path.find_last_of('/')).c_str()) == -1)
       return 500;
     close(pip[1]);
@@ -78,7 +87,8 @@ int CGI::execute() {
     execve(argv_[0], argv_, env_);
     exit(1);
   }
-  else if (pid > 0) {
+  else if (pid > 0)
+  {
     close(pip[0]);
     if (_req_body.length() && write(pip[1], _req_body.c_str(), _req_body.length()) <= 0)
       return 500;
@@ -91,7 +101,8 @@ int CGI::execute() {
     if (WIFEXITED(status) && WEXITSTATUS(status))
       return 502;
   }
-  else {
+  else
+  {
     return 502;
   }
 
@@ -99,80 +110,92 @@ int CGI::execute() {
   return 200;
 }
 
-void CGI::parseHeaders(std::map<std::string, std::string> &headers) {
+void CGI::parseHeaders(std::map<std::string, std::string> &headers)
+{
   size_t end, last;
   std::string header;
 
-  while ((end = body_.find("\r\n")) != std::string::npos) {
-    if (body_.find("\r\n") == 0) {
+  while ((end = body_.find("\r\n")) != std::string::npos)
+  {
+    if (body_.find("\r\n") == 0)
+    {
       body_.erase(0, end + 2);
       break;
     }
-    if ((last = body_.find(':', 0)) != std::string::npos) {
+    if ((last = body_.find(':', 0)) != std::string::npos)
+    {
       header = body_.substr(0, last);
       headers[header] = ft::trim_left(body_.substr(last + 1, end - last - 1), ' ');
     }
     body_.erase(0, end + 2);
   }
-  if (headers.count("Content-Length")) {
+  if (headers.count("Content-Length"))
+  {
     size_t size = ft::stoi(headers["Content-Length"]);
 
     body_.erase(size);
   }
 }
 
-std::string &CGI::getBody() {
+std::string &CGI::getBody()
+{
   return body_;
 }
 
-bool CGI::setCGIEnv() {
-  if (config_.getMethod() == "POST") {
-		cgi_env_["CONTENT_TYPE"] = req__headers["Content-Type"];
-		cgi_env_["CONTENT_LENGTH"] = ft::to_string(_req_body.length());
-	}
-	cgi_env_["GATEWAY_INTERFACE"] = "CGI/1.1";
+bool CGI::setCGIEnv()
+{
+  if (config_.getMethod() == "POST")
+  {
+    cgi_env_["CONTENT_TYPE"] = req__headers["Content-Type"];
+    cgi_env_["CONTENT_LENGTH"] = ft::to_string(_req_body.length());
+  }
+  cgi_env_["GATEWAY_INTERFACE"] = "CGI/1.1";
   cgi_env_["_pathINFO"] = file__path;
-	cgi_env_["_pathTRANSLATED"] = file__path;
+  cgi_env_["_pathTRANSLATED"] = file__path;
   cgi_env_["QUERY_STRING"] = config_.getQuery();
   cgi_env_["REMOTE_ADDR"] = config_.getClient().getAddr();
 
-  if (config_.getAuth() != "off") {
+  if (config_.getAuth() != "off")
+  {
     cgi_env_["AUTH_TYPE"] = "Basic";
     cgi_env_["REMOTE_IDENT"] = config_.getAuth().substr(0, config_.getAuth().find(':'));
     cgi_env_["REMOTE_USER"] = config_.getAuth().substr(0, config_.getAuth().find(':'));
   }
 
   cgi_env_["_requestMETHOD"] = config_.getMethod();
-	cgi_env_["_requestURI"] = file__path;
+  cgi_env_["_requestURI"] = file__path;
 
   cgi_env_["SCRIPT_NAME"] = cgi__path;
-	cgi_env_["SERVER_NAME"] = config_.getHost();
-	cgi_env_["SERVER_PROTOCOL"] = config_.getProtocol();
-	cgi_env_["SERVER_PORT"] = ft::to_string(config_.getPort());
+  cgi_env_["SERVER_NAME"] = config_.getHost();
+  cgi_env_["SERVER_PROTOCOL"] = config_.getProtocol();
+  cgi_env_["SERVER_PORT"] = ft::to_string(config_.getPort());
   cgi_env_["SERVER_SOFTWARE"] = "WEBSERV/1.0";
 
-	if (extension_ == ".php")
-		cgi_env_["REDIRECT_STATUS"] = "200";
+  if (extension_ == ".php")
+    cgi_env_["REDIRECT_STATUS"] = "200";
 
-  for (std::map<std::string, std::string, ft::comp>::iterator it = req__headers.begin(); it != req__headers.end(); it++) {
-    if (!it->second.empty()) {
+  for (std::map<std::string, std::string, ft::comp>::iterator it = req__headers.begin(); it != req__headers.end(); it++)
+  {
+    if (!it->second.empty())
+    {
       std::string header = "HTTP_" + ft::to_upper(it->first);
       std::replace(header.begin(), header.end(), '-', '_');
       cgi_env_[header] = it->second;
     }
   }
 
-	if (!(env_ = (char **)malloc(sizeof(char *) * (cgi_env_.size() + 1))))
-		return false;
+  if (!(env_ = (char **)malloc(sizeof(char *) * (cgi_env_.size() + 1))))
+    return false;
 
-	int i = 0;
+  int i = 0;
 
-	for (std::map<std::string, std::string>::iterator it = cgi_env_.begin(); it != cgi_env_.end(); it++) {
-		std::string tmp = it->first + "=" + it->second;
-		if (!(env_[i] = ft::strdup(tmp.c_str())))
+  for (std::map<std::string, std::string>::iterator it = cgi_env_.begin(); it != cgi_env_.end(); it++)
+  {
+    std::string tmp = it->first + "=" + it->second;
+    if (!(env_[i] = ft::strdup(tmp.c_str())))
       return false;
-		i++;
-	}
-	env_[i] = NULL;
+    i++;
+  }
+  env_[i] = NULL;
   return true;
 }
