@@ -9,5 +9,5 @@ class Utils
 	public:
 	static std::string	trim(const std::string &s);
 	static std::string	split(std::string str, std::string del);
-	time_t 				getTimeSeconds(void);
+	static time_t		getTimeSeconds(void);
 };
