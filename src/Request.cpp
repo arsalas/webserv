@@ -1,8 +1,57 @@
 #include "Request.hpp"
+#include "Utils.hpp"
 #include <string>
 #include <iostream>
+#include <vector>
 
-class Request;
+
+std::vector<std::string>    vectorSplit(std::string file, std::string delimiter)
+{
+    std::vector<std::string> auxVector;
+    std::vector<std::string>::iterator  it = auxVector.begin();
+    std::string aux;
+    size_t pos = 0;
+
+    while ((pos = file.find(delimiter)) != std::string::npos)
+    {
+        aux = file.substr(0, pos);
+        it = auxVector.end();
+        auxVector.insert(it, aux);
+        file.erase(0, pos + delimiter.length());
+    }
+    aux = file.substr(0, pos);
+    it = auxVector.end();
+    auxVector.insert(it, aux);
+    return (auxVector);
+}
+
+std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, std::string delimiter)
+{
+    std::map<std::string, std::string> auxMap;
+    std::vector<std::string> newVector;
+    std::vector<std::string>::iterator firstIter;
+    std::vector<std::string>::iterator secondtIter;
+
+    std::string start;
+    std::string end;
+    size_t pos = 0;
+
+    std::vector<std::string>::iterator itVector = auxVector.begin();
+    auxMap.insert(std::pair<std::string, std::string>(*firstIter, ""));
+
+    itVector++;
+    for (; itVector != auxVector.end(); itVector++)
+    {
+        newVector = vectorSplit(*itVector, ":");
+        firstIter = newVector.begin();
+        secondtIter = newVector.begin();
+        secondtIter++;
+        auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
+        std::cout << *firstIter << " & " << *secondtIter << std::endl;
+    }
+    return (auxMap);
+}
+
 /**
  * @brief 
  * Pair1 es lo que hay antes de ':'
@@ -11,36 +60,17 @@ class Request;
  */
 void Request::tokenRequest(void)
 {
-    std::string file = "\"DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}\"; ";
+    std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
+    std::string delimiter = "\n";
+    std::vector<std::string> lineVector;
+    lineVector = vectorSplit(file, delimiter);
 
-    std::string pair1;
-    std::string pair2;
-    std::string delimiter = ":";
-    size_t      pos = 0;
+    for (std::vector<std::string>::iterator  it =  lineVector.begin(); it < lineVector.end(); it++)
+        std::cout << "In my vector is: " << *it << std::endl;
 
-    // quiero en un vector hasta el \n
-    std::vector<std::string> auxVector;
-    std::string aux;
-    std::vector<std::string>::iterator  it;
-    delimiter = "\n";
-    while ((pos = file.find(delimiter)) != std::string::npos)
-    {
-        aux = file.substr(0, pos);
-        std::cout << aux << std::endl;
-        auxVector.insert(it, aux);
-        aux.erase(0, pos + delimiter.length());
-        it++;
-    }
-
-    // while ((pos = file.find(delimiter)) != std::string::npos)
-    // {
-    //     pair1 = file.substr(0, pos);
-    //     pair2 = file.substr(0, pos);
-    //     _headers.insert(std::pair<std::string, std::string>(pair1, pair2));
-    //     std::cout << pair1 << std::endl;
-    //     // std::cout << pair2 << std::endl;
-    //     file.erase(0, pos + delimiter.length());
-    // }
+    delimiter = ":";
+    std::map<std::string, std::string> map;
+    map = mapSplit(lineVector, delimiter);
 }
 
 int main ()
