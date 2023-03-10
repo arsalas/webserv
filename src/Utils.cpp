@@ -1,3 +1,7 @@
+#include <ctime>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <sys/time.h>
 #include "Utils.hpp"
 
 std::string Utils::ltrim(const std::string &s)
@@ -21,13 +25,21 @@ std::string Utils::trim(const std::string &s)
  * @brief SPLIT
  * Find returns the position of the first occurrence of str in the string, or npos if the string is not found
  * Substr creates a new string from the start position until the end ones
- * 
- * @param str 
- * @param del 
- * @return std::string 
+ *
+ * @param str
+ * @param del
+ * @return std::string
  */
 std::string Utils::split(std::string str, std::string del)
 {
-    std::string token = str.substr(0, str.find(del));
-    return (token);
+	std::string token = str.substr(0, str.find(del));
+	return (token);
+}
+
+time_t Utils::getTimeSeconds(void)
+{
+	struct timeval now;
+
+	gettimeofday(&now, NULL);
+	return (now.tv_sec);
 }

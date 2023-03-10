@@ -12,10 +12,10 @@ class Request
 
     public:
     void    tokenRequest(void);
-    void    insertMethod(std::vector<std::string> lineVector);
-    void    insertPath(std::vector<std::string> lineVector);
-    void    insertHeader(std::vector<std::string> lineVector);
-    void    insertBody(std::vector<std::string> lineVector);
+    void    setMethod(std::vector<std::string> lineVector);
+    void    setPath(std::vector<std::string> lineVector);
+    void    setHeader(std::vector<std::string> lineVector);
+    void    setBody(std::vector<std::string> lineVector);
 
     /*      GETTERS     */
     std::string getMethod(void);

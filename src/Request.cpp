@@ -1,4 +1,5 @@
 #include "Request.hpp"
+#include "Log.hpp"
 #include "Utils.hpp"
 #include <string>
 #include <iostream>
@@ -73,7 +74,7 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
  * 
  * @param lineVector 
  */
-void    Request::insertMethod(std::vector<std::string> lineVector)
+void    Request::setMethod(std::vector<std::string> lineVector)
 {
     std::vector<std::string> newVector;
     std::vector<std::string>::iterator iter;
@@ -89,7 +90,7 @@ void    Request::insertMethod(std::vector<std::string> lineVector)
  * 
  * @param lineVector 
  */
-void    Request::insertPath(std::vector<std::string> lineVector)
+void    Request::setPath(std::vector<std::string> lineVector)
 {
     std::vector<std::string> newVector;
     std::vector<std::string>::iterator iter;
@@ -101,7 +102,7 @@ void    Request::insertPath(std::vector<std::string> lineVector)
     _path = *iter;
 }
 
-void    Request::insertHeader(std::vector<std::string> lineVector)
+void    Request::setHeader(std::vector<std::string> lineVector)
 {
     _header = mapSplit(lineVector, ":");
 }
@@ -113,7 +114,7 @@ void    Request::insertHeader(std::vector<std::string> lineVector)
  * 
  * @param lineVector 
  */
-void    Request::insertBody(std::vector<std::string> lineVector)
+void    Request::setBody(std::vector<std::string> lineVector)
 {
     for (std::vector<std::string>::iterator iter = lineVector.begin(); iter != lineVector.end(); iter++)
     {
@@ -130,7 +131,8 @@ void    Request::insertBody(std::vector<std::string> lineVector)
 }   
 
 /**
- * @brief 
+ * @brief Creamos un token para method, path, header y body
+ * Printamos el log
  * 
  */
 void Request::tokenRequest(void)
@@ -140,21 +142,19 @@ void Request::tokenRequest(void)
     std::vector<std::string> lineVector;
 
     lineVector = vectorSplit(file, "\n");
-    for (std::vector<std::string>::iterator it = lineVector.begin(); it < lineVector.end(); it++)
-        std::cout << "In my vector is: " << *it << std::endl;
+    setMethod(lineVector);
+    setPath(lineVector);
+    setHeader(lineVector);
+    setBody(lineVector);
 
-    insertMethod(lineVector);
     std::cout << "METHOD: " << _method << std::endl;
-    insertPath(lineVector);
     std::cout << "PATH: " << _path << std::endl;
-    insertHeader(lineVector);
-
     for (std::map<std::string, std::string>::iterator iterMap  = _header.begin(); iterMap != _header.end(); iterMap++)
     {
         std::cout << "MAP: " << iterMap->first << " & " << iterMap->second << std::endl;
     }
-    insertBody(lineVector);
     std::cout << "BODY: " << _body << std::endl;
+    std::cout << Log::printLog() << std::endl;
 }
 
 std::string Request::getMethod(void)
