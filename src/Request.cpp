@@ -32,24 +32,56 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
     std::vector<std::string>::iterator firstIter;
     std::vector<std::string>::iterator secondtIter;
 
-    std::string start;
-    std::string end;
-    size_t pos = 0;
-
     std::vector<std::string>::iterator itVector = auxVector.begin();
-    auxMap.insert(std::pair<std::string, std::string>(*firstIter, ""));
-
+    // auxMap.insert(std::pair<std::string, std::string>(*firstIter, ""));
     itVector++;
-    for (; itVector != auxVector.end(); itVector++)
+
+    for (; itVector != auxVector.end() -1; itVector++)
     {
-        newVector = vectorSplit(*itVector, ":");
+        newVector = vectorSplit(*itVector, ":"); 
         firstIter = newVector.begin();
         secondtIter = newVector.begin();
         secondtIter++;
+        if (newVector.size() > 2)
+        {
+            *secondtIter = *secondtIter + delimiter + *(++secondtIter);
+        }
         auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
-        std::cout << *firstIter << " & " << *secondtIter << std::endl;
     }
+    newVector = vectorSplit(*itVector, ":"); 
+    firstIter = newVector.begin();
+    auxMap.insert(std::pair<std::string, std::string>(*firstIter, ""));
     return (auxMap);
+}
+
+void    Request::insertMethod(std::vector<std::string> lineVector)
+{
+    std::vector<std::string> newVector;
+    std::vector<std::string>::iterator iter;
+
+    iter = lineVector.begin();
+    newVector = vectorSplit(*iter, " /");
+    iter = newVector.begin();
+    std::cout << "_method : " << *iter << std::endl;
+    _method = *iter;
+}
+
+void    Request::insertPath(std::vector<std::string> lineVector)
+{
+    (void) lineVector;
+}
+
+void    Request::insertHeader(std::vector<std::string> lineVector)
+{
+    std::vector<std::string> newVector;
+    std::vector<std::string>::iterator iter;
+
+    iter = lineVector.begin();
+    newVector = vectorSplit(*iter, " ");
+    iter = newVector.begin();
+    iter++;
+    _path = *iter;
+    std::cout << "path: " << *iter << std::endl;
 }
 
 /**
@@ -61,16 +93,18 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 void Request::tokenRequest(void)
 {
     std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
-    std::string delimiter = "\n";
     std::vector<std::string> lineVector;
-    lineVector = vectorSplit(file, delimiter);
+
+    lineVector = vectorSplit(file, "\n");
 
     for (std::vector<std::string>::iterator  it =  lineVector.begin(); it < lineVector.end(); it++)
         std::cout << "In my vector is: " << *it << std::endl;
 
-    delimiter = ":";
-    std::map<std::string, std::string> map;
-    map = mapSplit(lineVector, delimiter);
+    insertMethod(lineVector);
+    insertPath(lineVector);
+    insertHeader(lineVector);
+    std::cout << "method: " << _method << std::endl;
+
 }
 
 int main ()
