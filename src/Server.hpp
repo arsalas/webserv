@@ -5,6 +5,9 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string>
+#include <poll.h>
+
+extern pollfd g_pfd[2];
 
 namespace http
 {
@@ -12,7 +15,7 @@ namespace http
     class TcpServer
     {
     public:
-        TcpServer(std::string ip_address, int port);
+        TcpServer(std::string ip_address, int port, int y);
         ~TcpServer();
         void startListen();
 
@@ -31,6 +34,9 @@ namespace http
         void acceptConnection(int &new_socket);
         std::string buildResponse();
         void sendResponse();
+
+
+        int i;
     };
 
 } // namespace http
