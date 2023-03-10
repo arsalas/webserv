@@ -31,22 +31,3 @@ std::string Utils::split(std::string str, std::string del)
     std::string token = str.substr(0, str.find(del));
     return (token);
 }
-
-std::vector<std::string>    Utils::vectorSplit(std::string file, std::string delimiter)
-{
-    std::vector<std::string> auxVector;
-    std::vector<std::string>::iterator  it = auxVector.begin();
-    std::string aux;
-    size_t pos = 0;
-    while ((pos = file.find(delimiter)) != std::string::npos)
-    {
-        aux = file.substr(0, pos);
-        it = auxVector.end();
-        auxVector.insert(it, aux);
-        file.erase(0, pos + delimiter.length());
-    }
-    aux = file.substr(0, pos);
-    it = auxVector.end();
-    auxVector.insert(it, aux);
-    return (auxVector);
-}
