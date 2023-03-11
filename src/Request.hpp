@@ -12,6 +12,7 @@ class Request
 
     public:
     void    tokenRequest(void);
+    bool    errorsToken();
     void    setMethod(std::vector<std::string> lineVector);
     void    setPath(std::vector<std::string> lineVector);
     void    setHeader(std::vector<std::string> lineVector);

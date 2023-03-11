@@ -8,5 +8,5 @@ class Log
     std::string _log;
 
     public:
-    static std::string printLog(void);
+    static void printLog(std::string method);
 };

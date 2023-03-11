@@ -3,6 +3,7 @@
 #include "Utils.hpp"
 #include <string>
 #include <iostream>
+#include <exception>
 #include <vector>
 
 
@@ -128,7 +129,23 @@ void    Request::setBody(std::vector<std::string> lineVector)
             }
         }
     }
-}   
+}
+
+/**
+ * @brief If the method is not correct, we send and error
+ * // TODO Alberto, que mas??
+ * 
+ * @return true 
+ * @return false 
+ */
+bool    Request::errorsToken()
+{
+    if (_method != "DELETE" && _method != "GET" && _method != "POST")
+        return (1);
+    // if (_path[0] != '\\')
+    //     return (1);
+    return (0);
+}
 
 /**
  * @brief Creamos un token para method, path, header y body
@@ -137,8 +154,8 @@ void    Request::setBody(std::vector<std::string> lineVector)
  */
 void Request::tokenRequest(void)
 {
-    // std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
-    std::string file = "GET /favicon.ico HTTP/1.1\nHost: 127.0.0.1:8080\nConnection: keep-alive\nsec-ch-ua: \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"\nsec-ch-ua-mobile: ?0\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\nsec-ch-ua-platform: \"macOS\"\nAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: no-cors\nSec-Fetch-Dest: image\nReferer: http://127.0.0.1:8080/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8";
+    std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
+    // std::string file = "GET /favicon.ico HTTP/1.1\nHost: 127.0.0.1:8080\nConnection: keep-alive\nsec-ch-ua: \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"\nsec-ch-ua-mobile: ?0\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\nsec-ch-ua-platform: \"macOS\"\nAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: no-cors\nSec-Fetch-Dest: image\nReferer: http://127.0.0.1:8080/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8";
     std::vector<std::string> lineVector;
 
     lineVector = vectorSplit(file, "\n");
@@ -146,6 +163,10 @@ void Request::tokenRequest(void)
     setPath(lineVector);
     setHeader(lineVector);
     setBody(lineVector);
+    if (errorsToken()) // TODO no funciona el error, da segfault
+        throw std::runtime_error(std::string("Error in the request file\n"));
+    else
+        Log::printLog(_method);
 
     std::cout << "METHOD: " << _method << std::endl;
     std::cout << "PATH: " << _path << std::endl;
@@ -154,7 +175,6 @@ void Request::tokenRequest(void)
         std::cout << "MAP: " << iterMap->first << " & " << iterMap->second << std::endl;
     }
     std::cout << "BODY: " << _body << std::endl;
-    std::cout << Log::printLog() << std::endl;
 }
 
 std::string Request::getMethod(void)
