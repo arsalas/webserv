@@ -6,8 +6,10 @@
 
 void    Log::printLog(std::string method)
 {
-    time_t time = Utils::getTimeSeconds();
-    std::string str = std::to_string(time);
-
-    std::cout << YEL "[ " << str << " ] " RESET << RED " [ " << method << " ] " RESET << std::endl;
+    std::cout << RED " [ " << method << " ] " RESET << std::endl;
 }
+
+// void    success(std::string method std::string message)
+// {
+
+// }

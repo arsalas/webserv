@@ -86,6 +86,19 @@ void    Request::setMethod(std::vector<std::string> lineVector)
     _method = *iter;
 }
 
+void    Request::setHttp(std::vector<std::string> lineVector)
+{
+        std::vector<std::string> newVector;
+    std::vector<std::string>::iterator iter;
+
+    iter = lineVector.begin();
+    newVector = vectorSplit(*iter, " ");
+    iter = newVector.begin();
+    iter++;
+    iter++;
+    _http = *iter;
+}
+
 /**
  * @brief Parseamos de la primera línea a partir del primer espacio
  * 
@@ -138,12 +151,12 @@ void    Request::setBody(std::vector<std::string> lineVector)
  * @return true 
  * @return false 
  */
-bool    Request::errorsToken()
+int Request::errorsToken()
 {
-    if (_method != "DELETE" && _method != "GET" && _method != "POST")
-        return (1);
-    // if (_path[0] != '\\')
-    //     return (1);
+    if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT") 
+        return (501);
+    if (_http != "HTTP/1.1")
+        return (505);
     return (0);
 }
 
@@ -152,7 +165,7 @@ bool    Request::errorsToken()
  * Printamos el log
  * 
  */
-void Request::tokenRequest(void)
+int Request::tokenRequest(void)
 {
     std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
     // std::string file = "GET /favicon.ico HTTP/1.1\nHost: 127.0.0.1:8080\nConnection: keep-alive\nsec-ch-ua: \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"\nsec-ch-ua-mobile: ?0\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\nsec-ch-ua-platform: \"macOS\"\nAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: no-cors\nSec-Fetch-Dest: image\nReferer: http://127.0.0.1:8080/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8";
@@ -160,26 +173,30 @@ void Request::tokenRequest(void)
 
     lineVector = vectorSplit(file, "\n");
     setMethod(lineVector);
+    setHttp(lineVector);
     setPath(lineVector);
     setHeader(lineVector);
     setBody(lineVector);
-    if (errorsToken()) // TODO no funciona el error, da segfault
-        throw std::runtime_error(std::string("Error in the request file\n"));
-    else
-        Log::printLog(_method);
 
     std::cout << "METHOD: " << _method << std::endl;
+    std::cout << "HTTP: " << _http << std::endl;
     std::cout << "PATH: " << _path << std::endl;
     for (std::map<std::string, std::string>::iterator iterMap  = _header.begin(); iterMap != _header.end(); iterMap++)
     {
         std::cout << "MAP: " << iterMap->first << " & " << iterMap->second << std::endl;
     }
     std::cout << "BODY: " << _body << std::endl;
+    return (errorsToken());
 }
 
 std::string Request::getMethod(void)
 {
     return (_method);
+}
+
+std::string Request::getHttp(void)
+{
+    return (_http);
 }
 
 std::string Request::getPath(void)
