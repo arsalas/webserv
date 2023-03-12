@@ -42,7 +42,6 @@ bool    isHyphenDigit(std::string str)
 
 void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
 {
-    (void) endVector;
     if (isHyphenDigit(*itVector))
     {
         std::vector<std::string> newVector;
@@ -53,12 +52,16 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
             if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
             {
                 newVector = vectorSplit(*itVector, ":");
-                std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
-                std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
-                firstIter = newVector.begin();
-                secondtIter = newVector.begin();
-                secondtIter++;
-                _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
+                firstIter = (++newVector.begin());
+                if (!(*firstIter).empty() )
+                {
+                    std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
+                    std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
+                    firstIter = newVector.begin();
+                    secondtIter = newVector.begin();
+                    secondtIter++;
+                    _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
+                }
             }
         }
     }
