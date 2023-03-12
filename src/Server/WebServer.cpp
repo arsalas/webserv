@@ -82,7 +82,7 @@ void WebServer::recivedPoll()
 			int n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
 			if (n == -1)
 				throw RecivedSocketException();
-			std::cout << "RECIVED: " << buffer;
+			std::cout << "RECIVED: " << buffer << std::endl;
 			sendResponse(newsockfd, _servers[i]);
 		}
 	}
@@ -97,7 +97,8 @@ void WebServer::recivedPoll()
  */
 void WebServer::sendResponse(int fd, Server server)
 {
-	std::string path = "www/index" + Strings::intToString(i) + ".html";
+	(void)server;
+	std::string path = "www/index" + Strings::intToString(1) + ".html";
 	Response resp(fd);
 	resp.status(200);
 	int n = resp.sendFile(path);
