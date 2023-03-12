@@ -441,3 +441,4 @@ std::string Response::response_log(LogLevel level) {
   }
   return ret;
 }
+

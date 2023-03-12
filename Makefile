@@ -20,7 +20,10 @@ FLAGS			:= $(W_FLAGS) $(PTH_FLAGS) $(VERSION) $(SANITIZER) # $(FDEBUG)
 RM 				:= rm -f
 
 # SRC
-SRCS 			=  main.cpp Server.cpp
+SRCS 			=  main.cpp \
+				Response.cpp StatusCode.cpp \
+				Server.cpp WebServer.cpp \
+				File.cpp Strings.cpp
 
 # FOLDERS
 OBJS_DIR		:= obj
@@ -43,7 +46,7 @@ NAME 				:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src
+vpath %.cpp src src/Server src/Http src/Utils
 
 .SECONDEXPANSION:
 
