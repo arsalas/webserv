@@ -2,18 +2,22 @@
 
 #include <iostream>
 #include <netinet/in.h>
+#include<vector>
+#include<map>
+#include "Config.hpp"
  
 class Server
 {
 private:
-	int _config;
+	Config _config;
+	sockaddr_in _servAddr;
 	std::string _ip;
 	int _port;
 	int _socketFd;
-	sockaddr_in _servAddr;
 
 public:
 	Server();
+	Server(Config);
 	Server(std::string, int);
 	~Server();
 

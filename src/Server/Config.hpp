@@ -10,10 +10,44 @@ private:
 	std::vector<std::string> _serverName;
 	std::string _root;
 	std::map<std::string, std::string> _cgi;
-	std::string _index;
+	std::vector<std::string> _index;
 	std::map<std::string, Config> _location;
 	std::vector<std::string> _limitExcept;
+	std::map<int, std::string> _errorPage;
+	bool _autoindex;
+	long _clientMaxBodySize;
+	std::string _uploads;
 
 public:
+	// TODO pasar text config para iniciar la clase
 	Config();
+	Config(std::string file);
+	~Config();
+
+private:
+	// GETTERS
+	std::vector<int> getListen() const;
+	std::vector<std::string> getServerName() const;
+	std::string getRoot() const;
+	std::map<std::string, std::string> getCgi() const;
+	std::vector<std::string> getIndex() const;
+	std::map<std::string, Config> getLocation() const;
+	std::vector<std::string> getLimitExcept() const;
+	std::map<int, std::string> getErrorPage() const;
+	bool getAutoindex() const;
+	long getClientMaxBodySize() const;
+	std::string getUploads() const;
+
+	//  SETTERS
+	void addListen(int listen);
+	void addServerName(std::string serverName);
+	void addCgi(std::string key, std::string value);
+	void setRoot(std::string);
+	void addIndex(std::string);
+	void addLocation(std::string, Config location);
+	void addLimitExcept(std::string method);
+	void addErrorPage(int code, std::string path);
+	void setAutoindex(bool autoindex);
+	void setClientMaxBodySize(float limit);
+	void setUploads(std::string path);
 };
