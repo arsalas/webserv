@@ -39,6 +39,12 @@ bool    isHyphenDigit(std::string str)
     return (0);
 }
 
+bool    isContentDisposition(std::string str)
+{
+    if (str.find("Content-Disposition: form-data") != std::string::npos)
+        return (1);
+    return (0);
+}
 
 void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
 {
@@ -49,9 +55,9 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
         std::vector<std::string>::iterator secondtIter;
         for (; itVector < endVector; itVector++)
         {
-            if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
+            if (itVector < endVector && !(*itVector).empty() && isContentDisposition(*itVector))
             {
-                newVector = vectorSplit(*itVector, ":");
+                newVector = vectorSplit(*itVector, "=");
                 firstIter = (++newVector.begin());
                 if (!(*firstIter).empty() )
                 {
@@ -59,6 +65,7 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
                     std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
                     firstIter = newVector.begin();
                     secondtIter = newVector.begin();
+                    
                     secondtIter++;
                     _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
                 }
@@ -66,6 +73,33 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
         }
     }
 }
+
+// void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
+// {
+//     if (isContentDisposition(*itVector))
+//     {
+//         std::vector<std::string> newVector;
+//         std::vector<std::string>::iterator firstIter;
+//         std::vector<std::string>::iterator secondtIter;
+//         for (; itVector < endVector; itVector++)
+//         {
+//             if (itVector < endVector && !(*itVector).empty() && !isContentDisposition(*itVector))
+//             {
+//                 newVector = vectorSplit(*itVector, ":");
+//                 firstIter = (++newVector.begin());
+//                 if (!(*firstIter).empty() )
+//                 {
+//                     std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
+//                     std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
+//                     firstIter = newVector.begin();
+//                     secondtIter = newVector.begin();
+//                     secondtIter++;
+//                     _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
+//                 }
+//             }
+//         }
+//     }
+// }
 
 /**
  * @brief MAPSPLIT
@@ -105,6 +139,11 @@ std::map<std::string, std::string> Request::mapSplit(std::vector<std::string> au
             setFormData(itVector, auxVector, auxVector.end() -1);
             return (auxMap);
         }
+        // if (isHyphenDigit(*itVector))
+        // {
+        //     setFormData(itVector, auxVector, auxVector.end() -1);
+        //     return (auxMap);
+        // }
         auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
         if (*itVector == "Connection: close")
             return (auxMap);
