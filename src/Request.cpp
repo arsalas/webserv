@@ -52,22 +52,23 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
     {
         std::vector<std::string> newVector;
         std::vector<std::string>::iterator firstIter;
-        std::vector<std::string>::iterator secondtIter;
+        std::vector<std::string>::iterator secondIter;
         for (; itVector < endVector; itVector++)
         {
-            if (itVector < endVector && !(*itVector).empty() && isContentDisposition(*itVector))
+            if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
             {
-                newVector = vectorSplit(*itVector, "=");
-                firstIter = (++newVector.begin());
+                newVector = vectorSplit(*itVector, "Content-Disposition: form-data; name=");
+                firstIter = (++newVector.begin()++);
+                secondIter++;
                 if (!(*firstIter).empty() )
                 {
                     std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
                     std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
                     firstIter = newVector.begin();
-                    secondtIter = newVector.begin();
+                    secondIter = newVector.begin();
                     
-                    secondtIter++;
-                    _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
+                    secondIter++;
+                    _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondIter));
                 }
             }
         }
