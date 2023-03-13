@@ -11,11 +11,10 @@ DEBUG_MSG		:= false
 
 # FLAGS
 W_FLAGS			:= -Wall -Wextra -Werror
-PTH_FLAGS		:=  -pthread
 VERSION			:= -std=c++98 
 SANITIZER		:= -g -fsanitize=address
 # FDEBUG			:=  -D DEBUG=$(DEBUG_MSG)
-FLAGS			:= $(W_FLAGS) $(PTH_FLAGS) $(VERSION) $(SANITIZER) # $(FDEBUG)
+FLAGS			:= $(W_FLAGS) $(VERSION) $(SANITIZER) # $(FDEBUG)
 
 RM 				:= rm -f
 
@@ -30,18 +29,18 @@ OBJS_DIR		:= obj
 BIN_DIR			:= bin
 
 # OBJECTS
-OBJS		= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
+OBJS			= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
 #INCLUDES
 INCLUDES 		:= src/  
-INC			= $(addprefix -I , $(INCLUDES))
+INC				= $(addprefix -I , $(INCLUDES))
 
 # DEPENDECES
-DEPS				= $(patsubst %.o, %.d, $(OBJS)) 
-DEPFLAGS			= -MMD -MP
+DEPS			= $(patsubst %.o, %.d, $(OBJS)) 
+DEPFLAGS		= -MMD -MP
 
 # PROGRAM NAME
-NAME 				:= webserv
+NAME 			:= webserv
 
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
