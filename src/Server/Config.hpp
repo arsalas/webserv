@@ -16,7 +16,7 @@ private:
 	std::map<int, std::string> _errorPage;
 	bool _autoindex;
 	long _clientMaxBodySize;
-	std::string _uploads;
+	std::string _upload;
 
 public:
 	// TODO pasar text config para iniciar la clase

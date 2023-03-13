@@ -42,7 +42,6 @@ size_t Response::end()
 }
 size_t Response::render(std::string body)
 {
-	std::string resp = getHeaders();
 	_body = body;
 	return end();
 }

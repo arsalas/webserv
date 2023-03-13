@@ -13,7 +13,7 @@ int main()
 	while ((dir_file = readdir(dir_fd)))
 	{
 		std::cout << "name: " << dir_file->d_name << std::endl;
-		std::cout << "type: " << dir_file->d_type << std::endl;
+		// std::cout << "type: " << dir_file->d_type << std::endl;
 	}
 	closedir(dir_fd);
 	return 0;

@@ -97,7 +97,8 @@ void WebServer::recivedPoll()
 			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
 			if (newsockfd < 0)
 				throw AcceptSocketException();
-			memset(&buffer, 0, RECV_BUFFER_SIZE);
+			// TODO mirar si funciona con std o hay que quitarlo
+			std::memset(&buffer, 0, RECV_BUFFER_SIZE);
 			int n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
 			if (n == -1)
 				throw RecivedSocketException();
