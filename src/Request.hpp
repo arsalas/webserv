@@ -9,6 +9,8 @@ class Request
     std::string                         _http;
     std::string                         _path;
     std::string                         _body;
+    std::string                         _host;
+    int                                 _port;
     std::map<std::string, std::string>  _header;
     std::map<std::string, std::string>  _formData;
 
@@ -30,6 +32,8 @@ class Request
     std::string getPath(void);
     std::map<std::string, std::string>  getHeader(void);
     std::string getBody(void);
+    int         getPort(void);
+    std::string getHost(void);
 
     public:
     int     tokenRequest(void); 
