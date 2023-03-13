@@ -2,18 +2,22 @@
 
 #include <iostream>
 #include <netinet/in.h>
-#include<vector>
-#include<map>
+#include <vector>
+#include <map>
+#include <set>
 #include "Config.hpp"
- 
+
 class Server
 {
 private:
 	Config _config;
-	sockaddr_in _servAddr;
-	std::string _ip;
-	int _port;
-	int _socketFd;
+	std::vector<sockaddr_in> _servAddr;
+	std::vector<int> _socketFd;
+
+	// sockaddr_in _servAddr;
+	// std::string _ip;
+	// int _port;
+	// int _socketFd;
 
 public:
 	Server();
@@ -23,6 +27,7 @@ public:
 
 	// GETTERS
 	int getSocketFd() const;
+	std::vector<int> getPorts() const;
 
 private:
 	// EXCEPTIONS

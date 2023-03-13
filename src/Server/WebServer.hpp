@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <set>
 #include <poll.h>
 #include "Server.hpp"
 
@@ -22,6 +23,7 @@ public:
 	~WebServer();
 
 private:
+	std::set<int> getPorts();
 	void constructPoll();
 	void initPoll();
 	void recivedPoll();

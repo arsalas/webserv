@@ -39,6 +39,25 @@ WebServer::~WebServer()
 }
 
 /**
+ * @brief Obtiene los diferentes puertos que usaran los servers
+ *
+ * @return std::set
+ */
+std::set<int> WebServer::getPorts()
+{
+	std::set<int> ports;
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		std::vector<int> serverPorts = _servers[i].getPorts();
+		for (size_t j = 0; j < serverPorts.size(); j++)
+		{
+			ports.insert(serverPorts[i]);
+		}
+	}
+	return ports;
+}
+
+/**
  * @brief Genera la array de los fd de los sockets de cada servidor
  * para generar el poll de conexiones
  */
@@ -82,6 +101,8 @@ void WebServer::recivedPoll()
 			int n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
 			if (n == -1)
 				throw RecivedSocketException();
+			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
+			// TODO machear la request con el server y la response
 			std::cout << "RECIVED: " << buffer << std::endl;
 			sendResponse(newsockfd, _servers[i]);
 		}

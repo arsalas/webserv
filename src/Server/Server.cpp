@@ -4,7 +4,7 @@
 Server::Server() {}
 Server::Server(Config config) : _config(config)
 {
-	// TODO no estoy seguro que el ip sea correcto con el server_name
+	// TODO no estoy seguro como va el server_name
 	std::vector<int> listens = config.getListen();
 	for (size_t i = 0; i < listens.size(); i++)
 	{
@@ -44,6 +44,11 @@ Server::~Server()
 int Server::getSocketFd() const
 {
 	return _socketFd;
+}
+
+std::vector<int> Server::getPorts() const
+{
+	return _config.getListen();
 }
 
 // Exceptions
