@@ -21,7 +21,7 @@ RM 				:= rm -f
 # SRC
 SRCS 			=  main.cpp \
 				Response.cpp StatusCode.cpp \
-				Server.cpp WebServer.cpp \
+				Config.cpp Server.cpp WebServer.cpp \
 				File.cpp Strings.cpp
 
 # FOLDERS
@@ -45,7 +45,7 @@ NAME 			:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src src/Server src/Http src/Utils
+vpath %.cpp src src/Http src/Server src/Utils
 
 .SECONDEXPANSION:
 

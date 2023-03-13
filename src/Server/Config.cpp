@@ -1,18 +1,26 @@
 #include "Config.hpp"
 
-Config::Config()
+Config::Config() {}
+// El boleano es para que el location no tenga un bucle infinito del configs con el harcodeo
+// Quitarlo cuando hagamos el parseo
+Config::Config(bool child)
 {
 	// TODO quitar harcodeo
 	addListen(3000);
+	addListen(3000);
+	addListen(3001);
 	addServerName("localhost");
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");
 	addIndex("index.html");
-	Config location;
-	location.setRoot("www/data");
-	location.addIndex("index.html");
-	location.addLimitExcept("GET");
-	addLocation("/data", location);
+	if (!child)
+	{
+		Config location(true);
+		location.setRoot("www/data");
+		location.addIndex("index.html");
+		location.addLimitExcept("GET");
+		addLocation("/data", location);
+	}
 	addErrorPage(404, "/404.html");
 	setAutoindex(false);
 }
@@ -74,14 +82,14 @@ long Config::getClientMaxBodySize() const
 	return _clientMaxBodySize;
 }
 
-std::string Config::getUploads() const
+std::string Config::getUpload() const
 {
-	return _uploads;
+	return _upload;
 }
 
 void Config::addListen(int listen)
 {
-	_listen.insert(_listen.end(), listen);
+	_listen.push_back(listen);
 }
 
 void Config::addServerName(std::string serverName)
@@ -129,7 +137,7 @@ void Config::setClientMaxBodySize(float limit)
 	_clientMaxBodySize = limit;
 }
 
-void Config::setUploads(std::string path)
+void Config::setUpload(std::string path)
 {
-	_uploads = path;
+	_upload = path;
 }

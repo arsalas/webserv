@@ -14,7 +14,6 @@ private:
 	std::vector<sockaddr_in> _servAddr;
 	std::vector<int> _socketFd;
 
-	// sockaddr_in _servAddr;
 	// std::string _ip;
 	// int _port;
 	// int _socketFd;
@@ -22,22 +21,14 @@ private:
 public:
 	Server();
 	Server(Config);
-	Server(std::string, int);
+	// Server(std::string, int);
 	~Server();
 
 	// GETTERS
-	int getSocketFd() const;
+	std::vector<int> getSocketFd() const;
 	std::vector<int> getPorts() const;
 
 private:
 	// EXCEPTIONS
 public:
-	class CreateSocketException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
-	class BindingException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
 };

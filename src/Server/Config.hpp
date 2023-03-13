@@ -19,14 +19,16 @@ private:
 	std::string _upload;
 
 public:
-	// TODO pasar text config para iniciar la clase
+	// TODO pasar text config para iniciar la clase, quitar el bool
 	Config();
+	Config(bool child);
 	Config(std::string file);
 	~Config();
 
+	std::vector<int> getListen() const;
+	
 private:
 	// GETTERS
-	std::vector<int> getListen() const;
 	std::vector<std::string> getServerName() const;
 	std::string getRoot() const;
 	std::map<std::string, std::string> getCgi() const;
@@ -36,7 +38,7 @@ private:
 	std::map<int, std::string> getErrorPage() const;
 	bool getAutoindex() const;
 	long getClientMaxBodySize() const;
-	std::string getUploads() const;
+	std::string getUpload() const;
 
 	//  SETTERS
 	void addListen(int listen);
@@ -49,5 +51,5 @@ private:
 	void addErrorPage(int code, std::string path);
 	void setAutoindex(bool autoindex);
 	void setClientMaxBodySize(float limit);
-	void setUploads(std::string path);
+	void setUpload(std::string path);
 };

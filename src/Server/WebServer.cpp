@@ -22,11 +22,12 @@
 WebServer::WebServer()
 {
 	// TODO cambiar por la configuracion
-	for (size_t i = 0; i < 4; i++)
+	for (size_t i = 0; i < 1; i++)
 	{
-		_servers.insert(_servers.end(), Server("127.0.0.1", 3000 + i));
+		Config conf(true);
+		_servers.insert(_servers.end(), Server(conf));
 	}
-	constructPoll();
+	startSockets();
 	initPoll();
 }
 
@@ -35,7 +36,6 @@ WebServer::WebServer()
  */
 WebServer::~WebServer()
 {
-	delete[] _poll;
 }
 
 /**
@@ -51,23 +51,35 @@ std::set<int> WebServer::getPorts()
 		std::vector<int> serverPorts = _servers[i].getPorts();
 		for (size_t j = 0; j < serverPorts.size(); j++)
 		{
-			ports.insert(serverPorts[i]);
+			ports.insert(serverPorts[j]);
 		}
 	}
 	return ports;
 }
 
-/**
- * @brief Genera la array de los fd de los sockets de cada servidor
- * para generar el poll de conexiones
- */
-void WebServer::constructPoll()
+void WebServer::startSockets()
 {
-	_poll = new struct pollfd[_servers.size()];
-	for (size_t i = 0; i < _servers.size(); i++)
+	std::set<int> ports = getPorts();
+	std::set<int>::iterator it;
+	for (it = ports.begin(); it != ports.end(); ++it)
 	{
-		_poll[i].fd = _servers[i].getSocketFd();
-		_poll[i].events = POLLIN | POLLPRI;
+		sockaddr_in servAddr;
+		servAddr.sin_family = AF_INET;
+		servAddr.sin_port = htons(*it);
+		// 0.0.0.0 permite todas las conexiones inet_addr() para convertir el string de la ip
+		servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+		int socketFd = socket(AF_INET, SOCK_STREAM, 0);
+		if (socketFd < 0)
+			throw CreateSocketException();
+		if (bind(socketFd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
+			throw BindingException();
+		listen(socketFd, 5);
+		// TODO* refactorizar en otra funcion
+		// Inserta el fd en el poll
+		struct pollfd pfd;
+		pfd.fd = socketFd;
+		pfd.events = POLLIN | POLLPRI;
+		_poll.push_back(pfd);
 	}
 }
 
@@ -76,7 +88,7 @@ void WebServer::constructPoll()
  */
 void WebServer::initPoll()
 {
-	poll(_poll, _servers.size(), WebServer::timeout);
+	poll(&_poll[0], _poll.size(), WebServer::timeout);
 	recivedPoll();
 }
 
@@ -90,14 +102,15 @@ void WebServer::recivedPoll()
 	char buffer[RECV_BUFFER_SIZE];
 	socklen_t clilen = sizeof(cli_addr);
 	// AQUI ES CUANDO RECIVE LA PETICION
-	for (size_t i = 0; i < _servers.size(); i++)
+	for (size_t i = 0; i < _poll.size(); i++)
 	{
+		// TODO? realmente necesito saber de donde viene o me vale con el request
+		// TODO* Refactorizar en otra funcion
 		if (_poll[i].revents & POLLIN)
 		{
 			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
 			if (newsockfd < 0)
 				throw AcceptSocketException();
-			// TODO mirar si funciona con std o hay que quitarlo
 			std::memset(&buffer, 0, RECV_BUFFER_SIZE);
 			int n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
 			if (n == -1)
@@ -105,7 +118,7 @@ void WebServer::recivedPoll()
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
 			std::cout << "RECIVED: " << buffer << std::endl;
-			sendResponse(newsockfd, _servers[i]);
+			sendResponse(newsockfd);
 		}
 	}
 	initPoll();
@@ -117,9 +130,8 @@ void WebServer::recivedPoll()
  * @param fd fd del socket del cliente
  * @param i BORRAR
  */
-void WebServer::sendResponse(int fd, Server server)
+void WebServer::sendResponse(int fd)
 {
-	(void)server;
 	std::string path = "www/index" + Strings::intToString(1) + ".html";
 	Response resp(fd);
 	resp.status(200);
@@ -142,6 +154,15 @@ const char *WebServer::RecivedSocketException::what() const throw()
 }
 
 const char *WebServer::SendSocketException::what() const throw()
+{
+	return "ERROR on binding";
+}
+
+const char *WebServer::CreateSocketException::what() const throw()
+{
+	return "Cannot create socket";
+}
+const char *WebServer::BindingException::what() const throw()
 {
 	return "ERROR on binding";
 }

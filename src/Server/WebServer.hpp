@@ -16,7 +16,7 @@ public:
 private:
 	std::string _path;
 	std::vector<Server> _servers;
-	struct pollfd *_poll;
+	std::vector<struct pollfd> _poll;
 
 public:
 	WebServer();
@@ -24,10 +24,10 @@ public:
 
 private:
 	std::set<int> getPorts();
-	void constructPoll();
+	void startSockets();
 	void initPoll();
 	void recivedPoll();
-	void sendResponse(int fd, Server server);
+	void sendResponse(int fd);
 
 	// EXCEPTIONS
 public:
@@ -42,6 +42,15 @@ public:
 	};
 
 	class SendSocketException : public std::exception
+	{
+		virtual const char *what() const throw();
+	};
+
+	class CreateSocketException : public std::exception
+	{
+		virtual const char *what() const throw();
+	};
+	class BindingException : public std::exception
 	{
 		virtual const char *what() const throw();
 	};
