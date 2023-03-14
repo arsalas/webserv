@@ -21,12 +21,14 @@ private:
 public:
 	// TODO pasar text config para iniciar la clase, quitar el bool
 	Config();
-	Config(bool child);
+	Config(bool);
 	Config(std::string file);
+	// Config(const Config &other);
+
 	~Config();
 
 	std::vector<int> getListen() const;
-	
+
 private:
 	// GETTERS
 	std::vector<std::string> getServerName() const;
@@ -46,7 +48,7 @@ private:
 	void addCgi(std::string key, std::string value);
 	void setRoot(std::string);
 	void addIndex(std::string);
-	void addLocation(std::string, Config location);
+	void addLocation(std::string, Config &location);
 	void addLimitExcept(std::string method);
 	void addErrorPage(int code, std::string path);
 	void setAutoindex(bool autoindex);

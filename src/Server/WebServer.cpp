@@ -24,8 +24,8 @@ WebServer::WebServer()
 	// TODO cambiar por la configuracion
 	for (size_t i = 0; i < 1; i++)
 	{
-		Config conf(true);
-		_servers.insert(_servers.end(), Server(conf));
+		Config conf;
+		_servers.push_back(Server(conf));
 	}
 	startSockets();
 	initPoll();
@@ -57,6 +57,10 @@ std::set<int> WebServer::getPorts()
 	return ports;
 }
 
+/**
+ * @brief Inicia un socket para cada puerto abierto del server
+ * 
+ */
 void WebServer::startSockets()
 {
 	std::set<int> ports = getPorts();
@@ -74,12 +78,7 @@ void WebServer::startSockets()
 		if (bind(socketFd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
 			throw BindingException();
 		listen(socketFd, 5);
-		// TODO* refactorizar en otra funcion
-		// Inserta el fd en el poll
-		struct pollfd pfd;
-		pfd.fd = socketFd;
-		pfd.events = POLLIN | POLLPRI;
-		_poll.push_back(pfd);
+		addPoll(socketFd);
 	}
 }
 
@@ -93,6 +92,19 @@ void WebServer::initPoll()
 }
 
 /**
+ * @brief Agrega en el poll un nuevo fd
+ * 
+ * @param fd 
+ */
+void WebServer::addPoll(int fd)
+{
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = POLLIN | POLLPRI;
+	_poll.push_back(pfd);
+}
+
+/**
  * @brief Recive una conexion a un puerto gestionado por el poll de conexiones
  *
  */
@@ -101,7 +113,6 @@ void WebServer::recivedPoll()
 	struct sockaddr_in cli_addr;
 	char buffer[RECV_BUFFER_SIZE];
 	socklen_t clilen = sizeof(cli_addr);
-	// AQUI ES CUANDO RECIVE LA PETICION
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
 		// TODO? realmente necesito saber de donde viene o me vale con el request
@@ -126,9 +137,7 @@ void WebServer::recivedPoll()
 
 /**
  * @brief Envia la respuesta al cliente que se ha conectado al servidor
- *
  * @param fd fd del socket del cliente
- * @param i BORRAR
  */
 void WebServer::sendResponse(int fd)
 {

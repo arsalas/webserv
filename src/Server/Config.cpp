@@ -1,28 +1,33 @@
 #include "Config.hpp"
 
-Config::Config() {}
-// El boleano es para que el location no tenga un bucle infinito del configs con el harcodeo
-// Quitarlo cuando hagamos el parseo
-Config::Config(bool child)
+Config::Config()
 {
+	std::cout << "1\n";
 	// TODO quitar harcodeo
 	addListen(3000);
 	addListen(3000);
 	addListen(3001);
+	addListen(3002);
+	addListen(8080);
 	addServerName("localhost");
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");
 	addIndex("index.html");
-	if (!child)
-	{
-		Config location(true);
-		location.setRoot("www/data");
-		location.addIndex("index.html");
-		location.addLimitExcept("GET");
-		addLocation("/data", location);
-	}
+	Config location(true);
+	// location.setRoot("www/data");
+	// location.addIndex("index.html");
+	// location.addLimitExcept("GET");
+	addLocation("/data", location);
 	addErrorPage(404, "/404.html");
 	setAutoindex(false);
+}
+
+Config::Config(bool children)
+{
+	if (children)
+		std::cout << "2\n";
+	else
+		std::cout << "3\n";
 }
 
 Config::Config(std::string file)
@@ -30,7 +35,16 @@ Config::Config(std::string file)
 	std::cout << file << std::endl;
 }
 
-Config::~Config() {}
+// Config::Config(const Config &other)
+// {
+// 	(void)other;
+// 	// std::cout << "copy\n";
+// }
+
+Config::~Config()
+{
+	// std::cout << "destr\n";
+}
 
 std::vector<int> Config::getListen() const
 {
@@ -112,8 +126,10 @@ void Config::addIndex(std::string index)
 	_index.insert(_index.end(), index);
 }
 
-void Config::addLocation(std::string path, Config location)
+void Config::addLocation(std::string path, Config &location)
 {
+	// (void)path;
+	// (void)location;
 	_location[path] = location;
 }
 

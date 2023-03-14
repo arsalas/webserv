@@ -21,6 +21,7 @@ RM 				:= rm -f
 # SRC
 SRCS 			=  main.cpp \
 				Response.cpp StatusCode.cpp \
+				APage.cpp Autoindex.cpp ServerError.cpp\
 				Config.cpp Server.cpp WebServer.cpp \
 				File.cpp Strings.cpp
 
@@ -45,11 +46,11 @@ NAME 			:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src src/Http src/Server src/Utils
+vpath %.cpp src src/Http src/Pages src/Server src/Utils
 
 .SECONDEXPANSION:
 
-all:$(BIN)
+all: $(BIN)
 
 $(OBJS_DIR)/%.o: %.cpp | $$(@D)
 	@echo "🔃 $(BLUE)Compiling" $(basename $(notdir $@)) "$(NC)"
@@ -73,7 +74,7 @@ clean:
 	@echo "✅ $(GREEN)$(NAME) cleaned!$(NC)"
 	@$(RM) -rf  $(OBJS_DIR)
 
-fclean:		clean
+fclean: clean
 	@$(RM) $(BIN)
 	@$(RM) -rf  $(BIN_DIR)
 

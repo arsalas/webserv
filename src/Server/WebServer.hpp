@@ -26,6 +26,7 @@ private:
 	std::set<int> getPorts();
 	void startSockets();
 	void initPoll();
+	void addPoll(int fd);
 	void recivedPoll();
 	void sendResponse(int fd);
 
