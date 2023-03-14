@@ -13,36 +13,6 @@ Request::Request()
     tokenRequest();
 }
 
-// void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
-// {
-//     (void) auxVector;
-//     if (isHyphenDigit(*itVector))
-//     {
-//         std::vector<std::string> newVector;
-//         std::vector<std::string>::iterator firstIter;
-//         std::vector<std::string>::iterator secondIter;
-//         for (; itVector < endVector; itVector++)
-//         {
-//             if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
-//             {
-//                 newVector = Strings::vectorSplit(*itVector, "Content-Disposition: form-data; name=");
-//                 firstIter = (++newVector.begin()++);
-//                 secondIter++;
-//                 if (!(*firstIter).empty() )
-//                 {
-//                     std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
-//                     std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
-//                     firstIter = newVector.begin();
-//                     secondIter = newVector.begin();
-                    
-//                     secondIter++;
-//                     _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondIter));
-//                 }
-//             }
-//         }
-//     }
-// }
-
 /**
  * @brief MAPSPLIT
  * Nos envian un vector con un split por \n y un delimitador
@@ -259,37 +229,37 @@ int Request::tokenRequest(void)
     return (errorsToken());
 }
 
-std::string Request::getMethod(void)
+std::string Request::getMethod(void) const
 {
     return (_method);
 }
 
-std::string Request::getHttp(void)
+std::string Request::getHttp(void) const
 {
     return (_http);
 }
 
-std::string Request::getPath(void)
+std::string Request::getPath(void) const
 {
     return (_path);
 }
 
-std::map<std::string, std::string> Request::getHeader(void)
+std::map<std::string, std::string> Request::getHeader(void) const
 {
     return (_header);
 }
 
-std::string Request::getBody(void)
+std::string Request::getBody(void) const
 {
     return (_body);
 }
 
-int Request::getPort(void)
+int Request::getPort(void) const
 {
     return (_port);
 }
 
-std::string Request::getHost(void)
+std::string Request::getHost(void) const
 {
     return (_host);
 }

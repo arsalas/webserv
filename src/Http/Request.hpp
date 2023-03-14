@@ -29,15 +29,16 @@ class Request
     void    setHostPort(std::vector<std::string> lineVector);
 
 
-    /*      GETTERS     */
-    std::string getMethod(void);
-    std::string getHttp(void);
-    std::string getPath(void);
-    std::map<std::string, std::string>  getHeader(void);
-    std::string getBody(void);
-    int         getPort(void);
-    std::string getHost(void);
 
     public:
+    /*      GETTERS     */
+    std::string getMethod(void) const;
+    std::string getHttp(void) const;
+    std::string getPath(void) const;
+    std::map<std::string, std::string>  getHeader(void) const;
+    std::string getBody(void) const;
+    int         getPort(void) const;
+    std::string getHost(void) const;
+
     Request();
 };
