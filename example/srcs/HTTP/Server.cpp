@@ -32,8 +32,6 @@ Server	&Server::operator=(const Server &copy) {
   return (*this);
 }
 
-Server::~Server() {
-}
 
 void Server::setup() {
   int yes = 1;
