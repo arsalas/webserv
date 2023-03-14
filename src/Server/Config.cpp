@@ -1,6 +1,6 @@
 #include "Config.hpp"
 
-Config::Config()
+Config::Config() : _parent(NULL)
 {
 	std::cout << "1\n";
 	// TODO quitar harcodeo
@@ -13,24 +13,20 @@ Config::Config()
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");
 	addIndex("index.html");
-	Config location(true);
-	// location.setRoot("www/data");
-	// location.addIndex("index.html");
-	// location.addLimitExcept("GET");
+	Config * location = new Config(this);
 	addLocation("/data", location);
 	addErrorPage(404, "/404.html");
 	setAutoindex(false);
 }
 
-Config::Config(bool children)
+Config::Config(Config *parent) : _parent (parent)
 {
-	if (children)
-		std::cout << "2\n";
-	else
-		std::cout << "3\n";
+	setRoot("www/data");
+	addIndex("index.html");
+	addLimitExcept("GET");
 }
 
-Config::Config(std::string file)
+Config::Config(std::string file) : _parent(NULL)
 {
 	std::cout << file << std::endl;
 }
@@ -44,6 +40,11 @@ Config::Config(std::string file)
 Config::~Config()
 {
 	// std::cout << "destr\n";
+}
+
+Config * Config::getParent() const
+{
+	return _parent;
 }
 
 std::vector<int> Config::getListen() const
@@ -71,7 +72,7 @@ std::vector<std::string> Config::getIndex() const
 	return _index;
 }
 
-std::map<std::string, Config> Config::getLocation() const
+std::map<std::string, Config *> Config::getLocation() const
 {
 	return _location;
 }
@@ -126,7 +127,7 @@ void Config::addIndex(std::string index)
 	_index.insert(_index.end(), index);
 }
 
-void Config::addLocation(std::string path, Config &location)
+void Config::addLocation(std::string path, Config *location)
 {
 	// (void)path;
 	// (void)location;

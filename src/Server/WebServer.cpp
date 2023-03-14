@@ -129,6 +129,7 @@ void WebServer::recivedPoll()
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
 			std::cout << "RECIVED: " << buffer << std::endl;
+			
 			sendResponse(newsockfd);
 		}
 	}

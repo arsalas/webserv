@@ -6,7 +6,7 @@
 class File
 {
 private:
-	int _fd;
+	// int _fd;
 	std::string _path;
 	std::ifstream _file;
 
