@@ -5,7 +5,7 @@
 #include <iostream>
 #include <exception>
 #include <vector>
-
+#include <stdlib.h>
 
 std::vector<std::string>    vectorSplit(std::string file, std::string delimiter)
 {
@@ -224,6 +224,29 @@ void    Request::setBody(std::vector<std::string> lineVector)
     }
 }
 
+void    Request::setHostPort(std::vector<std::string> lineVector)
+{
+    (void) lineVector;
+    std::vector<std::string> auxVector;
+    std::vector<std::string>::iterator iter = lineVector.begin();
+    std::vector<std::string>::iterator auxIter;
+    for (; iter < lineVector.end(); iter++)
+    {
+        if ((*iter).find("Host: ") != std::string::npos)
+        {
+            auxVector = vectorSplit(*iter, " ");
+            iter = auxVector.begin();
+            auxVector = vectorSplit(*iter, ":");
+            auxIter = auxVector.begin();
+            _host = *auxIter;
+            auxIter++;
+            _port = *auxIter;
+            // _port = std::stoi(*auxIter);
+            break ;
+        }
+    }
+}
+
 /**
  * @brief If the method is not correct, we send and error
  * // TODO Alberto, que mas??
@@ -258,6 +281,7 @@ int Request::tokenRequest(void)
     setPath(lineVector);
     setHeader(lineVector);
     setBody(lineVector);
+    setHostPort(lineVector);
 
     std::cout << "METHOD: " << _method << std::endl;
     std::cout << "HTTP: " << _http << std::endl;
@@ -297,6 +321,16 @@ std::map<std::string, std::string> Request::getHeader(void)
 std::string Request::getBody(void)
 {
     return (_body);
+}
+
+std::string Request::getPort(void)
+{
+    return (_port);
+}
+
+std::string Request::getHost(void)
+{
+    return (_host);
 }
 
 int main ()
