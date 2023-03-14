@@ -23,7 +23,6 @@ std::string Response::getHeaders()
 {
 	std::map<std::string, std::string>::iterator it;
 	std::ostringstream ss;
-
 	append("Content-Length", Strings::intToString(_body.size()));
 	ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
 	for (it = _headers.begin(); it != _headers.end(); it++)
@@ -64,6 +63,8 @@ size_t Response::sendFile(std::string filename)
 size_t Response::attachment(std::string filename)
 {
 	File file(filename);
+	// Con el content-disposition se envian archivos
+	append("Content-Disposition", "attachment; filename=\"picture.html\"");
 	_body = file.toStr();
 	return end();
 }
