@@ -7,54 +7,41 @@
 #include <vector>
 #include <stdlib.h>
 
-bool    isHyphenDigit(std::string str)
+
+Request::Request()
 {
-    int c = 0;
-    while (str[c] == '-' || isdigit(str[c]))
-        c++;
-    if (!str.empty() && str[c] == '\0')
-    {
-        return (1);
-    }
-    return (0);
+    tokenRequest();
 }
 
-bool    isContentDisposition(std::string str)
-{
-    if (str.find("Content-Disposition: form-data") != std::string::npos)
-        return (1);
-    return (0);
-}
-
-void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
-{
-    (void) auxVector;
-    if (isHyphenDigit(*itVector))
-    {
-        std::vector<std::string> newVector;
-        std::vector<std::string>::iterator firstIter;
-        std::vector<std::string>::iterator secondIter;
-        for (; itVector < endVector; itVector++)
-        {
-            if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
-            {
-                newVector = Strings::vectorSplit(*itVector, "Content-Disposition: form-data; name=");
-                firstIter = (++newVector.begin()++);
-                secondIter++;
-                if (!(*firstIter).empty() )
-                {
-                    std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
-                    std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
-                    firstIter = newVector.begin();
-                    secondIter = newVector.begin();
+// void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
+// {
+//     (void) auxVector;
+//     if (isHyphenDigit(*itVector))
+//     {
+//         std::vector<std::string> newVector;
+//         std::vector<std::string>::iterator firstIter;
+//         std::vector<std::string>::iterator secondIter;
+//         for (; itVector < endVector; itVector++)
+//         {
+//             if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
+//             {
+//                 newVector = Strings::vectorSplit(*itVector, "Content-Disposition: form-data; name=");
+//                 firstIter = (++newVector.begin()++);
+//                 secondIter++;
+//                 if (!(*firstIter).empty() )
+//                 {
+//                     std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
+//                     std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
+//                     firstIter = newVector.begin();
+//                     secondIter = newVector.begin();
                     
-                    secondIter++;
-                    _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondIter));
-                }
-            }
-        }
-    }
-}
+//                     secondIter++;
+//                     _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondIter));
+//                 }
+//             }
+//         }
+//     }
+// }
 
 /**
  * @brief MAPSPLIT
@@ -65,7 +52,7 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
  * @param delimiter 
  * @return std::map<std::string, std::string> 
  */
-std::map<std::string, std::string> Request::mapSplit(std::vector<std::string> auxVector, std::string delimiter)
+std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, std::string delimiter)
 {
     std::map<std::string, std::string> auxMap;
     std::vector<std::string> newVector;
@@ -80,19 +67,14 @@ std::map<std::string, std::string> Request::mapSplit(std::vector<std::string> au
         firstIter = newVector.begin();
         secondtIter = newVector.begin();
         secondtIter++;
-        size_t size = 2;
         if (newVector.size() > 2)
         {
+            size_t size = 2;
             while (size != newVector.size())
             {
                 *secondtIter = *secondtIter + delimiter + *(++secondtIter);
                 size++;
             }
-        }
-        if (isHyphenDigit(*itVector))
-        {
-            setFormData(itVector, auxVector, auxVector.end() -1);
-            return (auxMap);
         }
         auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
         if (*itVector == "Connection: close")
@@ -183,19 +165,19 @@ void    Request::setHostPort(std::vector<std::string> lineVector)
     (void) lineVector;
     std::vector<std::string> auxVector;
     std::vector<std::string>::iterator iter = lineVector.begin();
-    std::vector<std::string>::iterator auxIter;
-    for (; iter < lineVector.end(); iter++)
+
+    for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
     {
         if ((*iter).find("Host: ") != std::string::npos)
         {
             auxVector = Strings::vectorSplit(*iter, " ");
             iter = auxVector.begin();
+            iter++;
             auxVector = Strings::vectorSplit(*iter, ":");
             auxIter = auxVector.begin();
             _host = *auxIter;
             auxIter++;
-            _port = *auxIter;
-            // _port = std::stoi(*auxIter);
+            _port = std::stoi(*auxIter);
             break ;
         }
     }
@@ -217,6 +199,28 @@ int Request::errorsToken()
     return (0);
 }
 
+void    Request::setFormData(std::vector<std::string> lineVector)
+{
+    std::vector<std::string>::iterator iter = lineVector.begin();
+    std::vector<std::string>::iterator auxIter;
+    std::vector<std::string> auxVector;
+
+    for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
+    {
+        if ((*iter).find("/?") != std::string::npos)
+        {
+            auxVector = Strings::vectorSplit(*iter, " ");
+            auxIter = auxVector.begin();
+            auxIter++;
+            auxVector = Strings::vectorSplit(*auxIter, "&");
+            auxIter = auxVector.begin();
+            std::cout << "AV: " << *auxIter << std::endl;
+            auxIter++;
+            std::cout << "AV: " << *auxIter << std::endl;
+        }
+    }
+}
+
 /**
  * @brief Creamos un token para method, path, header y body
  * Printamos el log
@@ -224,13 +228,15 @@ int Request::errorsToken()
  */
 int Request::tokenRequest(void)
 {
-    std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
+    // std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
     // std::string file = "GET /favicon.ico HTTP/1.1\nHost: 127.0.0.1:8080\nConnection: keep-alive\nsec-ch-ua: \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"\nsec-ch-ua-mobile: ?0\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\nsec-ch-ua-platform: \"macOS\"\nAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: no-cors\nSec-Fetch-Dest: image\nReferer: http://127.0.0.1:8080/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8";
     // std::string file = "POST / HTTP/1.1\nUser-Agent: PostmanRuntime/7.31.1\nAccept: */*\nPostman-Token: a440ce60-e830-46ec-924e-ca8d079f302d\nHost: 127.0.0.1:3002\nAccept-Encoding: gzip, deflate, br\nConnection: keep-alive\nContent-Type: multipart/form-data; boundary=--------------------------321951531579093893025774\nContent-Length: 145640\n\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"name\"\n\nhola\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"pass\"\n\nmundo\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"file\"; filename=\"code.png\"\nContent-Type: image/png";
+    std::string file = "GET /?name=hjkhjk&name2=hjkhjk HTTP/1.1\nHost: 127.0.0.1:3001\nConnection: keep-alive\nsec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"\nsec-ch-ua-mobile: ?0\nsec-ch-ua-platform: \"macOS\"\nUpgrade-Insecure-Requests: 1\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: navigate\nSec-Fetch-User: ?1\nSec-Fetch-Dest: document\nReferer: http://127.0.0.1:3001/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8,ru;q=0.7";
     std::vector<std::string> lineVector;
 
     lineVector = Strings::vectorSplit(file, "\n");
     setMethod(lineVector);
+    setFormData(lineVector);
     setHttp(lineVector);
     setPath(lineVector);
     setHeader(lineVector);
@@ -249,6 +255,7 @@ int Request::tokenRequest(void)
         std::cout << "FORMDATA: " << iter->first << " & " << iter->second << std::endl;
     }
     std::cout << "BODY: " << _body << std::endl;
+    std::cout << "PORT: " << _port << std::endl;
     return (errorsToken());
 }
 
@@ -277,7 +284,7 @@ std::string Request::getBody(void)
     return (_body);
 }
 
-std::string Request::getPort(void)
+int Request::getPort(void)
 {
     return (_port);
 }

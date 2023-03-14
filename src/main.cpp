@@ -1,7 +1,10 @@
 #include "Server/WebServer.hpp"
+#include "Http/Request.hpp"
 
 int main()
 {
-	WebServer server = WebServer();
+	Request re;
+	// re.tokenRequest();
+	// WebServer server = WebServer();
 	return 0;
 }
