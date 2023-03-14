@@ -75,33 +75,6 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
     }
 }
 
-// void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
-// {
-//     if (isContentDisposition(*itVector))
-//     {
-//         std::vector<std::string> newVector;
-//         std::vector<std::string>::iterator firstIter;
-//         std::vector<std::string>::iterator secondtIter;
-//         for (; itVector < endVector; itVector++)
-//         {
-//             if (itVector < endVector && !(*itVector).empty() && !isContentDisposition(*itVector))
-//             {
-//                 newVector = vectorSplit(*itVector, ":");
-//                 firstIter = (++newVector.begin());
-//                 if (!(*firstIter).empty() )
-//                 {
-//                     std::cout << "My first vector is: " << *(newVector.begin()) << std::endl;
-//                     std::cout << "My second vector is: " << *(++newVector.begin()) << std::endl;
-//                     firstIter = newVector.begin();
-//                     secondtIter = newVector.begin();
-//                     secondtIter++;
-//                     _formData.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
-//                 }
-//             }
-//         }
-//     }
-// }
-
 /**
  * @brief MAPSPLIT
  * Nos envian un vector con un split por \n y un delimitador

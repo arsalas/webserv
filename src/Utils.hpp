@@ -10,4 +10,5 @@ class Utils
 	static std::string	trim(const std::string &s);
 	static std::string	split(std::string str, std::string del);
 	static time_t		getTimeSeconds(void);
+	
 };
