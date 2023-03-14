@@ -20,8 +20,9 @@ RM 				:= rm -f
 
 # SRC
 SRCS 			=  main.cpp \
-				Response.cpp StatusCode.cpp \
-				APage.cpp Autoindex.cpp ServerError.cpp\
+				Response.cpp StatusCode.cpp Request.cpp \
+				APage.cpp Autoindex.cpp ServerError.cpp \
+				Log.cpp \
 				Config.cpp Server.cpp WebServer.cpp \
 				File.cpp Strings.cpp
 
@@ -46,7 +47,7 @@ NAME 			:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src src/Http src/Pages src/Server src/Utils
+vpath %.cpp src src/Http src/Logs src/Pages src/Server src/Utils 
 
 .SECONDEXPANSION:
 

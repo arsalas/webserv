@@ -1,8 +1,7 @@
 #include <iostream>
 #include "Log.hpp"
-#include "Utils.hpp"
-#include "Request.hpp"
-#include "Colors.hpp"
+#include "Http/Request.hpp"
+#include "Utils/Colors.hpp"
 
 void    Log::printLog(std::string method)
 {

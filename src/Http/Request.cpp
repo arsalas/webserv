@@ -1,31 +1,11 @@
 #include "Request.hpp"
-#include "Log.hpp"
-#include "Utils.hpp"
+#include "Logs/Log.hpp"
+#include "Utils/Strings.hpp"
 #include <string>
 #include <iostream>
 #include <exception>
 #include <vector>
 #include <stdlib.h>
-
-std::vector<std::string>    vectorSplit(std::string file, std::string delimiter)
-{
-    std::vector<std::string> auxVector;
-    std::vector<std::string>::iterator  it = auxVector.begin();
-    std::string aux;
-    size_t pos = 0;
-
-    while ((pos = file.find(delimiter)) != std::string::npos)
-    {
-        aux = file.substr(0, pos);
-        it = auxVector.end();
-        auxVector.insert(it, aux);
-        file.erase(0, pos + delimiter.length());
-    }
-    aux = file.substr(0, pos);
-    it = auxVector.end();
-    auxVector.insert(it, aux);
-    return (auxVector);
-}
 
 bool    isHyphenDigit(std::string str)
 {
@@ -48,6 +28,7 @@ bool    isContentDisposition(std::string str)
 
 void    Request::setFormData(std::vector<std::string>::iterator itVector, std::vector<std::string> auxVector, std::vector<std::string>::iterator endVector)
 {
+    (void) auxVector;
     if (isHyphenDigit(*itVector))
     {
         std::vector<std::string> newVector;
@@ -57,7 +38,7 @@ void    Request::setFormData(std::vector<std::string>::iterator itVector, std::v
         {
             if (itVector < endVector && !(*itVector).empty() && !isHyphenDigit(*itVector))
             {
-                newVector = vectorSplit(*itVector, "Content-Disposition: form-data; name=");
+                newVector = Strings::vectorSplit(*itVector, "Content-Disposition: form-data; name=");
                 firstIter = (++newVector.begin()++);
                 secondIter++;
                 if (!(*firstIter).empty() )
@@ -95,7 +76,7 @@ std::map<std::string, std::string> Request::mapSplit(std::vector<std::string> au
     itVector++;
     for (; itVector != auxVector.end() -1; itVector++)
     { 
-        newVector = vectorSplit(*itVector, ":"); 
+        newVector = Strings::vectorSplit(*itVector, ":"); 
         firstIter = newVector.begin();
         secondtIter = newVector.begin();
         secondtIter++;
@@ -117,7 +98,7 @@ std::map<std::string, std::string> Request::mapSplit(std::vector<std::string> au
         if (*itVector == "Connection: close")
             return (auxMap);
     }
-    newVector = vectorSplit(*itVector, ":"); 
+    newVector = Strings::vectorSplit(*itVector, ":"); 
     firstIter = newVector.begin();
     auxMap.insert(std::pair<std::string, std::string>(*firstIter, ""));
     return (auxMap);
@@ -134,7 +115,7 @@ void    Request::setMethod(std::vector<std::string> lineVector)
     std::vector<std::string>::iterator iter;
 
     iter = lineVector.begin();
-    newVector = vectorSplit(*iter, " /");
+    newVector = Strings::vectorSplit(*iter, " /");
     iter = newVector.begin();
     _method = *iter;
 }
@@ -145,7 +126,7 @@ void    Request::setHttp(std::vector<std::string> lineVector)
     std::vector<std::string>::iterator iter;
 
     iter = lineVector.begin();
-    newVector = vectorSplit(*iter, " ");
+    newVector = Strings::vectorSplit(*iter, " ");
     iter = newVector.begin();
     iter++;
     iter++;
@@ -163,7 +144,7 @@ void    Request::setPath(std::vector<std::string> lineVector)
     std::vector<std::string>::iterator iter;
 
     iter = lineVector.begin();
-    newVector = vectorSplit(*iter, " ");
+    newVector = Strings::vectorSplit(*iter, " ");
     iter = newVector.begin();
     iter++;
     _path = *iter;
@@ -207,9 +188,9 @@ void    Request::setHostPort(std::vector<std::string> lineVector)
     {
         if ((*iter).find("Host: ") != std::string::npos)
         {
-            auxVector = vectorSplit(*iter, " ");
+            auxVector = Strings::vectorSplit(*iter, " ");
             iter = auxVector.begin();
-            auxVector = vectorSplit(*iter, ":");
+            auxVector = Strings::vectorSplit(*iter, ":");
             auxIter = auxVector.begin();
             _host = *auxIter;
             auxIter++;
@@ -248,7 +229,7 @@ int Request::tokenRequest(void)
     // std::string file = "POST / HTTP/1.1\nUser-Agent: PostmanRuntime/7.31.1\nAccept: */*\nPostman-Token: a440ce60-e830-46ec-924e-ca8d079f302d\nHost: 127.0.0.1:3002\nAccept-Encoding: gzip, deflate, br\nConnection: keep-alive\nContent-Type: multipart/form-data; boundary=--------------------------321951531579093893025774\nContent-Length: 145640\n\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"name\"\n\nhola\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"pass\"\n\nmundo\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"file\"; filename=\"code.png\"\nContent-Type: image/png";
     std::vector<std::string> lineVector;
 
-    lineVector = vectorSplit(file, "\n");
+    lineVector = Strings::vectorSplit(file, "\n");
     setMethod(lineVector);
     setHttp(lineVector);
     setPath(lineVector);
@@ -306,9 +287,9 @@ std::string Request::getHost(void)
     return (_host);
 }
 
-int main ()
-{
-    Request re;
-    re.tokenRequest();
-    return (0);
-}
+// int main ()
+// {
+//     Request re;
+//     re.tokenRequest();
+//     return (0);
+// }
