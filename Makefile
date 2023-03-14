@@ -20,10 +20,10 @@ RM 				:= rm -f
 
 # SRC
 SRCS 			=  main.cpp \
-				Response.cpp StatusCode.cpp Request.cpp \
-				APage.cpp Autoindex.cpp ServerError.cpp \
+				Request.cpp Response.cpp StatusCode.cpp \
 				Log.cpp \
-				Config.cpp Server.cpp WebServer.cpp \
+				APage.cpp Autoindex.cpp ServerError.cpp \
+				Config.cpp Server.cpp Sockets.cpp WebServer.cpp \
 				File.cpp Strings.cpp
 
 # FOLDERS

@@ -2,7 +2,6 @@
 
 Config::Config() : _parent(NULL)
 {
-	std::cout << "1\n";
 	// TODO quitar harcodeo
 	addListen(3000);
 	addListen(3000);

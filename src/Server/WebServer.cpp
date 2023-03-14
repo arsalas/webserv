@@ -15,6 +15,8 @@
 #include "Http/Response.hpp"
 #include "Utils/Strings.hpp"
 
+#include "Pages/Autoindex.hpp"
+
 /**
  * @brief Construct a new Web Server:: Web Server object
  * Inicia los diferentes servidores en funcion de la configuracion
@@ -144,10 +146,14 @@ void WebServer::sendResponse(int fd)
 {
 	std::string path = "www/index" + Strings::intToString(1) + ".html";
 	Response resp(fd);
-	resp.status(200);
-	int n = resp.sendFile(path);
-	if (n == -1)
-		throw SendSocketException();
+	// TODO todo esto habra que hacerlo con un controller
+	// resp.status(200);
+	Autoindex autoindex("www");
+	resp.status(200).render(autoindex.toStr());
+	// resp.render(autoindex.toStr());
+	// int n = resp.sendFile(path);
+	// if (n == -1)
+	// 	throw SendSocketException();
 	close(fd);
 }
 
