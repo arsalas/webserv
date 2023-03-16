@@ -1,6 +1,7 @@
 #include <iostream>
 #include <filesystem>
 #include "CGI.hpp"
+#include <string>
 
 CGI::CGI(Request &request)
 {
@@ -22,6 +23,7 @@ void    CGI::initEnviron(Request request)
     _env["SERVER_NAME"] = header["Hostname"];
     _env["CONTENT_TYPE"] = header["content-type"];
 }
+
 
 void    CGI::init()
 {
