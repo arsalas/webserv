@@ -15,9 +15,13 @@ class Request
     std::map<std::string, std::string>  _formData;
 
     private:
-    int     tokenRequest(void);
+    int     tokenRequest(std::string req);
     int     errorsToken();
 
+    Request();
+
+    public:
+    Request(std::string req);
 
     /*      SETTERS     */
     void    setMethod(std::vector<std::string> lineVector);
@@ -28,9 +32,6 @@ class Request
     void    setBody(std::vector<std::string> lineVector);
     void    setHostPort(std::vector<std::string> lineVector);
 
-
-
-    public:
     /*      GETTERS     */
     std::string getMethod(void) const;
     std::string getHttp(void) const;
@@ -39,6 +40,4 @@ class Request
     std::string getBody(void) const;
     int         getPort(void) const;
     std::string getHost(void) const;
-
-    Request();
 };

@@ -10,7 +10,16 @@
 
 Request::Request()
 {
-    tokenRequest();
+}
+
+Request::Request(std::string req)
+{
+    
+    std::cout << req << std::endl;
+    tokenRequest(req);
+    // TODO 
+    // excepciones
+
 }
 
 /**
@@ -32,23 +41,26 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 
     itVector++;
     for (; itVector != auxVector.end() -1; itVector++)
-    { 
-        newVector = Strings::vectorSplit(*itVector, ":"); 
-        firstIter = newVector.begin();
-        secondtIter = newVector.begin();
-        secondtIter++;
-        if (newVector.size() > 2)
+    {
+        if ((*itVector).find(":") != std::string::npos)
         {
-            size_t size = 2;
-            while (size != newVector.size())
+            newVector = Strings::vectorSplit(*itVector, ":"); 
+            firstIter = newVector.begin();
+            secondtIter = newVector.begin();
+            secondtIter++;
+            if (newVector.size() > 2)
             {
-                *secondtIter = *secondtIter + delimiter + *(++secondtIter);
-                size++;
+                size_t size = 2;
+                while (size != newVector.size())
+                {
+                    *secondtIter = *secondtIter + delimiter + *(++secondtIter);
+                    size++;
+                }
             }
+            auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
+            if (*itVector == "Connection: close")
+                return (auxMap);
         }
-        auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
-        if (*itVector == "Connection: close")
-            return (auxMap);
     }
     newVector = Strings::vectorSplit(*itVector, ":"); 
     firstIter = newVector.begin();
@@ -61,7 +73,7 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
  * 
  * @param lineVector 
  */
-void    Request::setMethod(std::vector<std::string> lineVector)
+void Request::setMethod(std::vector<std::string> lineVector)
 {
     std::vector<std::string> newVector;
     std::vector<std::string>::iterator iter;
@@ -162,8 +174,8 @@ void    Request::setHostPort(std::vector<std::string> lineVector)
  */
 int Request::errorsToken()
 {
-    if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT") 
-        return (501);
+    if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH") 
+        return (501); // crear excepcion
     if (_http != "HTTP/1.1")
         return (505);
     return (0);
@@ -196,15 +208,16 @@ void    Request::setFormData(std::vector<std::string> lineVector)
  * Printamos el log
  * 
  */
-int Request::tokenRequest(void)
+int Request::tokenRequest(std::string req)
 {
-    // std::string file = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
+    // std::string req = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
     // std::string file = "GET /favicon.ico HTTP/1.1\nHost: 127.0.0.1:8080\nConnection: keep-alive\nsec-ch-ua: \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"\nsec-ch-ua-mobile: ?0\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\nsec-ch-ua-platform: \"macOS\"\nAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: no-cors\nSec-Fetch-Dest: image\nReferer: http://127.0.0.1:8080/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8";
     // std::string file = "POST / HTTP/1.1\nUser-Agent: PostmanRuntime/7.31.1\nAccept: */*\nPostman-Token: a440ce60-e830-46ec-924e-ca8d079f302d\nHost: 127.0.0.1:3002\nAccept-Encoding: gzip, deflate, br\nConnection: keep-alive\nContent-Type: multipart/form-data; boundary=--------------------------321951531579093893025774\nContent-Length: 145640\n\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"name\"\n\nhola\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"pass\"\n\nmundo\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"file\"; filename=\"code.png\"\nContent-Type: image/png";
-    std::string file = "GET /?name=hjkhjk&name2=hjkhjk HTTP/1.1\nHost: 127.0.0.1:3001\nConnection: keep-alive\nsec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"\nsec-ch-ua-mobile: ?0\nsec-ch-ua-platform: \"macOS\"\nUpgrade-Insecure-Requests: 1\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: navigate\nSec-Fetch-User: ?1\nSec-Fetch-Dest: document\nReferer: http://127.0.0.1:3001/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8,ru;q=0.7";
+    // std::string req = "GET /?name=hjkhjk&name2=hjkhjk HTTP/1.1\nHost: 127.0.0.1:3001\nConnection: keep-alive\nsec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"\nsec-ch-ua-mobile: ?0\nsec-ch-ua-platform: \"macOS\"\nUpgrade-Insecure-Requests: 1\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: navigate\nSec-Fetch-User: ?1\nSec-Fetch-Dest: document\nReferer: http://127.0.0.1:3001/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8,ru;q=0.7";
     std::vector<std::string> lineVector;
+    // req = "GET / HTTP/1.1\nHost: localhost:8082\nConnection: keep-alive\nsec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"\nsec-ch-ua-mobile: ?0\nsec-ch-ua-platform: \"macOS\"\nUpgrade-Insecure-Requests: 1\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\nSec-Fetch-Site: none\nSec-Fetch-Mode: navigate\nSec-Fetch-User: ?1\nSec-Fetch-Dest: document\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9";
 
-    lineVector = Strings::vectorSplit(file, "\n");
+    lineVector = Strings::vectorSplit(req, "\n");
     setMethod(lineVector);
     setFormData(lineVector);
     setHttp(lineVector);
@@ -227,6 +240,7 @@ int Request::tokenRequest(void)
     std::cout << "BODY: " << _body << std::endl;
     std::cout << "PORT: " << _port << std::endl;
     return (errorsToken());
+    return (0);
 }
 
 std::string Request::getMethod(void) const

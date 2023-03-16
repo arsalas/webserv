@@ -13,6 +13,7 @@
 #include <cstring>
 
 #include "Http/Response.hpp"
+#include "Http/Request.hpp"
 #include "Utils/Strings.hpp"
 
 /**
@@ -59,7 +60,7 @@ std::set<int> WebServer::getPorts()
 
 /**
  * @brief Inicia un socket para cada puerto abierto del server
- * 
+ *
  */
 void WebServer::startSockets()
 {
@@ -93,8 +94,8 @@ void WebServer::initPoll()
 
 /**
  * @brief Agrega en el poll un nuevo fd
- * 
- * @param fd 
+ *
+ * @param fd
  */
 void WebServer::addPoll(int fd)
 {
@@ -128,8 +129,8 @@ void WebServer::recivedPoll()
 				throw RecivedSocketException();
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
-			std::cout << "RECIVED: " << buffer << std::endl;
-			
+			Request req(buffer);
+
 			sendResponse(newsockfd);
 		}
 	}

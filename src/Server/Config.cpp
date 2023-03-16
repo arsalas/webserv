@@ -4,11 +4,12 @@ Config::Config() : _parent(NULL)
 {
 	std::cout << "1\n";
 	// TODO quitar harcodeo
-	addListen(3000);
-	addListen(3000);
-	addListen(3001);
-	addListen(3002);
-	addListen(8080);
+	// addListen(3000);
+	// addListen(3000);
+	// addListen(3001);
+	// addListen(3002);
+	// addListen(8080);
+	addListen(8084);
 	addServerName("localhost");
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");

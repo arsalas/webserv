@@ -3,8 +3,6 @@
 
 int main()
 {
-	Request re;
-	// re.tokenRequest();
-	// WebServer server = WebServer();
+	WebServer server = WebServer();
 	return 0;
 }
