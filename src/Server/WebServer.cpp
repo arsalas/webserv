@@ -129,7 +129,11 @@ void WebServer::recivedPoll()
 				throw RecivedSocketException();
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
-			Request req(buffer);
+			// Request req(buffer);
+			std::cout << buffer << std::endl;
+
+			std::ifstream file;
+			
 
 			sendResponse(newsockfd);
 		}

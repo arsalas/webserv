@@ -9,7 +9,7 @@ Config::Config() : _parent(NULL)
 	// addListen(3001);
 	// addListen(3002);
 	// addListen(8080);
-	addListen(8084);
+	addListen(8086);
 	addServerName("localhost");
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");
