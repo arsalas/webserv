@@ -60,6 +60,11 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
             auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
             if (*itVector == "Connection: close")
                 return (auxMap);
+            // if ((*itVector).find("WebKitFormBoundary") != std::string::npos)
+            // {
+            //     std::cout << "HE SALIDO\n";
+            //     return (auxMap);
+            // }
         }
     }
     newVector = Strings::vectorSplit(*itVector, ":"); 
@@ -203,6 +208,29 @@ void    Request::setFormData(std::vector<std::string> lineVector)
     }
 }
 
+void    Request::setContentDisposition(std::vector<std::string> lineVector)
+{
+    std::vector<std::string>::iterator iter = lineVector.begin();
+
+    for(; iter != lineVector.end(); iter++)
+    {
+        if ((*iter).find("WebKitFormBoundary") != std::string::npos)
+        {
+            *iter++;
+            std::vector<std::string>::iterator cdIter = _ContentDisposition.end();
+            for (; iter != lineVector.end(); iter++)
+            {
+                cdIter = _ContentDisposition.end();
+                std::string str = *iter;
+                _ContentDisposition.insert(cdIter, str);
+                cdIter++;
+            }
+            std::cout << "B\n";
+            break ;
+        }
+    }
+}
+
 /**
  * @brief Creamos un token para method, path, header y body
  * Printamos el log
@@ -210,6 +238,7 @@ void    Request::setFormData(std::vector<std::string> lineVector)
  */
 int Request::tokenRequest(std::string req)
 {
+    std::cout << "ENTRO DENTRO DE TOKEN REQUEST" << std::endl;
     // std::string req = "DELETE /gfdgdf HTTP/1.1\nuser-agent: Thunder Client (https://www.thunderclient.com)\naccept: */*\nauthorization: 13245687\ncontent-type: application/json\ncontent-length: 23\naccept-encoding: gzip, deflate, br\nHost: 127.0.0.1:3001\nConnection: close\n{\n\"name\": \"Hola\"\n}; ";
     // std::string file = "GET /favicon.ico HTTP/1.1\nHost: 127.0.0.1:8080\nConnection: keep-alive\nsec-ch-ua: \"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\"110\"\nsec-ch-ua-mobile: ?0\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\nsec-ch-ua-platform: \"macOS\"\nAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\nSec-Fetch-Site: same-origin\nSec-Fetch-Mode: no-cors\nSec-Fetch-Dest: image\nReferer: http://127.0.0.1:8080/\nAccept-Encoding: gzip, deflate, br\nAccept-Language: en-US,en;q=0.9,es;q=0.8";
     // std::string file = "POST / HTTP/1.1\nUser-Agent: PostmanRuntime/7.31.1\nAccept: */*\nPostman-Token: a440ce60-e830-46ec-924e-ca8d079f302d\nHost: 127.0.0.1:3002\nAccept-Encoding: gzip, deflate, br\nConnection: keep-alive\nContent-Type: multipart/form-data; boundary=--------------------------321951531579093893025774\nContent-Length: 145640\n\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"name\"\n\nhola\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"pass\"\n\nmundo\n----------------------------321951531579093893025774\nContent-Disposition: form-data; name=\"file\"; filename=\"code.png\"\nContent-Type: image/png";
@@ -239,9 +268,26 @@ int Request::tokenRequest(std::string req)
     }
     std::cout << "BODY: " << _body << std::endl;
     std::cout << "PORT: " << _port << std::endl;
+    
+    setContentDisposition(lineVector);
+    std::cout << "DESPUES DE SET\n";
+    for (std::vector<std::string>::iterator iter; iter != _ContentDisposition.end(); iter++)
+    {
+        std::cout << "ContentDisposition is: " << *iter << std::endl;
+    }
+    // std::cout << _header.at("Content-Disposition") << std::endl;
+
     return (errorsToken());
     return (0);
 }
+// crear archivo con filename="Python_Modulo_00_ES.pdf"
+// y meter todo lo que viene debajo
+
+// ------WebKitFormBoundary3AFsyzo2QGEeTKWQ
+// Content-Disposition: form-data; name="name"
+
+// aa
+//  LA KEY ES NAME Y EL VALOR ES aa
 
 std::string Request::getMethod(void) const
 {
