@@ -91,7 +91,7 @@ void Request::setMethod(std::vector<std::string> lineVector)
 
 void    Request::setHttp(std::vector<std::string> lineVector)
 {
-        std::vector<std::string> newVector;
+    std::vector<std::string> newVector;
     std::vector<std::string>::iterator iter;
 
     iter = lineVector.begin();
@@ -208,30 +208,59 @@ void    Request::setFormData(std::vector<std::string> lineVector)
     }
 }
 
-void    Request::setContentDisposition(std::vector<std::string> lineVector)
-{
-    std::vector<std::string>::iterator iter = lineVector.begin();
 
-    for(; iter != lineVector.end(); iter++)
+void    Request::setFilename( void )
+{
+    std::vector<std::string>::iterator iter = _ContentDisposition.begin();
+    std::vector<std::string> auxVector;
+    std::vector<std::string>::iterator auxIter;
+
+    for(; iter != _ContentDisposition.end(); iter++)
     {
-        if ((*iter).find("WebKitFormBoundary") != std::string::npos)
+        if ((*iter).find("filename") != std::string::npos)
         {
-            *iter++;
-            std::vector<std::string>::iterator cdIter = _ContentDisposition.end();
-            for (; iter != lineVector.end(); iter++)
+            auxVector = Strings::vectorSplit(*iter, ";");
+            auxIter = auxVector.begin();
+            for (; auxIter != auxVector.end(); auxIter++)
             {
-                cdIter = _ContentDisposition.end();
-                std::string str = *iter;
-                _ContentDisposition.insert(cdIter, str);
+                if ((*auxIter).find("filename") != std::string::npos)
+                {
+                    auxVector = Strings::vectorSplit(*auxIter, "=");
+                    iter = auxVector.begin();
+                    iter++;
+                    auxVector = Strings::vectorSplit(*iter, ".");
+                    iter = auxVector.begin();
+                    _filename = Strings::deleteQuotes(*iter);
+                    iter++;
+                    _extension = Strings::deleteQuotes(*iter);
+                    std::cout << "MY FILENAME IS: " << _filename << std::endl;
+                    std::cout << "MY EXTENSION IS: " << _extension << std::endl;
+                    break ;
+                }
             }
             break ;
         }
     }
 }
 
+
+void    Request::setContentDisposition(std::vector<std::string> lineVector)
+{
+    std::vector<std::string>::iterator iter = lineVector.begin();
+    std::vector<std::string>::iterator cdIter;
+
+    for(; iter != lineVector.end(); iter++)
+    {
+        if ((*iter).find("Content-Disposition:") != std::string::npos)
+        {
+            cdIter = _ContentDisposition.end();
+            _ContentDisposition.insert(cdIter, *iter);
+        }
+    }
+}
+
 /**
  * @brief Creamos un token para method, path, header y body
- * Printamos el log
  * 
  */
 int Request::tokenRequest(std::string req)
@@ -247,6 +276,8 @@ int Request::tokenRequest(std::string req)
     setBody(lineVector);
     setHostPort(lineVector);
     setContentDisposition(lineVector);
+    setFilename();
+    // setExtension();
 
     // std::cout << "METHOD: " << _method << std::endl;
     // std::cout << "HTTP: " << _http << std::endl;
@@ -261,10 +292,10 @@ int Request::tokenRequest(std::string req)
     // }
     // std::cout << "BODY: " << _body << std::endl;
     // std::cout << "PORT: " << _port << std::endl;
-    // for (std::vector<std::string>::iterator iter; iter != _ContentDisposition.end(); iter++)
-    // {
-    //     std::cout << "ContentDisposition is: " << *iter << std::endl;
-    // }
+    for (std::vector<std::string>::iterator iter = _ContentDisposition.begin(); iter != _ContentDisposition.end(); iter++)
+    {
+        std::cout << "ContentDisposition is: " << *iter << std::endl;
+    }
     return (errorsToken());
     return (0);
 }

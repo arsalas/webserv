@@ -14,6 +14,8 @@ class Request
     std::map<std::string, std::string>  _header;
     std::map<std::string, std::string>  _formData;
     std::vector<std::string>            _ContentDisposition;
+    std::string                         _filename;
+    std::string                         _extension;
 
     private:
     int     tokenRequest(std::string req);
@@ -33,6 +35,7 @@ class Request
     void    setBody(std::vector<std::string> lineVector);
     void    setHostPort(std::vector<std::string> lineVector);
     void    setContentDisposition(std::vector<std::string> lineVector);
+    void    setFilename( void );
 
     /*      GETTERS     */
     std::string getMethod(void) const;
