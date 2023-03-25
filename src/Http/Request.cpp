@@ -186,6 +186,7 @@ int Request::errorsToken()
     return (0);
 }
 
+
 void    Request::setFormData(std::vector<std::string> lineVector)
 {
     std::vector<std::string>::iterator iter = lineVector.begin();
@@ -209,6 +210,10 @@ void    Request::setFormData(std::vector<std::string> lineVector)
 }
 
 
+/**
+ * @brief Guardamos el nombre del archivo y la extensión cuando nos envían un documento
+ * 
+ */
 void    Request::setFilename( void )
 {
     std::vector<std::string>::iterator iter = _ContentDisposition.begin();
@@ -277,7 +282,6 @@ int Request::tokenRequest(std::string req)
     setHostPort(lineVector);
     setContentDisposition(lineVector);
     setFilename();
-    // setExtension();
 
     // std::cout << "METHOD: " << _method << std::endl;
     // std::cout << "HTTP: " << _http << std::endl;
