@@ -323,15 +323,10 @@ int Request::tokenRequest(std::string req)
     setHeader(lineVector);
     setBody(lineVector);
     setHostPort(lineVector);
-    std::cout << "ME VOY A SETCONTENTDISPOSIITON\n";
     setContentDisposition(lineVector);
-    std::cout << "ME VOY A SETFILECONTENT\n";
     setFileContent(lineVector);
-    std::cout << "ME VOY A SETFILENAME\n";
     setFilename();
-    std::cout << "ME VOY A CREATEFILENAME\n";
     createFilename();
-    std::cout << "ME VOY A TOMAR POR \n";
 
     // std::cout << "METHOD: " << _method << std::endl;
     // std::cout << "HTTP: " << _http << std::endl;
@@ -353,14 +348,6 @@ int Request::tokenRequest(std::string req)
     return (errorsToken());
     return (0);
 }
-// crear archivo con filename="Python_Modulo_00_ES.pdf"
-// y meter todo lo que viene debajo
-
-// ------WebKitFormBoundary3AFsyzo2QGEeTKWQ
-// Content-Disposition: form-data; name="name"
-
-// aa
-//  LA KEY ES NAME Y EL VALOR ES aa
 
 std::string Request::getMethod(void) const
 {
