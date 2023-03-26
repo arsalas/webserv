@@ -396,8 +396,6 @@ void	ServerConfig::autoindex(std::vector<std::string>::iterator &it)
 };
 
 
-
-
 /**			GETTERS			**/
 
 std::string &ServerConfig::getUri()
