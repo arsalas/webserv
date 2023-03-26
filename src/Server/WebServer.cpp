@@ -113,6 +113,8 @@ void WebServer::recivedPoll()
 {
 	struct sockaddr_in cli_addr;
 	char buffer[RECV_BUFFER_SIZE];
+	std::string content;
+	int n = 1;
 	socklen_t clilen = sizeof(cli_addr);
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
@@ -124,24 +126,26 @@ void WebServer::recivedPoll()
 			if (newsockfd < 0)
 				throw AcceptSocketException();
 			std::memset(&buffer, 0, RECV_BUFFER_SIZE);
-			int n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
-			if (n == -1)
-				throw RecivedSocketException();
-			Request req(buffer);
+			while (n > 0)
+			{
+				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
+				if (n == -1)
+					throw RecivedSocketException();
+				content += buffer;
+			}
+			Request req(content);
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
 			// Request req(buffer);
-			std::cout << buffer << std::endl;
+			std::cout << content << std::endl;
 
 			std::ifstream file;
-			
 
 			sendResponse(newsockfd);
 		}
 	}
 	initPoll();
 }
-
 /**
  * @brief Envia la respuesta al cliente que se ha conectado al servidor
  * @param fd fd del socket del cliente
