@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <fstream>
 
 class Request
 {
@@ -16,6 +17,7 @@ class Request
     std::vector<std::string>            _ContentDisposition;
     std::string                         _filename;
     std::string                         _extension;
+    std::vector<std::string>            _fileContent;
 
     private:
     int     tokenRequest(std::string req);
@@ -36,6 +38,8 @@ class Request
     void    setHostPort(std::vector<std::string> lineVector);
     void    setContentDisposition(std::vector<std::string> lineVector);
     void    setFilename( void );
+    void    createFilename( void );
+    void    setFileContent(std::vector<std::string> lineVector);
 
     /*      GETTERS     */
     std::string getMethod(void) const;

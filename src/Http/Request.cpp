@@ -238,8 +238,6 @@ void    Request::setFilename( void )
                     _filename = Strings::deleteQuotes(*iter);
                     iter++;
                     _extension = Strings::deleteQuotes(*iter);
-                    std::cout << "MY FILENAME IS: " << _filename << std::endl;
-                    std::cout << "MY EXTENSION IS: " << _extension << std::endl;
                     break ;
                 }
             }
@@ -248,7 +246,52 @@ void    Request::setFilename( void )
     }
 }
 
+/**
+ * @brief Cuando envían un archivo, debemos crearlo
+ * 
+ */
+void    Request::createFilename( void )
+{
+    if (!_ContentDisposition.empty())
+    {
+        std::ofstream file(_filename + "." + _extension, std::ios::out);
+        for (std::vector<std::string>::iterator iter = _fileContent.begin(); iter != _fileContent.end(); iter++)
+        {
+            file << *iter;
+            file << "\n";
+        }
+        file.close();
+    }
+}
 
+void    Request::setFileContent(std::vector<std::string> lineVector)
+{
+    std::vector<std::string>::iterator iter = lineVector.begin();
+    std::vector<std::string>::iterator cdIter;
+
+    for(; iter != lineVector.end() && iter < lineVector.end(); iter++)
+    {
+        if (iter != lineVector.end() && iter < lineVector.end())
+        {
+            if ((*iter).find("filename=") != std::string::npos)
+            {
+                iter++;
+                while (iter != lineVector.end() && (*iter).find("Content-Disposition:") == std::string::npos)
+                {
+                    cdIter = _fileContent.end(); 
+                    _fileContent.insert(cdIter, *iter);
+                    iter++;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief Cuando envían un archivo, debemos guardar su contenido
+ * 
+ * @param lineVector 
+ */
 void    Request::setContentDisposition(std::vector<std::string> lineVector)
 {
     std::vector<std::string>::iterator iter = lineVector.begin();
@@ -280,8 +323,15 @@ int Request::tokenRequest(std::string req)
     setHeader(lineVector);
     setBody(lineVector);
     setHostPort(lineVector);
+    std::cout << "ME VOY A SETCONTENTDISPOSIITON\n";
     setContentDisposition(lineVector);
+    std::cout << "ME VOY A SETFILECONTENT\n";
+    setFileContent(lineVector);
+    std::cout << "ME VOY A SETFILENAME\n";
     setFilename();
+    std::cout << "ME VOY A CREATEFILENAME\n";
+    createFilename();
+    std::cout << "ME VOY A TOMAR POR \n";
 
     // std::cout << "METHOD: " << _method << std::endl;
     // std::cout << "HTTP: " << _http << std::endl;
@@ -296,10 +346,10 @@ int Request::tokenRequest(std::string req)
     // }
     // std::cout << "BODY: " << _body << std::endl;
     // std::cout << "PORT: " << _port << std::endl;
-    for (std::vector<std::string>::iterator iter = _ContentDisposition.begin(); iter != _ContentDisposition.end(); iter++)
-    {
-        std::cout << "ContentDisposition is: " << *iter << std::endl;
-    }
+    // for (std::vector<std::string>::iterator iter = _ContentDisposition.begin(); iter != _ContentDisposition.end(); iter++)
+    // {
+    //     std::cout << "ContentDisposition is: " << *iter << std::endl;
+    // }
     return (errorsToken());
     return (0);
 }
