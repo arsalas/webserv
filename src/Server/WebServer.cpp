@@ -114,6 +114,8 @@ void WebServer::recivedPoll()
 {
 	struct sockaddr_in cli_addr;
 	char buffer[RECV_BUFFER_SIZE];
+	std::string content;
+	int n;
 	socklen_t clilen = sizeof(cli_addr);
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
@@ -124,13 +126,31 @@ void WebServer::recivedPoll()
 			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
 			if (newsockfd < 0)
 				throw AcceptSocketException();
-			std::memset(&buffer, 0, RECV_BUFFER_SIZE);
-			int n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
-			if (n == -1)
-				throw RecivedSocketException();
+			while (1)
+			{
+				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
+				if (n <= 0)
+				{
+					break;
+					return;
+				}
+				// if (n == 0)
+				// 	break;
+				// if (n == -1)
+				// 	throw RecivedSocketException();
+				content += std::string(buffer);
+				// bzero(buffer, RECV_BUFFER_SIZE);
+				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
+				if (n < RECV_BUFFER_SIZE)
+					break;
+			}
+
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
-			std::cout << "RECIVED: " << buffer << std::endl;
+			// Request req(buffer);
+			std::cout << "CONTENT: " << content << std::endl;
+
+			std::ifstream file;
 
 			sendResponse(newsockfd);
 		}
@@ -149,12 +169,12 @@ void WebServer::sendResponse(int fd)
 	// TODO todo esto habra que hacerlo con un controller
 	// resp.status(200);
 	Autoindex autoindex("www");
-	resp.status(200).render(autoindex.toStr());
+	// resp.status(200).render(autoindex.toStr());
 	// resp.status(200).attachment(path);
 	// resp.render(autoindex.toStr());
-	// int n = resp.sendFile(path);
-	// if (n == -1)
-	// 	throw SendSocketException();
+	int n = resp.sendFile(path);
+	if (n == -1)
+		throw SendSocketException();
 	close(fd);
 }
 
