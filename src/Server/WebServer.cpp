@@ -14,8 +14,13 @@
 
 #include "Http/Response.hpp"
 #include "Utils/Strings.hpp"
+#include "Utils/Colors.hpp"
 
 #include "Pages/Autoindex.hpp"
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 /**
  * @brief Construct a new Web Server:: Web Server object
@@ -79,6 +84,7 @@ void WebServer::startSockets()
 			throw CreateSocketException();
 		if (bind(socketFd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
 			throw BindingException();
+		// Backlog = 5, conexiones maximas que pueden estar esperando
 		listen(socketFd, 5);
 		addPoll(socketFd);
 	}
@@ -89,8 +95,96 @@ void WebServer::startSockets()
  */
 void WebServer::initPoll()
 {
-	poll(&_poll[0], _poll.size(), WebServer::timeout);
-	recivedPoll();
+	struct pollfd pollfds[_poll.size() + MAX_CLIENTS];
+	for (size_t i = 0; i < _poll.size(); i++)
+	{
+		pollfds[i].fd = _poll[i].fd;
+		pollfds[i].events = POLLIN | POLLPRI;
+	}
+
+	int useClient = 0;
+
+	while (1)
+	{
+
+		std::cout << "size: " << _poll.size() << std::endl;
+		int res = poll(pollfds, _poll.size() + useClient, WebServer::timeout);
+		// int res = poll(&_poll[0], _poll.size(), WebServer::timeout);
+		std::cout << "res: " << res << std::endl;
+
+		if (res < 1)
+			return;
+
+		// BUSCAR EL SERVER
+		struct sockaddr_in cli_addr;
+		// char buf[RECV_BUFFER_SIZE];
+		std::string content;
+		// int n;
+		socklen_t clilen = sizeof(cli_addr);
+		for (size_t i = 0; i < _poll.size(); i++)
+		{
+			if (pollfds[i].revents & POLLIN)
+			{
+				std::cout << RED "FIND\n" RESET;
+				int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
+				std::cout << RED "FD: " << newsockfd << "\n" RESET;
+
+				for (int i = _poll.size(); i < MAX_CLIENTS; i++)
+				{
+					if (pollfds[i].fd == 0)
+					{
+						pollfds[i].fd = newsockfd;
+						pollfds[i].events = POLLIN | POLLPRI;
+						useClient++;
+						break;
+					}
+				}
+			}
+		}
+
+		// LEER LOS CLIENTES
+		for (int i = _poll.size(); i < MAX_CLIENTS; i++)
+		{
+			if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
+			{
+				char buf[RECV_BUFFER_SIZE];
+				int bufSize = read(pollfds[i].fd, buf, RECV_BUFFER_SIZE - 1);
+				if (bufSize == -1)
+				{
+					pollfds[i].fd = 0;
+					pollfds[i].events = 0;
+					pollfds[i].revents = 0;
+					useClient--;
+				}
+				else if (bufSize == 0)
+				{
+					pollfds[i].fd = 0;
+					pollfds[i].events = 0;
+					pollfds[i].revents = 0;
+					useClient--;
+				}
+				else
+				{
+					printf("From client: %i\n", bufSize);
+					buf[bufSize] = '\0';
+					// printf("From client: %s\n", buf);
+					sendResponse(pollfds[i].fd);
+					if (bufSize < RECV_BUFFER_SIZE - 1)
+					{
+
+						close(pollfds[i].fd);
+						pollfds[i].fd = 0;
+						pollfds[i].events = 0;
+						pollfds[i].revents = 0;
+						useClient--;
+						std::cout << GRN "CLOSE\n" RESET;
+					}
+				}
+			}
+		}
+
+		// recivedPoll();
+	}
 }
 
 /**
@@ -119,27 +213,38 @@ void WebServer::recivedPoll()
 	socklen_t clilen = sizeof(cli_addr);
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
+		std::cout << "FOR\n";
 		// TODO? realmente necesito saber de donde viene o me vale con el request
 		// TODO* Refactorizar en otra funcion
 		if (_poll[i].revents & POLLIN)
 		{
+			std::cout << "IF\n";
 			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
+			printf("accept success %s\n", inet_ntoa(cli_addr.sin_addr));
+			std::cout << "newsockfd: " << newsockfd << "\n";
+
 			if (newsockfd < 0)
 				throw AcceptSocketException();
+			// close(newsockfd);
 			while (1)
 			{
+				std::cout << "reciv\n";
 				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
+				std::cout << GRN "n: " RESET << n << "\n";
+				if (n == 0)
+				{
+					std::cout << RED "END\n";
+					close(newsockfd);
+				}
 				if (n <= 0)
 				{
 					break;
 					return;
 				}
-				// if (n == 0)
-				// 	break;
 				// if (n == -1)
 				// 	throw RecivedSocketException();
 				content += std::string(buffer);
-				// bzero(buffer, RECV_BUFFER_SIZE);
+				// std::bzero(buffer, RECV_BUFFER_SIZE);
 				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
 				if (n < RECV_BUFFER_SIZE)
 					break;
@@ -148,14 +253,15 @@ void WebServer::recivedPoll()
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
 			// Request req(buffer);
-			std::cout << "CONTENT: " << content << std::endl;
+			std::cout << "CONTENT:\n"
+					  << content << "|" << std::endl;
 
 			std::ifstream file;
 
 			sendResponse(newsockfd);
+			break;
 		}
 	}
-	initPoll();
 }
 
 /**
@@ -175,7 +281,7 @@ void WebServer::sendResponse(int fd)
 	int n = resp.sendFile(path);
 	if (n == -1)
 		throw SendSocketException();
-	close(fd);
+	// close(fd);
 }
 
 // Exceptions
