@@ -254,7 +254,8 @@ void    Request::createFilename( void )
 {
     if (!_ContentDisposition.empty())
     {
-        std::ofstream file(_filename + "." + _extension, std::ios::out);
+        // std::ofstream file(_filename + "." + _extension, std::ios::out);
+        std::ofstream file((_filename + "." + _extension).c_str(), std::ios_base::in);
         for (std::vector<std::string>::iterator iter = _fileContent.begin(); iter != _fileContent.end(); iter++)
         {
             file << *iter;
@@ -276,7 +277,8 @@ void    Request::setFileContent(std::vector<std::string> lineVector)
             if ((*iter).find("filename=") != std::string::npos)
             {
                 iter++;
-                while (iter != lineVector.end() && (*iter).find("Content-Disposition:") == std::string::npos)
+                iter++;
+                while (iter != lineVector.end() && (*iter).find("Content-Disposition:") == std::string::npos && (*iter).find("WebKitFormBoundary:") == std::string::npos)
                 {
                     cdIter = _fileContent.end(); 
                     _fileContent.insert(cdIter, *iter);
