@@ -200,6 +200,8 @@ void WebServer::initPoll()
 						// std::cout << "|\n"
 						// 		  << _fdContent[i] << "|" << std::endl;
 
+
+	
 						Request req(_fdContent[i]);
 
 
