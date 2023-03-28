@@ -27,10 +27,10 @@
  * 	Recepción garantizada de los datos
  * 	No hay concepto de mensajes
  * 	En el dominio de internet se llaman TCP sockets
- * 
+ *
  * Sockets activo: cliente
  * Sockets pasivo: servidor
- * 
+ *
  * Socket pasivo:
  * 	socket()
  * 	bind() - asigna IP y puerto
@@ -38,15 +38,14 @@
  * 	accept()
  * 	read() / write()
  * 	close()
- * 
+ *
  * Socket activo:
  * 	socket()
  * 	connect() - conecta con IP y puerto
  * 	read() / write()
  * 	close()
- * 
+ *
  */
-*/
 
 /**
  * @brief Construct a new Web Server:: Web Server object
@@ -122,6 +121,7 @@ void WebServer::startSockets()
 void WebServer::initPoll()
 {
 	struct pollfd pollfds[_poll.size() + MAX_CLIENTS];
+	std::memset(&pollfds, 0, sizeof(pollfds));
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
 		pollfds[i].fd = _poll[i].fd;
@@ -133,10 +133,8 @@ void WebServer::initPoll()
 	while (1)
 	{
 
-		std::cout << "size: " << _poll.size() << std::endl;
 		int res = poll(pollfds, _poll.size() + useClient, WebServer::timeout);
 		// int res = poll(&_poll[0], _poll.size(), WebServer::timeout);
-		std::cout << "res: " << res << std::endl;
 
 		if (res < 1)
 			return;
@@ -151,9 +149,7 @@ void WebServer::initPoll()
 		{
 			if (pollfds[i].revents & POLLIN)
 			{
-				std::cout << RED "FIND\n" RESET;
 				int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
-				std::cout << RED "FD: " << newsockfd << "\n" RESET;
 
 				for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 				{
@@ -167,19 +163,21 @@ void WebServer::initPoll()
 				}
 			}
 		}
-
-		// LEER LOS CLIENTES
+		std::cout << GRN "1\n" RESET;
+		// LEER LOS CLIENTES (recorres en array a ver qué fd ha cambiado en el poll)
 		for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 		{
 			if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
 			{
 				char buf[RECV_BUFFER_SIZE];
-				int bufSize = read(pollfds[i].fd, buf, RECV_BUFFER_SIZE - 1);
+				int bufSize = read(pollfds[i].fd, buf, RECV_BUFFER_SIZE - 1); // recv
 				if (bufSize == -1)
 				{
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
+						_fdContent[i] = "";
+						close(pollfds[i].fd);
 					useClient--;
 				}
 				else if (bufSize == 0)
@@ -187,23 +185,26 @@ void WebServer::initPoll()
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
+						_fdContent[i] = "";
+						close(pollfds[i].fd);
 					useClient--;
 				}
 				else
 				{
-					printf("From client: %i\n", bufSize);
 					buf[bufSize] = '\0';
-					// printf("From client: %s\n", buf);
-					sendResponse(pollfds[i].fd);
+					_fdContent[i] += buf;
 					if (bufSize < RECV_BUFFER_SIZE - 1)
 					{
 
+						std::cout << "|\n" << _fdContent[i] << "|" << std::endl;
+						sendResponse(pollfds[i].fd);
+						_fdContent[i] = "";
 						close(pollfds[i].fd);
 						pollfds[i].fd = 0;
 						pollfds[i].events = 0;
 						pollfds[i].revents = 0;
 						useClient--;
-						std::cout << GRN "CLOSE\n" RESET;
+						break;
 					}
 				}
 			}

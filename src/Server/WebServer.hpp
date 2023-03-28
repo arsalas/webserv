@@ -6,7 +6,7 @@
 #include <poll.h>
 #include "Server.hpp"
 
-#define RECV_BUFFER_SIZE 10024
+#define RECV_BUFFER_SIZE 500
 #define MAX_CLIENTS 5
 
 class WebServer
@@ -18,6 +18,8 @@ private:
 	std::string _path;
 	std::vector<Server> _servers;
 	std::vector<struct pollfd> _poll;
+	// std::vector<std::string> _fdContent = 5;
+	std::string _fdContent[MAX_CLIENTS];
 
 public:
 	WebServer();
