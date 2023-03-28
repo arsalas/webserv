@@ -23,6 +23,32 @@
 #include <arpa/inet.h>
 
 /**
+ * Nosotros utilizamos los Stream sockets, que tienen:
+ * 	Recepción garantizada de los datos
+ * 	No hay concepto de mensajes
+ * 	En el dominio de internet se llaman TCP sockets
+ * 
+ * Sockets activo: cliente
+ * Sockets pasivo: servidor
+ * 
+ * Socket pasivo:
+ * 	socket()
+ * 	bind() - asigna IP y puerto
+ * 	listen()
+ * 	accept()
+ * 	read() / write()
+ * 	close()
+ * 
+ * Socket activo:
+ * 	socket()
+ * 	connect() - conecta con IP y puerto
+ * 	read() / write()
+ * 	close()
+ * 
+ */
+*/
+
+/**
  * @brief Construct a new Web Server:: Web Server object
  * Inicia los diferentes servidores en funcion de la configuracion
  */
