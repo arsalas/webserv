@@ -1,6 +1,7 @@
 #include "Request.hpp"
 #include "Logs/Log.hpp"
 #include "Utils/Strings.hpp"
+#include "Utils/Colors.hpp"
 #include <string>
 #include <iostream>
 #include <exception>
@@ -15,7 +16,7 @@ Request::Request()
 Request::Request(std::string req)
 {
     
-    std::cout << req << std::endl;
+    // std::cout << req << std::endl;
     tokenRequest(req);
     // TODO 
     // excepciones
@@ -202,9 +203,7 @@ void    Request::setFormData(std::vector<std::string> lineVector)
             auxIter++;
             auxVector = Strings::vectorSplit(*auxIter, "&");
             auxIter = auxVector.begin();
-            std::cout << "AV: " << *auxIter << std::endl;
             auxIter++;
-            std::cout << "AV: " << *auxIter << std::endl;
         }
     }
 }
@@ -224,6 +223,7 @@ void    Request::setFilename( void )
     {
         if ((*iter).find("filename") != std::string::npos)
         {
+            std::cout << "YES I HAVE FIND IT!!!\n";
             auxVector = Strings::vectorSplit(*iter, ";");
             auxIter = auxVector.begin();
             for (; auxIter != auxVector.end(); auxIter++)
@@ -254,10 +254,16 @@ void    Request::createFilename( void )
 {
     if (!_ContentDisposition.empty())
     {
+        std::cout << "YES, ITS NOT EMPTY\n";
         // std::ofstream file(_filename + "." + _extension, std::ios::out);
-        std::ofstream file((_filename + "." + _extension).c_str(), std::ios_base::in);
+        std::string name = "/System/Volumes/Data/sgoinfre/Perso/amurcia-/webserv/";
+        name += (_filename + "." + _extension).c_str();
+        std::ofstream file(name, std::ios_base::out);
+        std::cout << RED << _filename << "." << _extension << std::endl;
+        std::cout << GRN "is open: " RESET << file.is_open() << std::endl;
         for (std::vector<std::string>::iterator iter = _fileContent.begin(); iter != _fileContent.end(); iter++)
         {
+            std::cout << "MY ITER IS: " << *iter << std::endl;
             file << *iter;
             file << "\n";
         }
@@ -318,21 +324,34 @@ int Request::tokenRequest(std::string req)
     std::vector<std::string> lineVector;
 
     lineVector = Strings::vectorSplit(req, "\n");
+    std::cout << "1\n";
     setMethod(lineVector);
-    setFormData(lineVector);
+    std::cout << "2\n";
+    // setFormData(lineVector);
+    std::cout << "3\n";
     setHttp(lineVector);
+    std::cout << "4\n";
     setPath(lineVector);
+    std::cout << "5\n";
     setHeader(lineVector);
+    std::cout << "6\n";
     setBody(lineVector);
+    std::cout << "7\n";
     setHostPort(lineVector);
+    std::cout << "8\n";
     setContentDisposition(lineVector);
+    std::cout << "9\n";
     setFileContent(lineVector);
+    std::cout << "10\n";
     setFilename();
+    std::cout << "11\n";
     createFilename();
 
-    // std::cout << "METHOD: " << _method << std::endl;
-    // std::cout << "HTTP: " << _http << std::endl;
-    // std::cout << "PATH: " << _path << std::endl;
+    std::cout << "METHOD: " << _method << std::endl;
+    std::cout << "HTTP: " << _http << std::endl;
+    std::cout << "PATH: " << _path << std::endl;
+    std::cout << "FILENAME: " << _filename << std::endl;
+    std::cout << "EXTENSION: " << _extension << std::endl;
     // for (std::map<std::string, std::string>::iterator iterMap  = _header.begin(); iterMap != _header.end(); iterMap++)
     // {
     //     std::cout << "MAP: " << iterMap->first << " & " << iterMap->second << std::endl;
@@ -341,8 +360,8 @@ int Request::tokenRequest(std::string req)
     // {
     //     std::cout << "FORMDATA: " << iter->first << " & " << iter->second << std::endl;
     // }
-    // std::cout << "BODY: " << _body << std::endl;
-    // std::cout << "PORT: " << _port << std::endl;
+    std::cout << "BODY: " << _body << std::endl;
+    std::cout << "PORT: " << _port << std::endl;
     // for (std::vector<std::string>::iterator iter = _ContentDisposition.begin(); iter != _ContentDisposition.end(); iter++)
     // {
     //     std::cout << "ContentDisposition is: " << *iter << std::endl;

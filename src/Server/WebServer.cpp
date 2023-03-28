@@ -164,7 +164,6 @@ void WebServer::initPoll()
 				}
 			}
 		}
-		std::cout << GRN "1\n" RESET;
 		// LEER LOS CLIENTES (recorres en array a ver qué fd ha cambiado en el poll)
 		for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 		{
@@ -177,8 +176,8 @@ void WebServer::initPoll()
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
-						_fdContent[i] = "";
-						close(pollfds[i].fd);
+					_fdContent[i] = "";
+					close(pollfds[i].fd);
 					useClient--;
 				}
 				else if (bufSize == 0)
@@ -186,18 +185,24 @@ void WebServer::initPoll()
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
-						_fdContent[i] = "";
-						close(pollfds[i].fd);
+					_fdContent[i] = "";
+					close(pollfds[i].fd);
 					useClient--;
 				}
 				else
 				{
 					buf[bufSize] = '\0';
+					// std::cout << "size: " << buf << std::endl;
 					_fdContent[i] += buf;
 					if (bufSize < RECV_BUFFER_SIZE - 1)
 					{
 
-						std::cout << "|\n" << _fdContent[i] << "|" << std::endl;
+						// std::cout << "|\n"
+						// 		  << _fdContent[i] << "|" << std::endl;
+
+						Request req(_fdContent[i]);
+
+
 						sendResponse(pollfds[i].fd);
 						_fdContent[i] = "";
 						close(pollfds[i].fd);
@@ -237,7 +242,7 @@ void WebServer::recivedPoll()
 	struct sockaddr_in cli_addr;
 	char buffer[RECV_BUFFER_SIZE];
 	std::string content;
-	int n = 1;
+	int n;
 	socklen_t clilen = sizeof(cli_addr);
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
@@ -253,19 +258,36 @@ void WebServer::recivedPoll()
 
 			if (newsockfd < 0)
 				throw AcceptSocketException();
-			std::memset(&buffer, 0, RECV_BUFFER_SIZE);
-			while (n > 0)
+			// close(newsockfd);
+			while (1)
 			{
+				std::cout << "reciv\n";
 				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
-				if (n == -1)
-					throw RecivedSocketException();
-				content += buffer;
+				std::cout << GRN "n: " RESET << n << "\n";
+				if (n == 0)
+				{
+					std::cout << RED "END\n";
+					close(newsockfd);
+				}
+				if (n <= 0)
+				{
+					break;
+					return;
+				}
+				// if (n == -1)
+				// 	throw RecivedSocketException();
+				content += std::string(buffer);
+				// std::bzero(buffer, RECV_BUFFER_SIZE);
+				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
+				if (n < RECV_BUFFER_SIZE)
+					break;
 			}
-			Request req(content);
+
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
 			// Request req(buffer);
-			std::cout << content << std::endl;
+			std::cout << "CONTENT:\n"
+					  << content << "|" << std::endl;
 
 			std::ifstream file;
 
@@ -274,6 +296,7 @@ void WebServer::recivedPoll()
 		}
 	}
 }
+
 /**
  * @brief Envia la respuesta al cliente que se ha conectado al servidor
  * @param fd fd del socket del cliente

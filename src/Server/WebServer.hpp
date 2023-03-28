@@ -6,7 +6,7 @@
 #include <poll.h>
 #include "Server.hpp"
 
-#define RECV_BUFFER_SIZE 500
+#define RECV_BUFFER_SIZE 100
 #define MAX_CLIENTS 5
 
 class WebServer
