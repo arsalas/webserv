@@ -44,3 +44,22 @@ std::vector<std::string>    Strings::vectorSplit(std::string file, std::string d
     auxVector.insert(it, aux);
     return (auxVector);
 }
+
+std::string    Strings::deleteQuotes(std::string str)
+{
+    int j = 0;
+    std::string newStr = "";
+
+    if (str.find("\"") != std::string::npos || str.find("'") != std::string::npos)
+    {
+        for (size_t i = 0; i < str.length(); i++)
+        {
+            if (str[i] != '"' && str[i] != '\'')
+            {
+                newStr.push_back(str[i]);
+                j++;
+            }
+        }
+    }
+    return (newStr);
+}

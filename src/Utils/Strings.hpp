@@ -9,6 +9,7 @@ public:
 	static const std::string intToString(int);
 	static std::string		trim(const std::string &s);
 	static std::vector<std::string>    vectorSplit(std::string file, std::string delimiter);
+	static std::string    deleteQuotes(std::string str);
 
 private:
 	Strings();
