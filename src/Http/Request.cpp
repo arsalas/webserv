@@ -400,7 +400,7 @@ void	Request::setMapFiles(std::vector<std::string> lineVector)
 		if ((*iterV).find(_boundary) != std::string::npos)
 		{
 			iterV++;
-		std::cout << "INSIDE THE IF: " << *iterV << std::endl;
+			std::cout << "INSIDE THE IF: " << *iterV << std::endl;
 			name = Strings::vectorSplit(*iterV, "name=");
 			if (!name.empty())
 			{
@@ -471,6 +471,38 @@ void	Request::setPayload(std::vector<std::string> lineVector)
 	}
 }
 
+std::string	setRawHeader(std::string str)
+{
+	std::string newStr;
+	for (int i = 0; str[i]; i++)
+	{
+		if (str[i] == '\n' && str[i + 1] == '\n')
+		{
+			i += 2;
+			std::cout << "I HAVE FOUND IT. I WILL RETURN: " << str[i] << std::endl;
+			newStr.substr(i, newStr.length());
+			return (newStr);
+		}
+	}
+	return (str);
+}
+
+std::string	setBody(std::string str)
+{
+	std::string newStr;
+	for (int i = 0; str[i]; i++)
+	{
+		if (str[i] == '\n' && str[i + 1] == '\n')
+		{
+			i += 2;
+			std::cout << "I HAVE FOUND IT. I WILL RETURN: " << str[i] << str[i+1] << str[i+3] << std::endl;
+			newStr.substr(0, i);
+			return (newStr);
+		}
+	}
+	return (str);
+}
+
 /**
  * @brief Creamos un token para method, path, header y body
  *
@@ -479,6 +511,11 @@ int Request::tokenRequest(std::string req)
 {
 	std::vector<std::string> lineVector;
 
+	std::cout << "\n ALL MY REQUEST IS\n" << req << std::endl;
+
+	std::string rawHeader = setRawHeader(req);
+	// std::string body = setBody(req);
+	std::cout << "I HAVE RAWHEADER\n";
 	lineVector = Strings::vectorSplit(req, "\n");
 	setMethod(lineVector);
 	std::cout << "METHOD: " << _method << std::endl;
