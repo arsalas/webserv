@@ -394,19 +394,25 @@ void	Request::setMapFiles(std::vector<std::string> lineVector)
 		}
 	}
 	iterV++;
+	std::cout << "ITERV IS: " << *iterV << std::endl;
 	for (; iterV != lineVector.end(); iterV++)
 	{
 		if ((*iterV).find(_boundary) != std::string::npos)
 		{
 			iterV++;
+		std::cout << "INSIDE THE IF: " << *iterV << std::endl;
+			name = Strings::vectorSplit(*iterV, "name=");
 			if (!name.empty())
 			{
-				name = Strings::vectorSplit(*iterV, "name=");
 				iterName = name.begin();
 				iterName++;
 				std::string name = (*iterName).substr(0, (*iterName).find(";"));
 				std::cout << "NAME IS " << name << std::endl;
-				_mapPayload[_filename] = name;
+
+				std::map<std::string, std::string>::iterator it = _mapFiles.end();
+				_mapFiles.insert(it, std::pair<std::string, std::string>(_filename, name));
+				// _mapFiles.insert (std::pair<std::string, std::string>(_filename, name));
+				// _mapFiles[_filename] = name;
 			}
 			break ;
 		}
@@ -455,7 +461,10 @@ void	Request::setPayload(std::vector<std::string> lineVector)
 				iterName++;
 				std::string payloadContent = (*iterName).substr(0, (*iterName).find(";"));
 				std::cout << "ITERNAME IS " << payloadContent << std::endl;
-				_mapPayload[payloadKey] = payloadContent;
+				std::map<std::string, std::string>::iterator it = _mapPayload.end();
+				_mapPayload.insert(it, std::pair<std::string, std::string>(payloadKey, payloadContent));
+				// _mapPayload.insert (std::pair<std::string, std::string>(payloadKey,payloadContent));
+				// _mapPayload[payloadKey] = payloadContent;
 			}
 			break ;
 		}
@@ -489,10 +498,10 @@ int Request::tokenRequest(std::string req)
 	if (isContentType())
 	{
 		setBoundary();
+		setFile(lineVector);
 		setPayload(lineVector);
 		setMapFiles(lineVector);
 		std::cout << "Inside content disposition\n";
-		setFile(lineVector);
 	}
 	std::map<std::string, std::string>::iterator itM;
 	for (itM = _mapPayload.begin(); itM != _mapPayload.end(); itM++)
@@ -501,7 +510,7 @@ int Request::tokenRequest(std::string req)
 	}
 	for (itM = _mapFiles.begin(); itM != _mapFiles.end(); itM++)
 	{
-		std::cout << "MY _mapFiles IS: " << itM->first << " | " << itM->second << std::endl;
+		std::cout << "MY mapFiles IS: " << itM->first << " | " << itM->second << std::endl;
 	}
 	// setFileContent(lineVector);
 	// createFilename();
