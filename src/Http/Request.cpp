@@ -8,6 +8,11 @@
 #include <vector>
 #include <stdlib.h>
 
+#include <algorithm>
+#include <array>
+#include <iostream>
+#include <functional>
+
 Request::Request()
 {
 }
@@ -128,7 +133,7 @@ void Request::setHeader(std::vector<std::string> lineVector)
 		{
 			std::cout << "DENTRO DEL IF DE 2 nn\n";
 			_header.erase(iter, _header.end());
-			break ;
+			break;
 		}
 	}
 }
@@ -306,28 +311,28 @@ void Request::createFilename(void)
 // 	}
 // }
 
-void	Request::setFileName(std::string str)
+void Request::setFileName(std::string str)
 {
 	std::vector<std::string> filename = Strings::vectorSplit(str, "filename");
 	std::vector<std::string>::iterator iter = filename.begin();
 	iter++;
-	_filename = (*iter).substr(1, (*iter).length() -2);
+	_filename = (*iter).substr(1, (*iter).length() - 2);
 }
 
 /**
  * @brief Cuando envían un archivo, debemos guardar su contenido
  *
- * @param lineVector
+ * @param lineBody
  */
-void Request::setFile(std::vector<std::string> lineVector)
+void Request::setFile(std::vector<std::string> lineBody)
 {
-	std::vector<std::string>::iterator iter = lineVector.begin();
+	std::vector<std::string>::iterator iter = lineBody.begin();
 	std::vector<std::string>::iterator cdIter;
 
-	for (; iter != lineVector.end() && (*iter).find(_boundary) != std::string::npos; iter++)
+	for (; iter != lineBody.end() && (*iter).find(_boundary) != std::string::npos; iter++)
 	{
 	}
-	for (; iter != lineVector.end(); iter++)
+	for (; iter != lineBody.end(); iter++)
 	{
 		if ((*iter).find("filename=") != std::string::npos)
 		{
@@ -345,9 +350,9 @@ void Request::setFile(std::vector<std::string> lineVector)
 /**
  * @brief Guardamos lo que hay despues de "boundary="
  * Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryIbYhOcGT9mbVEAXA
- * 
+ *
  */
-void Request::setBoundary( void )
+void Request::setBoundary(void)
 {
 	std::map<std::string, std::string>::iterator iterMap;
 
@@ -357,45 +362,47 @@ void Request::setBoundary( void )
 	std::vector<std::string> boundary = Strings::vectorSplit(iterMap->second, "=");
 	std::vector<std::string>::iterator iterV = boundary.begin();
 	iterV++;
-	_boundary = *iterV;
+	_boundary = "--";
+	_boundary += *iterV;
+
 	std::cout << "BOUNDARY IS: " << *iterV << std::endl;
 }
 
 /**
  * @brief Check si hay un Content-type
- * 
- * @return true 
- * @return false 
+ *
+ * @return true
+ * @return false
  */
-bool Request::isContentType( void )
+bool Request::isContentType(void)
 {
 	if ((_header.find("Content-Type")) != _header.end())
 		return (true);
 	return (false);
 }
 
-void	Request::setMapFiles(std::vector<std::string> lineVector)
+void Request::setMapFiles(std::vector<std::string> lineBody)
 {
-	std::vector<std::string>::iterator iterV = lineVector.begin();
+	std::vector<std::string>::iterator iterV = lineBody.begin();
 	std::vector<std::string>::iterator iterName;
 	std::vector<std::string> name;
 
-	for (; iterV != lineVector.end(); iterV++)
-	{
-		if ((*iterV).find(_boundary) != std::string::npos)
-			break ;
-	}
-	iterV++;
-	for (; iterV != lineVector.end(); iterV++)
+	// for (; iterV != lineBody.end(); iterV++)
+	// {
+	// 	if ((*iterV).find(_boundary) != std::string::npos)
+	// 		break ;
+	// }
+	// iterV++;
+	for (; iterV != lineBody.end(); iterV++)
 	{
 		if ((*iterV).find(_boundary) != std::string::npos)
 		{
-			break ;
+			break;
 		}
 	}
 	iterV++;
 	std::cout << "ITERV IS: " << *iterV << std::endl;
-	for (; iterV != lineVector.end(); iterV++)
+	for (; iterV != lineBody.end(); iterV++)
 	{
 		if ((*iterV).find(_boundary) != std::string::npos)
 		{
@@ -410,97 +417,113 @@ void	Request::setMapFiles(std::vector<std::string> lineVector)
 				std::cout << "NAME IS " << name << std::endl;
 
 				std::map<std::string, std::string>::iterator it = _mapFiles.end();
-				_mapFiles.insert(it, std::pair<std::string, std::string>(_filename, name));
+				_mapFiles.insert(it, std::pair<std::string, std::string>(name, _filename));
 				// _mapFiles.insert (std::pair<std::string, std::string>(_filename, name));
 				// _mapFiles[_filename] = name;
 			}
-			break ;
+			break;
 		}
 	}
 }
 
-void	Request::setPayload(std::vector<std::string> lineVector)
+void Request::setPayload(std::vector<std::string> rawBoundary)
 {
-	std::vector<std::string>::iterator iterV = lineVector.begin();
-	std::vector<std::string>::iterator iterName;
-	std::vector<std::string> name;
-	std::string payloadKey;
+	std::vector<std::string>::iterator iterV = rawBoundary.begin();
 
-	for (; iterV != lineVector.end(); iterV++)
+	for (; iterV != rawBoundary.end(); iterV++)
 	{
-		if ((*iterV).find(_boundary) != std::string::npos)
-			break ;
-	}
-	iterV++;
-	for (; iterV != lineVector.end(); iterV++)
-	{
-		if ((*iterV).find(_boundary) != std::string::npos)
+		if ((*iterV).empty())
+			continue;
+		// std::cout << "ALL MY rawBoundary IS: " << *iterV << std::endl;
+		if ((*iterV).find("name=") != std::string::npos)
 		{
-			iterV++;
-			name = Strings::vectorSplit(*iterV, "name=");
-			if (!name.empty())
-			{
-				iterName = name.begin();
-				iterName++;
-				payloadKey = *iterName;
-			}
-			break ;
+			int i = (*iterV).find("\"");
+			i++;
+			std::string aux = (*iterV).substr(i, (*iterV).length() - i);
+			int end = (aux).find("\"");
+
+			// std::cout << RED "end: " << end <<std::endl;
+			std::string name = (*iterV).substr(i, end);
+			// std::cout << RED "name is: " << name << "AND content: " << *iterV << "" RESET << std::endl;
+			std::map<std::string, std::string>::iterator it = _mapPayload.end();
+
+			// std::cout << GRN "key: " << name << "" RESET << std::endl;
+			// std::cout << YEL "value: " << (*iterV) << "" RESET << std::endl;
+
+			int n = (*iterV).find("\n\n");
+			n++;
+			std::cout << GRN "ITERV: " << *iterV << "" RESET << std::endl;
+			std::string content = (*iterV).substr(n, (*iterV).length() -n);
+			std::cout << YEL "n: " << n << std::endl;
+			std::cout << RED "=>" << content << "<="<< std::endl;
+			_mapPayload.insert(it, std::pair<std::string, std::string>(name, content));
 		}
 	}
-	std::cout << "PAYLOAD IS " << payloadKey << std::endl;
-	iterV++;
-	for (; iterV != lineVector.end(); iterV++)
-	{
-		if ((*iterV).find(_boundary) != std::string::npos)
-		{
-			iterV++;
-			if (!name.empty())
-			{
-				name = Strings::vectorSplit(*iterV, "name=");
-				iterName = name.begin();
-				iterName++;
-				std::string payloadContent = (*iterName).substr(0, (*iterName).find(";"));
-				std::cout << "ITERNAME IS " << payloadContent << std::endl;
-				std::map<std::string, std::string>::iterator it = _mapPayload.end();
-				_mapPayload.insert(it, std::pair<std::string, std::string>(payloadKey, payloadContent));
-				// _mapPayload.insert (std::pair<std::string, std::string>(payloadKey,payloadContent));
-				// _mapPayload[payloadKey] = payloadContent;
-			}
-			break ;
-		}
-	}
+	// std::vector<std::string>::iterator iterName;
+	// std::vector<std::string> name;
+	// std::string payloadKey;
+
+	// for (; iterV != lineBody.end(); iterV++)
+	// {
+	// 	if ((*iterV).find(_boundary) != std::string::npos)
+	// 		break ;
+	// }
+	// iterV++;
+	// for (; iterV != lineBody.end(); iterV++)
+	// {
+	// 	if ((*iterV).find(_boundary) != std::string::npos)
+	// 	{
+	// 		iterV++;
+	// 		name = Strings::vectorSplit(*iterV, "name=");
+	// 		if (!name.empty())
+	// 		{
+	// 			iterName = name.begin();
+	// 			iterName++;
+	// 			payloadKey = *iterName;
+	// 		}
+	// 		break;
+	// 	}
+	// }
+	// std::cout << "PAYLOAD IS " << payloadKey << std::endl;
+	// iterV++;
+	// std::cout << "ITERV IS: " << *iterV << std::endl;
+	// iterV++;
+	// std::cout << "ITERV IS: " << *iterV << std::endl;
+	// std::map<std::string, std::string>::iterator it = _mapPayload.end();
+	// _mapPayload.insert(it, std::pair<std::string, std::string>(payloadKey, *iterV));
+	// for (; iterV != lineBody.end(); iterV++)
+	// {
+	// 	if ((*iterV).find(_boundary) != std::string::npos)
+	// 	{
+	// 		iterV++;
+	// 		if (!name.empty())
+	// 		{
+	// 			name = Strings::vectorSplit(*iterV, "name=");
+	// 			iterName = name.begin();
+	// 			iterName++;
+	// 			std::string payloadContent = (*iterName).substr(0, (*iterName).find(";"));
+	// 			std::cout << "ITERNAME IS " << payloadContent << std::endl;
+	// 			std::map<std::string, std::string>::iterator it = _mapPayload.end();
+	// 			_mapPayload.insert(it, std::pair<std::string, std::string>(payloadKey, payloadContent));
+	// 		}
+	// 		break;
+	// 	}
+	// }
 }
 
-std::string	setRawHeader(std::string str)
+std::string setRawHeader(std::string str)
 {
-	std::string newStr;
-	for (int i = 0; str[i]; i++)
-	{
-		if (str[i] == '\n' && str[i + 1] == '\n')
-		{
-			i += 2;
-			std::cout << "I HAVE FOUND IT. I WILL RETURN: " << str[i] << std::endl;
-			newStr.substr(i, newStr.length());
-			return (newStr);
-		}
-	}
-	return (str);
+	str.erase(std::remove(str.begin(), str.end(), 13), str.end());
+	int i = str.find("\n\n");
+	return (str.substr(0, i));
 }
 
-std::string	setBody(std::string str)
+std::string setRawBody(std::string str)
 {
-	std::string newStr;
-	for (int i = 0; str[i]; i++)
-	{
-		if (str[i] == '\n' && str[i + 1] == '\n')
-		{
-			i += 2;
-			std::cout << "I HAVE FOUND IT. I WILL RETURN: " << str[i] << str[i+1] << str[i+3] << std::endl;
-			newStr.substr(0, i);
-			return (newStr);
-		}
-	}
-	return (str);
+	str.erase(std::remove(str.begin(), str.end(), 13), str.end());
+	int i = str.find("\n\n");
+	i++;
+	return (str.substr(i, str.length() - i));
 }
 
 /**
@@ -509,37 +532,44 @@ std::string	setBody(std::string str)
  */
 int Request::tokenRequest(std::string req)
 {
-	std::vector<std::string> lineVector;
-
-	std::cout << "\n ALL MY REQUEST IS\n" << req << std::endl;
-
 	std::string rawHeader = setRawHeader(req);
-	// std::string body = setBody(req);
-	std::cout << "I HAVE RAWHEADER\n";
-	lineVector = Strings::vectorSplit(req, "\n");
+	std::string rawBody = setRawBody(req);
+	std::vector<std::string> lineVector = Strings::vectorSplit(rawHeader, "\n");
+	std::vector<std::string> lineBody = Strings::vectorSplit(rawBody, "\n");
+
 	setMethod(lineVector);
-	std::cout << "METHOD: " << _method << std::endl;
 	setHttp(lineVector);
-	std::cout << "HTTP: " << _http << std::endl;
 	setPath(lineVector);
-	std::cout << "PATH: " << _path << std::endl;
 	setHeader(lineVector);
-	for (std::map<std::string, std::string>::iterator iterMap  = _header.begin(); iterMap != _header.end(); iterMap++)
-	{
-	    std::cout << "HEADER: " << iterMap->first << " & " << iterMap->second << std::endl;
-	}
 	setHostPort(lineVector);
-	std::cout << "PORT: " << _port << std::endl;
-	// setFormData(lineVector);
-	// setBody(lineVector); // TODO Alberto, al final lo utilizamos???
 	if (isContentType())
 	{
 		setBoundary();
-		setFile(lineVector);
-		setPayload(lineVector);
-		setMapFiles(lineVector);
+		std::vector<std::string> rawBoundary = Strings::vectorSplit(rawBody, _boundary);
+
+		std::vector<std::string>::iterator iter = rawBoundary.begin();
+		for (; iter != rawBoundary.end(); iter++)
+		{
+			std::cout << "MY RAW BOUNDARY IS ->" << *iter << "<-\n";
+		}
+
+		setFile(lineBody);
+		std::cout << "FILE IS: " << _filename << std::endl;
+		setPayload(rawBoundary);
+		setMapFiles(lineBody);
 		std::cout << "Inside content disposition\n";
 	}
+
+	std::cout << "METHOD: " << _method << std::endl;
+	std::cout << "HTTP: " << _http << std::endl;
+	std::cout << "PATH: " << _path << std::endl;
+	for (std::map<std::string, std::string>::iterator iterMap = _header.begin(); iterMap != _header.end(); iterMap++)
+	{
+		std::cout << "HEADER: " << iterMap->first << " & " << iterMap->second << std::endl;
+	}
+	std::cout << "PORT: " << _port << std::endl;
+	// setFormData(lineVector);
+	// setBody(lineVector); // TODO Alberto, al final lo utilizamos???
 	std::map<std::string, std::string>::iterator itM;
 	for (itM = _mapPayload.begin(); itM != _mapPayload.end(); itM++)
 	{
