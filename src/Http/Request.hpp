@@ -13,11 +13,15 @@ class Request
     std::string                         _host;
     int                                 _port;
     std::map<std::string, std::string>  _header;
+    std::string                         _boundary;
+    std::string                         _filename;
+    std::vector<std::string>            _fileContent;
+    std::map<std::string, std::string>  _mapFiles;
+    std::map<std::string, std::string>  _mapPayload;
+
+    std::string                         _extension;
     std::map<std::string, std::string>  _formData;
     std::vector<std::string>            _ContentDisposition;
-    std::string                         _filename;
-    std::string                         _extension;
-    std::vector<std::string>            _fileContent;
 
     private:
     int     tokenRequest(std::string req);
@@ -33,12 +37,18 @@ class Request
     void    setHttp(std::vector<std::string> lineVector);
     void    setPath(std::vector<std::string> lineVector);
     void    setHeader(std::vector<std::string> lineVector);
-    void    setFormData(std::vector<std::string> lineVector);
-    void    setBody(std::vector<std::string> lineVector);
     void    setHostPort(std::vector<std::string> lineVector);
-    void    setContentDisposition(std::vector<std::string> lineVector);
-    void    setFilename( void );
+    void    setBody(std::vector<std::string> lineVector);
+    bool    isContentType( void );
+    void    setBoundary( void );
+    void    setFile(std::vector<std::string> lineVector);
+    void    setFileName(std::string str);
     void    createFilename( void );
+    void	setPayload(std::vector<std::string> lineVector);
+    void	setMapFiles(std::vector<std::string> lineVector);
+
+    void    setFormData(std::vector<std::string> lineVector);
+    void    setContentDisposition(std::vector<std::string> lineVector);
     void    setFileContent(std::vector<std::string> lineVector);
 
     /*      GETTERS     */

@@ -121,6 +121,16 @@ void Request::setPath(std::vector<std::string> lineVector)
 void Request::setHeader(std::vector<std::string> lineVector)
 {
 	_header = mapSplit(lineVector, ":");
+
+	for (std::map<std::string, std::string>::iterator iter = _header.begin(); iter != _header.end(); iter++)
+	{
+		if ((_header.find("\n")) != _header.end())
+		{
+			std::cout << "DENTRO DEL IF DE 2 nn\n";
+			_header.erase(iter, _header.end());
+			break ;
+		}
+	}
 }
 
 /**
@@ -209,39 +219,39 @@ void Request::setFormData(std::vector<std::string> lineVector)
  * @brief Guardamos el nombre del archivo y la extensión cuando nos envían un documento
  *
  */
-void Request::setFilename(void)
-{
-	std::vector<std::string>::iterator iter = _ContentDisposition.begin();
-	std::vector<std::string> auxVector;
-	std::vector<std::string>::iterator auxIter;
+// void Request::setFilename(void)
+// {
+// 	std::vector<std::string>::iterator iter = _ContentDisposition.begin();
+// 	std::vector<std::string> auxVector;
+// 	std::vector<std::string>::iterator auxIter;
 
-	for (; iter != _ContentDisposition.end(); iter++)
-	{
-		if ((*iter).find("filename") != std::string::npos)
-		{
-			std::cout << "YES I HAVE FIND IT!!!\n";
-			auxVector = Strings::vectorSplit(*iter, ";");
-			auxIter = auxVector.begin();
-			for (; auxIter != auxVector.end(); auxIter++)
-			{
-				if ((*auxIter).find("filename") != std::string::npos)
-				{
-					auxVector = Strings::vectorSplit(*auxIter, "=");
-					iter = auxVector.begin();
-					iter++;
-					auxVector = Strings::vectorSplit(*iter, ".");
-					iter = auxVector.begin();
-					_filename = Strings::deleteQuotes(*iter);
-					iter++;
-					std::cout << YEL << *iter << std::endl;
-					_extension = Strings::deleteQuotes(*iter);
-					break;
-				}
-			}
-			break;
-		}
-	}
-}
+// 	for (; iter != _ContentDisposition.end(); iter++)
+// 	{
+// 		if ((*iter).find("filename") != std::string::npos)
+// 		{
+// 			std::cout << "YES I HAVE FIND IT!!!\n";
+// 			auxVector = Strings::vectorSplit(*iter, ";");
+// 			auxIter = auxVector.begin();
+// 			for (; auxIter != auxVector.end(); auxIter++)
+// 			{
+// 				if ((*auxIter).find("filename") != std::string::npos)
+// 				{
+// 					auxVector = Strings::vectorSplit(*auxIter, "=");
+// 					iter = auxVector.begin();
+// 					iter++;
+// 					auxVector = Strings::vectorSplit(*iter, ".");
+// 					iter = auxVector.begin();
+// 					_filename = Strings::deleteQuotes(*iter);
+// 					iter++;
+// 					std::cout << YEL << *iter << std::endl;
+// 					_extension = Strings::deleteQuotes(*iter);
+// 					break;
+// 				}
+// 			}
+// 			break;
+// 		}
+// 	}
+// }
 
 /**
  * @brief Cuando envían un archivo, debemos crearlo
@@ -249,7 +259,7 @@ void Request::setFilename(void)
  */
 void Request::createFilename(void)
 {
-	if (!_ContentDisposition.empty())
+	if (!_filename.empty())
 	{
 		std::cout << "YES, ITS NOT EMPTY\n";
 		// std::ofstream file(_filename + "." + _extension, std::ios::out);
@@ -272,28 +282,36 @@ void Request::createFilename(void)
 	}
 }
 
-void Request::setFileContent(std::vector<std::string> lineVector)
-{
-	std::vector<std::string>::iterator iter = lineVector.begin();
-	std::vector<std::string>::iterator cdIter;
+// void Request::setFileContent(std::vector<std::string> lineVector)
+// {
+// 	std::vector<std::string>::iterator iter = lineVector.begin();
+// 	std::vector<std::string>::iterator cdIter;
 
-	for (; iter != lineVector.end() && iter < lineVector.end(); iter++)
-	{
-		if (iter != lineVector.end() && iter < lineVector.end())
-		{
-			if ((*iter).find("filename=") != std::string::npos)
-			{
-				iter++;
-				iter++;
-				while (iter != lineVector.end() && (*iter).find("Content-Disposition:") == std::string::npos && (*iter).find("WebKitFormBoundary:") == std::string::npos)
-				{
-					cdIter = _fileContent.end();
-					_fileContent.insert(cdIter, *iter);
-					iter++;
-				}
-			}
-		}
-	}
+// 	for (; iter != lineVector.end() && iter < lineVector.end(); iter++)
+// 	{
+// 		if (iter != lineVector.end() && iter < lineVector.end())
+// 		{
+// 			if ((*iter).find("filename=") != std::string::npos)
+// 			{
+// 				iter++;
+// 				iter++;
+// 				while (iter != lineVector.end() && (*iter).find("Content-Disposition:") == std::string::npos && (*iter).find("WebKitFormBoundary:") == std::string::npos)
+// 				{
+// 					cdIter = _fileContent.end();
+// 					_fileContent.insert(cdIter, *iter);
+// 					iter++;
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+void	Request::setFileName(std::string str)
+{
+	std::vector<std::string> filename = Strings::vectorSplit(str, "filename");
+	std::vector<std::string>::iterator iter = filename.begin();
+	iter++;
+	_filename = (*iter).substr(1, (*iter).length() -2);
 }
 
 /**
@@ -301,17 +319,145 @@ void Request::setFileContent(std::vector<std::string> lineVector)
  *
  * @param lineVector
  */
-void Request::setContentDisposition(std::vector<std::string> lineVector)
+void Request::setFile(std::vector<std::string> lineVector)
 {
 	std::vector<std::string>::iterator iter = lineVector.begin();
 	std::vector<std::string>::iterator cdIter;
 
+	for (; iter != lineVector.end() && (*iter).find(_boundary) != std::string::npos; iter++)
+	{
+	}
 	for (; iter != lineVector.end(); iter++)
 	{
-		if ((*iter).find("Content-Disposition:") != std::string::npos)
+		if ((*iter).find("filename=") != std::string::npos)
 		{
-			cdIter = _ContentDisposition.end();
-			_ContentDisposition.insert(cdIter, *iter);
+			setFileName(*iter);
+			// TODO guardar contenido
+		}
+	}
+	// if ((*iter).find("Content-Disposition:") != std::string::npos)
+	// {
+	// 	cdIter = _ContentDisposition.end();
+	// 	_ContentDisposition.insert(cdIter, *iter);
+	// }
+}
+
+/**
+ * @brief Guardamos lo que hay despues de "boundary="
+ * Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryIbYhOcGT9mbVEAXA
+ * 
+ */
+void Request::setBoundary( void )
+{
+	std::map<std::string, std::string>::iterator iterMap;
+
+	iterMap = _header.find("Content-Type");
+	std::cout << "iterMap is: " << _header.find("Content-Type")->first << std::endl;
+	std::cout << "iterMap is: " << _header.find("Content-Type")->second << std::endl;
+	std::vector<std::string> boundary = Strings::vectorSplit(iterMap->second, "=");
+	std::vector<std::string>::iterator iterV = boundary.begin();
+	iterV++;
+	_boundary = *iterV;
+	std::cout << "BOUNDARY IS: " << *iterV << std::endl;
+}
+
+/**
+ * @brief Check si hay un Content-type
+ * 
+ * @return true 
+ * @return false 
+ */
+bool Request::isContentType( void )
+{
+	if ((_header.find("Content-Type")) != _header.end())
+		return (true);
+	return (false);
+}
+
+void	Request::setMapFiles(std::vector<std::string> lineVector)
+{
+	std::vector<std::string>::iterator iterV = lineVector.begin();
+	std::vector<std::string>::iterator iterName;
+	std::vector<std::string> name;
+
+	for (; iterV != lineVector.end(); iterV++)
+	{
+		if ((*iterV).find(_boundary) != std::string::npos)
+			break ;
+	}
+	iterV++;
+	for (; iterV != lineVector.end(); iterV++)
+	{
+		if ((*iterV).find(_boundary) != std::string::npos)
+		{
+			break ;
+		}
+	}
+	iterV++;
+	for (; iterV != lineVector.end(); iterV++)
+	{
+		if ((*iterV).find(_boundary) != std::string::npos)
+		{
+			iterV++;
+			if (!name.empty())
+			{
+				name = Strings::vectorSplit(*iterV, "name=");
+				iterName = name.begin();
+				iterName++;
+				std::string name = (*iterName).substr(0, (*iterName).find(";"));
+				std::cout << "NAME IS " << name << std::endl;
+				_mapPayload[_filename] = name;
+			}
+			break ;
+		}
+	}
+}
+
+void	Request::setPayload(std::vector<std::string> lineVector)
+{
+	std::vector<std::string>::iterator iterV = lineVector.begin();
+	std::vector<std::string>::iterator iterName;
+	std::vector<std::string> name;
+	std::string payloadKey;
+
+	for (; iterV != lineVector.end(); iterV++)
+	{
+		if ((*iterV).find(_boundary) != std::string::npos)
+			break ;
+	}
+	iterV++;
+	for (; iterV != lineVector.end(); iterV++)
+	{
+		if ((*iterV).find(_boundary) != std::string::npos)
+		{
+			iterV++;
+			name = Strings::vectorSplit(*iterV, "name=");
+			if (!name.empty())
+			{
+				iterName = name.begin();
+				iterName++;
+				payloadKey = *iterName;
+			}
+			break ;
+		}
+	}
+	std::cout << "PAYLOAD IS " << payloadKey << std::endl;
+	iterV++;
+	for (; iterV != lineVector.end(); iterV++)
+	{
+		if ((*iterV).find(_boundary) != std::string::npos)
+		{
+			iterV++;
+			if (!name.empty())
+			{
+				name = Strings::vectorSplit(*iterV, "name=");
+				iterName = name.begin();
+				iterName++;
+				std::string payloadContent = (*iterName).substr(0, (*iterName).find(";"));
+				std::cout << "ITERNAME IS " << payloadContent << std::endl;
+				_mapPayload[payloadKey] = payloadContent;
+			}
+			break ;
 		}
 	}
 }
@@ -325,48 +471,41 @@ int Request::tokenRequest(std::string req)
 	std::vector<std::string> lineVector;
 
 	lineVector = Strings::vectorSplit(req, "\n");
-	std::cout << "1\n";
 	setMethod(lineVector);
-	std::cout << "2\n";
-	// setFormData(lineVector);
-	std::cout << "3\n";
-	setHttp(lineVector);
-	std::cout << "4\n";
-	setPath(lineVector);
-	std::cout << "5\n";
-	setHeader(lineVector);
-	std::cout << "6\n";
-	setBody(lineVector);
-	std::cout << "7\n";
-	setHostPort(lineVector);
-	std::cout << "8\n";
-	setContentDisposition(lineVector);
-	std::cout << "9\n";
-	setFileContent(lineVector);
-	std::cout << "10\n";
-	setFilename();
-	std::cout << "11\n";
-	createFilename();
-
 	std::cout << "METHOD: " << _method << std::endl;
+	setHttp(lineVector);
 	std::cout << "HTTP: " << _http << std::endl;
+	setPath(lineVector);
 	std::cout << "PATH: " << _path << std::endl;
-	std::cout << "FILENAME: " << _filename << std::endl;
-	std::cout << "EXTENSION: " << _extension << std::endl;
-	// for (std::map<std::string, std::string>::iterator iterMap  = _header.begin(); iterMap != _header.end(); iterMap++)
-	// {
-	//     std::cout << "MAP: " << iterMap->first << " & " << iterMap->second << std::endl;
-	// }
-	// for (std::map<std::string, std::string>::iterator iter  = _formData.begin(); iter != _formData.end(); iter++)
-	// {
-	//     std::cout << "FORMDATA: " << iter->first << " & " << iter->second << std::endl;
-	// }
-	std::cout << "BODY: " << _body << std::endl;
+	setHeader(lineVector);
+	for (std::map<std::string, std::string>::iterator iterMap  = _header.begin(); iterMap != _header.end(); iterMap++)
+	{
+	    std::cout << "HEADER: " << iterMap->first << " & " << iterMap->second << std::endl;
+	}
+	setHostPort(lineVector);
 	std::cout << "PORT: " << _port << std::endl;
-	// for (std::vector<std::string>::iterator iter = _ContentDisposition.begin(); iter != _ContentDisposition.end(); iter++)
-	// {
-	//     std::cout << "ContentDisposition is: " << *iter << std::endl;
-	// }
+	// setFormData(lineVector);
+	// setBody(lineVector); // TODO Alberto, al final lo utilizamos???
+	if (isContentType())
+	{
+		setBoundary();
+		setPayload(lineVector);
+		setMapFiles(lineVector);
+		std::cout << "Inside content disposition\n";
+		setFile(lineVector);
+	}
+	std::map<std::string, std::string>::iterator itM;
+	for (itM = _mapPayload.begin(); itM != _mapPayload.end(); itM++)
+	{
+		std::cout << "MY PAYLOAD IS: " << itM->first << " | " << itM->second << std::endl;
+	}
+	for (itM = _mapFiles.begin(); itM != _mapFiles.end(); itM++)
+	{
+		std::cout << "MY _mapFiles IS: " << itM->first << " | " << itM->second << std::endl;
+	}
+	// setFileContent(lineVector);
+	// createFilename();
+
 	return (errorsToken());
 	return (0);
 }
