@@ -189,9 +189,11 @@ void Request::setHostPort(std::vector<std::string> lineVector)
 int Request::errorsToken()
 {
 	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
-		return (501); // crear excepcion
+		throw InvalidMethod();
+		// return (501); // crear excepcion
 	if (_http != "HTTP/1.1")
-		return (505);
+		throw InvalidProtocol();
+		// return (505);
 	return (0);
 }
 
