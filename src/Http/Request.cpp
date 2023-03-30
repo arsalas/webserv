@@ -453,10 +453,25 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				// int endFile = (*iterV).find(EOF);
 				// if (endFile < 0)
 				// std::cout << YEL"" << (*iterV) << std::endl;
-				int endFile = (*iterV).length() - n - 1;
+
+				std::string search = "filename=\"" + content + "\"";
+				int start1 = _auxReq.find(search);
+				// TODO comprobar que lo encuentra
+				// start1 = start1 + search.length();
+				std::string sample = _auxReq.substr(start1, _auxReq.length() - start1);
+				int start2 = sample.find("\r\n\r\n");
+				std::cout << "START 2 IS: " << start2 << std::endl;
+				start2 = start2 + 4;
+				int end1 = sample.find(_boundary + "--");
+				std::string fileRawContent = sample.substr(start2, end1  - start2);			
+				// std::cout << "CONTENT IS: \n";
+				// std::cout << fileRawContent;
+				
+
+				// int endFile = (*iterV).length() - n - 1;
 				// std::cout << "EOF: " << endFile << std::endl;
 				// std::cout << Strings::ltrim((*iterV).substr(n, endFile), "\n") << std::endl;
-				file << (*iterV).substr(n, endFile);
+				file << fileRawContent;
 				file.close();
 			}
 			else
@@ -504,6 +519,7 @@ std::string setRawBody(std::string str)
  */
 int Request::tokenRequest(std::string req)
 {
+	_auxReq = req;
 	// Obtenemos el header
 	std::string rawHeader = setRawHeader(req);
 	// std::cout << RED "" << req << "|" RESET << std::endl;

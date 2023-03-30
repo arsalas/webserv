@@ -13,6 +13,8 @@ class Request
 	// _method;
 
 
+
+    std::string                         _auxReq;
     std::string                         _method;
     std::string                         _http;
     std::string                         _path;
