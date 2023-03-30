@@ -6,7 +6,7 @@ Config::Config() : _parent(NULL)
 	// Request re;
 	// addListen(re.getPort());
 	// TODO quitar harcodeo
-	addListen(7002);
+	addListen(7000);
 	// addListen(3000);
 	// addListen(3001);
 	// addListen(3002);
