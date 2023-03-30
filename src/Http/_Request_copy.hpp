@@ -5,26 +5,19 @@
 
 class Request
 {
-    private:
-	// _headers;
-	// _payload;
-	// _files;
-	// _path;
-	// _method;
-
-
-    std::string                         _method;
-    std::string                         _http;
-    std::string                         _path;
-    std::string                         _body;
-    std::string                         _host;
-    int                                 _port;
-    std::map<std::string, std::string>  _header;
-    std::string                         _boundary;
-    std::string                         _filename;
-    std::vector<std::string>            _fileContent;
-    std::map<std::string, std::string>  _mapFiles;
-    std::map<std::string, std::string>  _mapPayload;
+private:
+    std::string _method;
+    std::string _http;
+    std::string _path;
+    // std::string                         _body;
+    std::string _host;
+    int _port;
+    std::map<std::string, std::string> _header;
+    std::string _boundary;
+    std::string _filename;
+    std::vector<std::string> _fileContent;
+    std::map<std::string, std::string> _mapFiles;
+    std::map<std::string, std::string> _mapPayload;
 
     std::string _extension;
     std::map<std::string, std::string> _formData;

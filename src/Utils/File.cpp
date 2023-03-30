@@ -36,3 +36,4 @@ const char *File::NotFoundException::what() const throw()
 {
 	return "File not found";
 }
+

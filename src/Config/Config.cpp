@@ -1,15 +1,16 @@
 #include <algorithm>
 #include <cctype>
 #include <locale>
+#include <fstream> 
 #include "Config.hpp"
-#include "Utils.hpp"
+#include "Utils/Strings.hpp"
 
 Config::Config(std::string &path) : _path(path)
 {
 	_workers = 0;
-	fd_ = open(_path.c_str(), O_RDONLY);
-	if (fd_ < 0)
-		throw webserv_exception("could not open configuration file : %", 0, _path);
+	_fd = open(_path.c_str(), O_RDONLY);
+	if (_fd < 0)
+		throw config_exception("Can't open configuration file : %", 0, _path);
 	parse();
 }
 
@@ -20,10 +21,10 @@ Config::~Config()
 
 void Config::clear()
 {
-	if (fd_ > 0)
+	if (_fd > 0)
 	{
-		close(fd_);
-		fd_ = 0;
+		close(_fd);
+		_fd = 0;
 	}
 	_tokens.clear();
 	_fileContent.clear();
@@ -97,9 +98,30 @@ void Config::closeBrackets(std::stack<bool> &brackets, std::string &tmp, int lin
 	if (tmp.find('}') < tmp.length())
 	{
 		if (brackets.empty())
-			throw webserv_exception("extra closing '}' on line %", 0, ft::to_string(line_idx));
+			throw config_exception("extra closing '}' on line %", 0, ft::to_string(line_idx));
 		brackets.pop();
 	}
+}
+
+/**
+ * @brief Check si el string enviado es alguno de los mencionados abajo
+ * 
+ * @param str 
+ * @return true 
+ * @return false 
+ */
+bool Config::isValidDirective(std::string const &str)
+{
+	return (str == "listen" ||
+			str == "server_name" ||
+			str == "root" ||
+			str == "auth" ||
+			str == "error_page" ||
+			str == "upload" ||
+			str == "autoindex" ||
+			str == "index" ||
+			str == "cgi" ||
+			str == "cgi_bin");
 }
 
 /**
@@ -122,13 +144,13 @@ void Config::tokenize()
 	while (std::getline(myfile, line))
 	{
 		_fileContent += line + "\n";
-		tmp = Utils::trim(line);
+		tmp = Strings::trim(line);
 		if (tmp[0] != '#' && tmp.length() > 0)
 		{
 			openBrackets(brackets, tmp);
 			closeBrackets(brackets, tmp, line_idx);
 			if (isValidDirective(tmp) && line[line.length()] != ';')
-				throw webserv_exception("missing ';' on line %", 0, ft::to_string(line_idx));
+				throw config_exception("missing ';' on line %", 0, ft::to_string(line_idx));
 			if (tmp.find(';', tmp.length() - 1) != std::string::npos)
 				endOfLine(tmp);
 			else
@@ -196,12 +218,14 @@ void Config::parse()
 		else if (*it == "workers")
 			workersToken(it);
 		else
-			throw webserv_exception("invalid directive % in main block", 0, *it);
+			throw config_exception("invalid directive % in main block", 0, *it);
 	}
 	if (_servers.empty())
-		throw webserv_exception("missing server block");
+		throw config_exception("missing server block");
 }
 
+
+/*		GETTERS		*/
 std::string &Config::getPath()
 {
 	return (_path);

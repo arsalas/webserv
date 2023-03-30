@@ -63,11 +63,6 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 			auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
 			if (*itVector == "Connection: close")
 				return (auxMap);
-			// if ((*itVector).find("WebKitFormBoundary") != std::string::npos)
-			// {
-			//     std::cout << "HE SALIDO\n";
-			//     return (auxMap);
-			// }
 		}
 	}
 	newVector = Strings::vectorSplit(*itVector, ":");
@@ -143,21 +138,21 @@ void Request::setHeader(std::vector<std::string> lineVector)
  *
  * @param lineVector
  */
-void Request::setBody(std::vector<std::string> lineVector)
-{
-	for (std::vector<std::string>::iterator iter = lineVector.begin(); iter != lineVector.end(); iter++)
-	{
-		if (*iter == "Connection: close")
-		{
-			iter = iter + 2;
-			while (iter != lineVector.end() - 1)
-			{
-				_body = _body + *iter;
-				iter++;
-			}
-		}
-	}
-}
+// void Request::setBody(std::vector<std::string> lineVector)
+// {
+// 	for (std::vector<std::string>::iterator iter = lineVector.begin(); iter != lineVector.end(); iter++)
+// 	{
+// 		if (*iter == "Connection: close")
+// 		{
+// 			iter = iter + 2;
+// 			while (iter != lineVector.end() - 1)
+// 			{
+// 				_body = _body + *iter;
+// 				iter++;
+// 			}
+// 		}
+// 	}
+// }
 
 void Request::setHostPort(std::vector<std::string> lineVector)
 {
@@ -192,31 +187,33 @@ void Request::setHostPort(std::vector<std::string> lineVector)
 int Request::errorsToken()
 {
 	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
-		return (501); // crear excepcion
+		throw InvalidMethod();
+		// return (501); // crear excepcion
 	if (_http != "HTTP/1.1")
-		return (505);
+		throw InvalidProtocol();
+		// return (505);
 	return (0);
 }
 
-void Request::setFormData(std::vector<std::string> lineVector)
-{
-	std::vector<std::string>::iterator iter = lineVector.begin();
-	std::vector<std::string>::iterator auxIter;
-	std::vector<std::string> auxVector;
+// void Request::setFormData(std::vector<std::string> lineVector)
+// {
+// 	std::vector<std::string>::iterator iter = lineVector.begin();
+// 	std::vector<std::string>::iterator auxIter;
+// 	std::vector<std::string> auxVector;
 
-	for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
-	{
-		if ((*iter).find("/?") != std::string::npos)
-		{
-			auxVector = Strings::vectorSplit(*iter, " ");
-			auxIter = auxVector.begin();
-			auxIter++;
-			auxVector = Strings::vectorSplit(*auxIter, "&");
-			auxIter = auxVector.begin();
-			auxIter++;
-		}
-	}
-}
+// 	for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
+// 	{
+// 		if ((*iter).find("/?") != std::string::npos)
+// 		{
+// 			auxVector = Strings::vectorSplit(*iter, " ");
+// 			auxIter = auxVector.begin();
+// 			auxIter++;
+// 			auxVector = Strings::vectorSplit(*auxIter, "&");
+// 			auxIter = auxVector.begin();
+// 			auxIter++;
+// 		}
+// 	}
+// }
 
 /**
  * @brief Guardamos el nombre del archivo y la extensión cuando nos envían un documento
@@ -336,6 +333,7 @@ void Request::setFile(std::vector<std::string> lineBody)
 		{
 			setFileName(*iter);
 			// TODO guardar contenido
+			// setFileContent(lineVector);
 		}
 	}
 	// if ((*iter).find("Content-Disposition:") != std::string::npos)
@@ -382,12 +380,6 @@ void Request::setMapFiles(std::vector<std::string> lineBody)
 	std::vector<std::string>::iterator iterName;
 	std::vector<std::string> name;
 
-	// for (; iterV != lineBody.end(); iterV++)
-	// {
-	// 	if ((*iterV).find(_boundary) != std::string::npos)
-	// 		break ;
-	// }
-	// iterV++;
 	for (; iterV != lineBody.end(); iterV++)
 	{
 		if ((*iterV).find(_boundary) != std::string::npos)
@@ -558,14 +550,9 @@ std::string Request::getPath(void) const
 	return (_path);
 }
 
-std::map<std::string, std::string> Request::getHeader(void) const
+std::string Request::getHost(void) const
 {
-	return (_header);
-}
-
-std::string Request::getBody(void) const
-{
-	return (_body);
+	return (_host);
 }
 
 int Request::getPort(void) const
@@ -573,14 +560,33 @@ int Request::getPort(void) const
 	return (_port);
 }
 
-std::string Request::getHost(void) const
+std::map<std::string, std::string> Request::getHeader(void) const
 {
-	return (_host);
+	return (_header);
 }
 
-// int main ()
+std::string Request::getBoundary(void) const
+{
+	return (_boundary);
+}
+
+std::string Request::getFilename(void) const
+{
+	return (_filename);
+}
+
+std::map<std::string, std::string> Request::getMapFiles(void) const
+{
+	return (_mapFiles);
+}
+
+std::map<std::string, std::string> Request::getMapPayload(void) const
+{
+	return (_mapPayload);
+}
+
+// std::string Request::getBody(void) const
 // {
-//     Request re;
-//     re.tokenRequest();
-//     return (0);
+// 	return (_body);
 // }
+
