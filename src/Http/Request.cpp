@@ -64,11 +64,6 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 			auxMap.insert(std::pair<std::string, std::string>(*firstIter, *secondtIter));
 			if (*itVector == "Connection: close")
 				return (auxMap);
-			// if ((*itVector).find("WebKitFormBoundary") != std::string::npos)
-			// {
-			//     std::cout << "HE SALIDO\n";
-			//     return (auxMap);
-			// }
 		}
 	}
 	newVector = Strings::vectorSplit(*itVector, ":");
@@ -591,14 +586,9 @@ std::string Request::getPath(void) const
 	return (_path);
 }
 
-std::map<std::string, std::string> Request::getHeader(void) const
+std::string Request::getHost(void) const
 {
-	return (_header);
-}
-
-std::string Request::getBody(void) const
-{
-	return (_body);
+	return (_host);
 }
 
 int Request::getPort(void) const
@@ -606,7 +596,33 @@ int Request::getPort(void) const
 	return (_port);
 }
 
-std::string Request::getHost(void) const
+std::map<std::string, std::string> Request::getHeader(void) const
 {
-	return (_host);
+	return (_header);
 }
+
+std::string Request::getBoundary(void) const
+{
+	return (_boundary);
+}
+
+std::string Request::getFilename(void) const
+{
+	return (_filename);
+}
+
+std::map<std::string, std::string> Request::getMapFiles(void) const
+{
+	return (_mapFiles);
+}
+
+std::map<std::string, std::string> Request::getMapPayload(void) const
+{
+	return (_mapPayload);
+}
+
+// std::string Request::getBody(void) const
+// {
+// 	return (_body);
+// }
+

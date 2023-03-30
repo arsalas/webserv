@@ -9,7 +9,7 @@ class Request
     std::string                         _method;
     std::string                         _http;
     std::string                         _path;
-    std::string                         _body;
+    // std::string                         _body;
     std::string                         _host;
     int                                 _port;
     std::map<std::string, std::string>  _header;
@@ -53,8 +53,12 @@ class Request
     std::string getMethod(void) const;
     std::string getHttp(void) const;
     std::string getPath(void) const;
-    std::map<std::string, std::string>  getHeader(void) const;
-    std::string getBody(void) const;
-    int         getPort(void) const;
     std::string getHost(void) const;
+    int         getPort(void) const;
+    std::map<std::string, std::string>  getHeader(void) const;
+    std::string getBoundary(void) const;
+    std::string getFilename(void) const;
+    std::map<std::string, std::string> getMapFiles(void) const;
+    std::map<std::string, std::string> getMapPayload(void) const;
+    // std::string getBody(void) const;
 };
