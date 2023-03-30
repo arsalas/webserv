@@ -8,21 +8,27 @@ const std::string Strings::intToString(int number)
 	return ss.str();
 }
 
-std::string Strings::ltrim(const std::string &s)
+std::string Strings::ltrim(const std::string &s, const std::string &delim)
 {
-	size_t start = s.find_first_not_of(" \t");
+	size_t start = s.find_first_not_of(delim);
 	return (start == std::string::npos) ? "" : s.substr(start);
 }
 
-std::string Strings::rtrim(const std::string &s)
+std::string Strings::rtrim(const std::string &s, const std::string &delim)
 {
-	size_t end = s.find_last_not_of(" \t");
+	size_t end = s.find_last_not_of(delim);
 	return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
 
 std::string Strings::trim(const std::string &s)
 {
-	return (Strings::rtrim(Strings::ltrim(s)));
+	const std::string delim = " \t";
+	return (Strings::rtrim(Strings::ltrim(s, delim),delim));
+}
+
+std::string Strings::trim(const std::string &s, const std::string &delim)
+{
+	return (Strings::rtrim(Strings::ltrim(s, delim),delim));
 }
 
 std::vector<std::string>    Strings::vectorSplit(std::string file, std::string delimiter)

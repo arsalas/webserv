@@ -6,7 +6,7 @@
 #include <poll.h>
 #include "Server.hpp"
 
-#define RECV_BUFFER_SIZE 100
+#define RECV_BUFFER_SIZE 50000
 #define MAX_CLIENTS 5
 
 class WebServer
@@ -20,6 +20,9 @@ private:
 	std::vector<struct pollfd> _poll;
 	// std::vector<std::string> _fdContent = 5;
 	std::string _fdContent[MAX_CLIENTS];
+	int _lens[MAX_CLIENTS];
+	int _maxLens[MAX_CLIENTS];
+	int _initLens[MAX_CLIENTS];
 
 public:
 	WebServer();

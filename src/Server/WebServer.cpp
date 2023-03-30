@@ -69,6 +69,12 @@ WebServer::WebServer()
  */
 WebServer::~WebServer()
 {
+	// TODO Vaciamos la array. mover a otro sitio
+	for (size_t i = 0; i < 5; i++)
+	{
+		_lens[i] = 0;
+		_initLens[i] = 0;
+	}
 }
 
 /**
@@ -131,12 +137,15 @@ void WebServer::initPoll()
 
 	int useClient = 0;
 
+	std::ofstream reqF("req", std::ios::out);
+
 	while (1)
 	{
-
+		char buf[RECV_BUFFER_SIZE];
+		// std::memset(buf, 0, sizeof(buf));
 		int res = poll(pollfds, _poll.size() + useClient, WebServer::timeout);
 		// int res = poll(&_poll[0], _poll.size(), WebServer::timeout);
-
+		std::cout << RED "res: " << res << RESET "\n";
 		if (res < 1)
 			return;
 
@@ -151,7 +160,7 @@ void WebServer::initPoll()
 			if (pollfds[i].revents & POLLIN)
 			{
 				int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
-
+				std::cout << YEL "fd: " << newsockfd << RESET "\n";
 				for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 				{
 					if (pollfds[i].fd == 0)
@@ -169,8 +178,11 @@ void WebServer::initPoll()
 		{
 			if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
 			{
-				char buf[RECV_BUFFER_SIZE];
-				int bufSize = read(pollfds[i].fd, buf, RECV_BUFFER_SIZE - 1); // recv
+
+				std::cout << "recv: " << std::endl;
+				int bufSize = recv(pollfds[i].fd, buf, RECV_BUFFER_SIZE, 0); // recv
+				reqF << buf;
+				std::cout << "buf: " << bufSize << std::endl;
 				if (bufSize == -1)
 				{
 					pollfds[i].fd = 0;
@@ -191,19 +203,58 @@ void WebServer::initPoll()
 				}
 				else
 				{
-					buf[bufSize] = '\0';
-					// std::cout << "size: " << buf << std::endl;
-					_fdContent[i] += buf;
-					if (bufSize < RECV_BUFFER_SIZE - 1)
+					// buf[bufSize] = '\0';
+					//  std::cout << "size: " << buf << std::endl;
+					std::string newStr = std::string(buf);
+					std::cout << "new len: " << newStr.length() << std::endl;
+					_fdContent[i] += newStr;
+					// std::cout << buf;
+
+					// Comprobar si hay body
+					int st = _fdContent[i].find("Content-Length: ");
+
+					if (st > 0)
+					{
+						std::string aux = _fdContent[i].substr(st + 16, _fdContent[i].length() - st - 16);
+						int end = aux.find("\n");
+						_maxLens[i] = std::stoi(aux.substr(0, end));
+						if (_initLens[i] == 0)
+							_initLens[i] = bufSize;
+						else
+							_lens[i] += bufSize;
+						// int endHead = _fdContent[i].find("\n\n");
+						std::cout << "bytes: " << _lens[i] << std::endl;
+						std::cout << "max: " << _maxLens[i] << std::endl;
+
+						if (_lens[i] >= _maxLens[i])
+						{
+							std::cout << GRN "FIN\n";
+							std::cout << _fdContent[i].length() << GRN "\n";
+							// std::cout << _lens[i] - endHead << std::endl;
+							std::cout << _maxLens[i] << std::endl;
+							reqF.close();
+							Request req(_fdContent[i]);
+
+							sendResponse(pollfds[i].fd);
+							_fdContent[i] = "";
+							close(pollfds[i].fd);
+							pollfds[i].fd = 0;
+							pollfds[i].events = 0;
+							pollfds[i].revents = 0;
+							_lens[i] = 0;
+							_maxLens[i] = 0;
+
+							useClient--;
+							break;
+						}
+					}
+					else if (st < 0 && bufSize < RECV_BUFFER_SIZE - 1)
 					{
 
 						// std::cout << "|\n"
 						// 		  << _fdContent[i] << "|" << std::endl;
 
-
-	
 						Request req(_fdContent[i]);
-
 
 						sendResponse(pollfds[i].fd);
 						_fdContent[i] = "";
@@ -211,8 +262,16 @@ void WebServer::initPoll()
 						pollfds[i].fd = 0;
 						pollfds[i].events = 0;
 						pollfds[i].revents = 0;
+						_lens[i] = 0;
+						_maxLens[i] = 0;
+
 						useClient--;
 						break;
+					}
+					else
+					{
+						std::cout << GRN "ELSE\n";
+						exit(1);
 					}
 				}
 			}

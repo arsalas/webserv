@@ -6,6 +6,13 @@
 class Request
 {
     private:
+	// _headers;
+	// _payload;
+	// _files;
+	// _path;
+	// _method;
+
+
     std::string                         _method;
     std::string                         _http;
     std::string                         _path;
