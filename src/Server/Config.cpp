@@ -3,7 +3,7 @@
 Config::Config() : _parent(NULL)
 {
 	// TODO quitar harcodeo
-	addListen(7001);
+	addListen(7002);
 	// addListen(3000);
 	// addListen(3001);
 	// addListen(3002);

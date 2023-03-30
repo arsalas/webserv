@@ -187,11 +187,11 @@ void Request::setHostPort(std::vector<std::string> lineVector)
 int Request::errorsToken()
 {
 	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
-		throw InvalidMethod();
-		// return (501); // crear excepcion
+		// throw InvalidMethod();
+		return (501); // crear excepcion
 	if (_http != "HTTP/1.1")
-		throw InvalidProtocol();
-		// return (505);
+		// throw InvalidProtocol();
+		return (505);
 	return (0);
 }
 
@@ -420,9 +420,9 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 			continue;
 		// std::string content = Strings::ltrim((*iterV), "\n");
 
-		std::ofstream file("file", std::ios::out);
-		file << *iterV;
-		file.close();
+		// std::ofstream file("file", std::ios::out);
+		// file << *iterV;
+		// file.close();
 
 		// std::cout << "ALL MY rawBoundary IS: " << *iterV << std::endl;
 		if ((*iterV).find("name=") != std::string::npos)
@@ -456,7 +456,7 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				int endFile = (*iterV).length() - n - 1;
 				// std::cout << "EOF: " << endFile << std::endl;
 				// std::cout << Strings::ltrim((*iterV).substr(n, endFile), "\n") << std::endl;
-				file << Strings::ltrim((*iterV).substr(n, endFile), "\n");
+				file << (*iterV).substr(n, endFile);
 				file.close();
 			}
 			else

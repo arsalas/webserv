@@ -54,6 +54,12 @@
  */
 WebServer::WebServer()
 {
+	// TODO Vaciamos la array. mover a otro sitio
+	for (size_t i = 0; i < 5; i++)
+	{
+		_lens[i] = 0;
+		_initLens[i] = 0;
+	}
 	// TODO cambiar por la configuracion
 	for (size_t i = 0; i < 1; i++)
 	{
@@ -69,12 +75,6 @@ WebServer::WebServer()
  */
 WebServer::~WebServer()
 {
-	// TODO Vaciamos la array. mover a otro sitio
-	for (size_t i = 0; i < 5; i++)
-	{
-		_lens[i] = 0;
-		_initLens[i] = 0;
-	}
 }
 
 /**
@@ -141,8 +141,9 @@ void WebServer::initPoll()
 
 	while (1)
 	{
-		char buf[RECV_BUFFER_SIZE];
+
 		// std::memset(buf, 0, sizeof(buf));
+		printf("Waiting on poll()...\n");
 		int res = poll(pollfds, _poll.size() + useClient, WebServer::timeout);
 		// int res = poll(&_poll[0], _poll.size(), WebServer::timeout);
 		std::cout << RED "res: " << res << RESET "\n";
@@ -159,7 +160,8 @@ void WebServer::initPoll()
 		{
 			if (pollfds[i].revents & POLLIN)
 			{
-				int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
+				printf("  Descriptor %d is readable\n", pollfds[i].fd);
+				int newsockfd = accept(pollfds[i].fd, (struct sockaddr *)&cli_addr, &clilen);
 				std::cout << YEL "fd: " << newsockfd << RESET "\n";
 				for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 				{
@@ -180,8 +182,10 @@ void WebServer::initPoll()
 			{
 
 				std::cout << "recv: " << std::endl;
+				char buf[RECV_BUFFER_SIZE];
+				std::memset(buf, 0, RECV_BUFFER_SIZE);
 				int bufSize = recv(pollfds[i].fd, buf, RECV_BUFFER_SIZE, 0); // recv
-				reqF << buf;
+				
 				std::cout << "buf: " << bufSize << std::endl;
 				if (bufSize == -1)
 				{
@@ -205,7 +209,8 @@ void WebServer::initPoll()
 				{
 					// buf[bufSize] = '\0';
 					//  std::cout << "size: " << buf << std::endl;
-					std::string newStr = std::string(buf);
+					std::string newStr = std::string(buf, bufSize);
+					reqF << newStr;
 					std::cout << "new len: " << newStr.length() << std::endl;
 					_fdContent[i] += newStr;
 					// std::cout << buf;
@@ -218,20 +223,25 @@ void WebServer::initPoll()
 						std::string aux = _fdContent[i].substr(st + 16, _fdContent[i].length() - st - 16);
 						int end = aux.find("\n");
 						_maxLens[i] = std::stoi(aux.substr(0, end));
+
+						int currentLenInit = _fdContent[i].find("\n\n");
+						std::string auxLen = _fdContent[i].substr(currentLenInit + 2, _fdContent[i].length() - currentLenInit - 2);
+
+						int currentLen = auxLen.length();
 						if (_initLens[i] == 0)
 							_initLens[i] = bufSize;
 						else
 							_lens[i] += bufSize;
 						// int endHead = _fdContent[i].find("\n\n");
-						std::cout << "bytes: " << _lens[i] << std::endl;
+						std::cout << "bytes: " << currentLen << std::endl;
 						std::cout << "max: " << _maxLens[i] << std::endl;
-
-						if (_lens[i] >= _maxLens[i])
+						if (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))
 						{
 							std::cout << GRN "FIN\n";
 							std::cout << _fdContent[i].length() << GRN "\n";
 							// std::cout << _lens[i] - endHead << std::endl;
 							std::cout << _maxLens[i] << std::endl;
+							reqF << _fdContent[i];
 							reqF.close();
 							Request req(_fdContent[i]);
 
@@ -323,6 +333,7 @@ void WebServer::recivedPoll()
 			while (1)
 			{
 				std::cout << "reciv\n";
+				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
 				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
 				std::cout << GRN "n: " RESET << n << "\n";
 				if (n == 0)
@@ -339,7 +350,7 @@ void WebServer::recivedPoll()
 				// 	throw RecivedSocketException();
 				content += std::string(buffer);
 				// std::bzero(buffer, RECV_BUFFER_SIZE);
-				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
+
 				if (n < RECV_BUFFER_SIZE)
 					break;
 			}
