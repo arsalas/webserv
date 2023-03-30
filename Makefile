@@ -24,7 +24,7 @@ SRCS 			=  main.cpp \
 				Log.cpp \
 				APage.cpp Autoindex.cpp ServerError.cpp \
 				Config.cpp Server.cpp Sockets.cpp WebServer.cpp \
-				File.cpp Strings.cpp
+				File.cpp Strings.cpp 
 
 # FOLDERS
 OBJS_DIR		:= obj
@@ -47,7 +47,7 @@ NAME 			:= webserv
 # BINARY PATH
 BIN = $(BIN_DIR)/$(NAME)
 
-vpath %.cpp src src/Http src/Logs src/Pages src/Server src/Utils 
+vpath %.cpp src src/Http src/Logs src/Pages src/Server src/Utils src/Config
 
 .SECONDEXPANSION:
 
