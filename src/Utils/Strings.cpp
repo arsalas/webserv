@@ -69,3 +69,10 @@ std::string    Strings::deleteQuotes(std::string str)
     }
     return (newStr);
 }
+
+// const std::ifstream Strings::strToIfstream(int number)
+// {
+// 	std::ostringstream ss;
+// 	ss << number;
+// 	return ss.str();
+// }

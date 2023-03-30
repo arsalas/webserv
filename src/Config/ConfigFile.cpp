@@ -1,88 +1,28 @@
 #include <unistd.h>
 #include <algorithm>
 #include <cctype>
+#include <vector>
 #include <locale>
-#include <fstream>
-#include <iostream>
-#include "Utils/Strings.hpp"
+#include <iostream>    
+#include <fstream> 
+#include <string>
 #include "ConfigFile.hpp"
+#include "Utils/File.hpp"
+#include "Utils/Strings.hpp"
 
-ConfigFile::ConfigFile(std::string &path) : _path(path)
+ConfigFile::ConfigFile(std::string path)
 {
-    _workers = 0;
-    _fd = open(_path.c_str(), O_RDONLY);
-    if (_fd < 0)
-        throw config_exception("Can't open configuration file : %", 0, _path);
+
+    File file(path);
+    _file = file.toStr();
+    if (_file.empty())
+        throw EmptyFile();
+
     parse();
 }
 
 ConfigFile::~ConfigFile()
-{
-
-    // ConfigFile conf;
-    // conf.addListen(5000);
-    // conf.addListen(5000);
-    // conf.addListen(5000);
-    // conf.addListen(5000);
-    // conf.addListen(5000);
-    // Server(conf)
-
-
-    clear();
-}
-
-void ConfigFile::clear()
-{
-    if (_fd > 0)
-    {
-        close(_fd);
-        _fd = 0;
-    }
-    _tokens.clear();
-    _fileContent.clear();
-}
-
-/**
- * @brief Encontramos un ';', por lo que es final de linea
- *
- * @param tmp
- */
-void ConfigFile::endOfLine(std::string &tmp)
-{
-    tmp.erase(tmp.length() - 1, 1);
-    size_t pos = 0;
-    std::string token;
-    while ((pos = tmp.find(" ")) != std::string::npos)
-    {
-        token = tmp.substr(0, pos);
-        _tokens.push_back(token);
-        tmp.erase(0, pos + 1);
-    }
-    _tokens.push_back(tmp);
-    _tokens.push_back(";");
-}
-
-/**
- * @brief Split por palabras y push del token
- *
- * @param tmp
- */
-void ConfigFile::pushToken(std::string &tmp)
-{
-    size_t pos = 0;
-    std::string token;
-
-    if (!(tmp.find(' ') < tmp.length()))
-    {
-    }
-    while ((pos = tmp.find(" ")) != std::string::npos)
-    {
-        token = tmp.substr(0, pos);
-        _tokens.push_back(token);
-        tmp.erase(0, pos + 1);
-    }
-    _tokens.push_back(tmp);
-}
+{}
 
 /**
  * @brief Si encontramos "{", hacemos un push de true
@@ -110,7 +50,7 @@ void ConfigFile::closeBrackets(std::stack<bool> &brackets, std::string &tmp, int
     if (tmp.find('}') < tmp.length())
     {
         if (brackets.empty())
-            throw config_exception("extra closing '}' on line %", 0, Strings::intToString(line_idx));
+            throw ExtraClosing();
         brackets.pop();
     }
 }
@@ -137,21 +77,55 @@ bool ConfigFile::isValidDirective(std::string const &str)
 }
 
 /**
- * @brief
- * Abrir file. Leer linea a linea. Trim. No tener en cuenta los comentarios.
- * Check si se ha abierto o cerrado {}.
- * Check si el string es correcto (isValidDirective) y no es final de linea (;).
- * Check si es final de linea (;).
- * Split por palabras. Push dentro de _tokens.
+ * @brief Encontramos un ';', por lo que es final de linea
  *
+ * @param tmp
  */
-void ConfigFile::tokenize()
+void ConfigFile::endOfLine(std::string &tmp)
 {
-    std::string line, tmp;
+    tmp.erase(tmp.length() - 1, 1);
+    size_t pos = 0;
+    std::string token;
+    while ((pos = tmp.find(" ")) != std::string::npos)
+    {
+        token = tmp.substr(0, pos);
+        _token.push_back(token);
+        tmp.erase(0, pos + 1);
+    }
+    _token.push_back(tmp);
+    _token.push_back(";");
+}
+
+/**
+ * @brief Split por palabras y push del token
+ *
+ * @param tmp
+ */
+void ConfigFile::pushToken(std::string &tmp)
+{
+    size_t pos = 0;
+    std::string token;
+
+    if (!(tmp.find(' ') < tmp.length()))
+    {
+    }
+    while ((pos = tmp.find(" ")) != std::string::npos)
+    {
+        token = tmp.substr(0, pos);
+        _token.push_back(token);
+        tmp.erase(0, pos + 1);
+    }
+    _token.push_back(tmp);
+}
+
+void ConfigFile::token()
+{
+    std::string line;
+    std::string tmp;
     std::stack<bool> brackets;
-    std::vector<int>::iterator it;
+    std::vector<int>::iterator iter;
+    std::ifstream myfile(_file.c_str());
     int line_idx = 1;
-    std::ifstream myfile(_path.c_str());
 
     while (std::getline(myfile, line))
     {
@@ -162,7 +136,7 @@ void ConfigFile::tokenize()
             openBrackets(brackets, tmp);
             closeBrackets(brackets, tmp, line_idx);
             if (isValidDirective(tmp) && line[line.length()] != ';')
-                throw config_exception("missing ';' on line %", 0, Strings::intToString(line_idx));
+                throw MissingDot();
             if (tmp.find(';', tmp.length() - 1) != std::string::npos)
                 endOfLine(tmp);
             else
@@ -170,89 +144,51 @@ void ConfigFile::tokenize()
         }
         line_idx++;
     }
-
-    for (std::size_t i = 0; i < _tokens.size(); i++)
+    for (std::size_t i = 0; i < _token.size(); i++)
     {
-        std::cout << "token: " << _tokens[i] << "\n";
+        std::cout << "token: " << _token[i] << "\n";
     }
 }
 
-/**
- * @brief El token es "server"
- * Le asignamos un id y hacemos un push_back en _servers
- *
- * @param i
- * @param it
- */
-void ConfigFile::serverToken(int i, std::vector<std::string>::iterator &it)
-{
-    Server serv;
-
-    serv.id_ = i++;
-    serv.server(++it);
-    _servers.push_back(serv);
-}
-
-/**
- * @brief El token es "workers"
- * Workers tiene que estar entre 0 y 16 y tiene que acabar en ';'
- * Un service worker es un servicio intermedio entre nuestro navegador
- * e internet que actúa a modo de proxy y que intercepta toda la
- * comunicación que se produce entre el dispositivo y la red
- * Básicamente es para que funcione la web sin conexión, utiliza el contenido de caché
- *
- * @param it
- */
-void ConfigFile::workersToken(std::vector<std::string>::iterator &it)
-{
-    _workers = std::stoi(*(++it));
-    if (_workers > 16 || _workers < 0)
-        throw std::runtime_error("workers must be between [0-16]range");
-    if (*++it != ";")
-        throw std::runtime_error("missing ';' in 'workers'");
-}
-
-/**
- * @brief Recogemos los tokens
- * Guardamos la información de server y workers en su respectiva estructura
- *
- */
 void ConfigFile::parse()
 {
     int i = 1;
-    std::vector<std::string>::iterator it;
+    std::vector<std::string>::iterator iter;
 
-    tokenize();
-    for (it = _tokens.begin(); it != _tokens.end(); ++it)
+    token();
+    for (iter = _token.begin(); iter != _token.end(); iter++)
     {
-        if (*it == "server")
-            serverToken(i, it);
-        else if (*it == "workers")
-            workersToken(it);
+        if (*iter == "server")
+            std::cout << "SERVER!\n";
+            // serverToken(i, iter);
         else
-            throw config_exception("invalid directive % in main block", 0, *it);
+            throw InvalidBlock();
     }
-    if (_servers.empty())
-        throw config_exception("missing server block");
+    if (_server.empty())
+        throw EmptyServer();
 }
 
-/*		GETTERS		*/
-std::string &ConfigFile::getPath()
+const char *ConfigFile::EmptyFile::what() const throw()
 {
-    return (_path);
+	return "Empty file";
 }
 
-std::vector<Server> &ConfigFile::getServers()
+const char *ConfigFile::ExtraClosing::what() const throw()
 {
-    return (_servers);
+	return "Extra closing }";
 }
 
-int ConfigFile::getWorkers()
+const char *ConfigFile::MissingDot::what() const throw()
 {
-    return (_workers);
+	return "Missing ;";
 }
 
-std::string &ConfigFile::getFileContent()
+const char *ConfigFile::InvalidBlock::what() const throw()
 {
-    return (_fileContent);
+	return "Invalid block";
+}
+
+const char *ConfigFile::InvalidBlock::what() const throw()
+{
+	return "Empty server";
 }
