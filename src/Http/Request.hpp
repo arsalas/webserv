@@ -5,7 +5,7 @@
 
 class Request
 {
-    private:
+    protected:
 	// _headers;
 	// _payload;
 	// _files;

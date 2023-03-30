@@ -1,18 +1,23 @@
 #include "Config.hpp"
+#include "Http/Request.hpp"
 
 Config::Config() : _parent(NULL)
 {
+	// Request re;
+	// addListen(re.getPort());
 	// TODO quitar harcodeo
 	addListen(7002);
 	// addListen(3000);
 	// addListen(3001);
 	// addListen(3002);
 	// addListen(8080);
+	// addServerName(re.getHost());
 	addServerName("localhost");
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");
 	addIndex("index.html");
 	Config * location = new Config(this);
+	// addLocation(re.getPath(), location);
 	addLocation("/data", location);
 	addErrorPage(404, "/404.html");
 	setAutoindex(false);
@@ -23,6 +28,7 @@ Config::Config(Config *parent) : _parent (parent)
 	setRoot("www/data");
 	addIndex("index.html");
 	addLimitExcept("GET");
+	// addLimitExcept(re.getMethod());
 }
 
 Config::Config(std::string file) : _parent(NULL)
