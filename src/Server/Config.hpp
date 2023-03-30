@@ -30,7 +30,7 @@ public:
 
 	std::vector<int> getListen() const;
 
-private:
+public:
 	// GETTERS
 	Config * getParent() const;
 	std::vector<std::string> getServerName() const;
@@ -44,6 +44,7 @@ private:
 	long getClientMaxBodySize() const;
 	std::string getUpload() const;
 
+private:
 	//  SETTERS
 	void addListen(int listen);
 	void addServerName(std::string serverName);

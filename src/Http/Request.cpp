@@ -590,3 +590,12 @@ std::map<std::string, std::string> Request::getMapPayload(void) const
 // 	return (_body);
 // }
 
+const char *Request::InvalidMethod::what() const throw()
+{
+	return "Invalid method";
+}
+
+const char *Request::InvalidProtocol::what() const throw()
+{
+	return "Invalid protocol";
+}
