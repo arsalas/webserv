@@ -24,10 +24,10 @@ class Request
     std::vector<std::string>            _ContentDisposition;
 
     private:
+    Request();
     int     tokenRequest(std::string req);
     int     errorsToken();
-
-    Request();
+    
 
     public:
     Request(std::string req);
@@ -38,18 +38,16 @@ class Request
     void    setPath(std::vector<std::string> lineVector);
     void    setHeader(std::vector<std::string> lineVector);
     void    setHostPort(std::vector<std::string> lineVector);
-    void    setBody(std::vector<std::string> lineVector);
+
     bool    isContentType( void );
     void    setBoundary( void );
     void    setFile(std::vector<std::string> lineVector);
     void    setFileName(std::string str);
     void    createFilename( void );
+    void    setFileContent(std::vector<std::string> lineVector);
+
     void	setPayload(std::vector<std::string> lineVector);
     void	setMapFiles(std::vector<std::string> lineVector);
-
-    void    setFormData(std::vector<std::string> lineVector);
-    void    setContentDisposition(std::vector<std::string> lineVector);
-    void    setFileContent(std::vector<std::string> lineVector);
 
     /*      GETTERS     */
     std::string getMethod(void) const;

@@ -2,14 +2,14 @@
 #include <cctype>
 #include <locale>
 #include "Config.hpp"
-#include "Utils.hpp"
+#include "Utils/Strings.hpp"
 
 Config::Config(std::string &path) : _path(path)
 {
 	_workers = 0;
 	fd_ = open(_path.c_str(), O_RDONLY);
 	if (fd_ < 0)
-		throw webserv_exception("could not open configuration file : %", 0, _path);
+		throw webserv_exception("Can't open configuration file : %", 0, _path);
 	parse();
 }
 
@@ -122,7 +122,7 @@ void Config::tokenize()
 	while (std::getline(myfile, line))
 	{
 		_fileContent += line + "\n";
-		tmp = Utils::trim(line);
+		tmp = Strings::trim(line);
 		if (tmp[0] != '#' && tmp.length() > 0)
 		{
 			openBrackets(brackets, tmp);

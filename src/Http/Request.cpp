@@ -145,21 +145,21 @@ void Request::setHeader(std::vector<std::string> lineVector)
  *
  * @param lineVector
  */
-void Request::setBody(std::vector<std::string> lineVector)
-{
-	for (std::vector<std::string>::iterator iter = lineVector.begin(); iter != lineVector.end(); iter++)
-	{
-		if (*iter == "Connection: close")
-		{
-			iter = iter + 2;
-			while (iter != lineVector.end() - 1)
-			{
-				_body = _body + *iter;
-				iter++;
-			}
-		}
-	}
-}
+// void Request::setBody(std::vector<std::string> lineVector)
+// {
+// 	for (std::vector<std::string>::iterator iter = lineVector.begin(); iter != lineVector.end(); iter++)
+// 	{
+// 		if (*iter == "Connection: close")
+// 		{
+// 			iter = iter + 2;
+// 			while (iter != lineVector.end() - 1)
+// 			{
+// 				_body = _body + *iter;
+// 				iter++;
+// 			}
+// 		}
+// 	}
+// }
 
 void Request::setHostPort(std::vector<std::string> lineVector)
 {
@@ -200,25 +200,25 @@ int Request::errorsToken()
 	return (0);
 }
 
-void Request::setFormData(std::vector<std::string> lineVector)
-{
-	std::vector<std::string>::iterator iter = lineVector.begin();
-	std::vector<std::string>::iterator auxIter;
-	std::vector<std::string> auxVector;
+// void Request::setFormData(std::vector<std::string> lineVector)
+// {
+// 	std::vector<std::string>::iterator iter = lineVector.begin();
+// 	std::vector<std::string>::iterator auxIter;
+// 	std::vector<std::string> auxVector;
 
-	for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
-	{
-		if ((*iter).find("/?") != std::string::npos)
-		{
-			auxVector = Strings::vectorSplit(*iter, " ");
-			auxIter = auxVector.begin();
-			auxIter++;
-			auxVector = Strings::vectorSplit(*auxIter, "&");
-			auxIter = auxVector.begin();
-			auxIter++;
-		}
-	}
-}
+// 	for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
+// 	{
+// 		if ((*iter).find("/?") != std::string::npos)
+// 		{
+// 			auxVector = Strings::vectorSplit(*iter, " ");
+// 			auxIter = auxVector.begin();
+// 			auxIter++;
+// 			auxVector = Strings::vectorSplit(*auxIter, "&");
+// 			auxIter = auxVector.begin();
+// 			auxIter++;
+// 		}
+// 	}
+// }
 
 /**
  * @brief Guardamos el nombre del archivo y la extensión cuando nos envían un documento
@@ -338,6 +338,7 @@ void Request::setFile(std::vector<std::string> lineBody)
 		{
 			setFileName(*iter);
 			// TODO guardar contenido
+			// setFileContent(lineVector);
 		}
 	}
 	// if ((*iter).find("Content-Disposition:") != std::string::npos)
@@ -387,12 +388,6 @@ void Request::setMapFiles(std::vector<std::string> lineBody)
 	std::vector<std::string>::iterator iterName;
 	std::vector<std::string> name;
 
-	// for (; iterV != lineBody.end(); iterV++)
-	// {
-	// 	if ((*iterV).find(_boundary) != std::string::npos)
-	// 		break ;
-	// }
-	// iterV++;
 	for (; iterV != lineBody.end(); iterV++)
 	{
 		if ((*iterV).find(_boundary) != std::string::npos)
@@ -568,8 +563,6 @@ int Request::tokenRequest(std::string req)
 		std::cout << "HEADER: " << iterMap->first << " & " << iterMap->second << std::endl;
 	}
 	std::cout << "PORT: " << _port << std::endl;
-	// setFormData(lineVector);
-	// setBody(lineVector); // TODO Alberto, al final lo utilizamos???
 	std::map<std::string, std::string>::iterator itM;
 	for (itM = _mapPayload.begin(); itM != _mapPayload.end(); itM++)
 	{
@@ -579,9 +572,6 @@ int Request::tokenRequest(std::string req)
 	{
 		std::cout << "MY mapFiles IS: " << itM->first << " | " << itM->second << std::endl;
 	}
-	// setFileContent(lineVector);
-	// createFilename();
-
 	return (errorsToken());
 	return (0);
 }
@@ -620,10 +610,3 @@ std::string Request::getHost(void) const
 {
 	return (_host);
 }
-
-// int main ()
-// {
-//     Request re;
-//     re.tokenRequest();
-//     return (0);
-// }
