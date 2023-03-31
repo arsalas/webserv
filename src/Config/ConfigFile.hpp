@@ -4,8 +4,8 @@
 #include <cctype>
 #include <vector>
 #include <locale>
-#include <iostream>    
-#include <fstream> 
+#include <iostream>
+#include <fstream>
 #include <string>
 #include "Utils/File.hpp"
 #include "Server/Server.hpp"
@@ -16,6 +16,7 @@ private:
     std::string _file;
     std::string _fileContent;
     std::vector<std::string> _token;
+    std::vector<std::string> _configToken;
     std::vector<Config> _configs;
 
 public:
@@ -30,7 +31,11 @@ private:
     bool isValidDirective(std::string const &str);
     void endOfLine(std::string &tmp);
     void pushToken(std::string &tmp);
-    void serverToken(std::vector<std::string>::iterator &it);
+    void configToken(std::vector<std::string>::iterator &it);
+    void checkValidDir(std::vector<std::string>::iterator &it);
+
+    void listen(std::vector<std::string>::iterator &it);
+    void savePort(std::string &str, std::string &ip, uint32_t &port);
 
 public:
     class EmptyFile : public std::exception
@@ -68,4 +73,9 @@ public:
         virtual const char *what() const throw();
     };
 
+public:
+    class InvalidValue : public std::exception
+    {
+        virtual const char *what() const throw();
+    };
 };
