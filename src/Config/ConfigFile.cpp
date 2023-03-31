@@ -1,14 +1,15 @@
 #include "ConfigFile.hpp"
 #include "Utils/File.hpp"
 #include "Utils/Strings.hpp"
+#include "Server/Config.hpp"
 
 ConfigFile::ConfigFile(std::string path)
 {
     File file(path);
-    _file = file.toStr();
+
+    _file = path;
     if (_file.empty())
         throw EmptyFile();
-
     parse();
 }
 
@@ -116,25 +117,36 @@ void ConfigFile::pushToken(std::string &tmp)
  * @param i
  * @param it
  */
-void ConfigFile::serverToken(int i, std::vector<std::string>::iterator &it)
+void ConfigFile::serverToken(std::vector<std::string>::iterator &it)
 {
-    Server serv;
+    Config config;
 
     std::cout << "it is:" << *(++it) << std::endl;
-    serv._id = i++;
+
+    std::string _root = "/";
+    // si hay un location
+    // 	addLocation("/data", location); Crea un puntero de un config
+    // esto es otro config con sus propias funciones
+    // el constructor : Config::Config(Config *parent) : _parent (parent)
+    // es cuando tengamos el addlocation, iremos a esa configuracion a darle los valores
+
+    config.setRoot(_root);
     // serv._configServer(++it);
-    _server.push_back(serv);
+    // _configs.push_back(configs);
 }
 
 void ConfigFile::token()
 {
-    std::cout << "ENTRAMOS EN EL TOKEN\n";
+    int line_idx = 1;
     std::string line;
     std::string tmp;
     std::stack<bool> brackets;
     std::vector<int>::iterator iter;
-    std::ifstream myfile(_file.c_str());
-    int line_idx = 1;
+    std::ifstream myfile(_file);
+    std::cout << "file is: " << _file << std::endl;
+
+    if (!myfile || !myfile.is_open())
+        throw InvalidFile();
 
     while (std::getline(myfile, line))
     {
@@ -153,6 +165,24 @@ void ConfigFile::token()
         }
         line_idx++;
     }
+    // while (std::getline(myfile, line))
+    // {
+    //     std::cout << "INSIDE THE WHILE\n";
+    //     _fileContent += line + "\n";
+    //     tmp = Strings::trim(line);
+    //     if (tmp[0] != '#' && tmp.length() > 0)
+    //     {
+    //         openBrackets(brackets, tmp);
+    //         closeBrackets(brackets, tmp);
+    //         if (isValidDirective(tmp) && line[line.length()] != ';')
+    //             throw MissingDot();
+    //         if (tmp.find(';', tmp.length() - 1) != std::string::npos)
+    //             endOfLine(tmp);
+    //         else
+    //             pushToken(tmp);
+    //     }
+    //     line_idx++;
+    // }
     for (std::size_t i = 0; i < _token.size(); i++)
     {
         std::cout << "token: " << _token[i] << "\n";
@@ -161,22 +191,18 @@ void ConfigFile::token()
 
 void ConfigFile::parse()
 {
-    std::cout << "ENTRAMOS EN PARSE\n";
-    int i = 1;
     std::vector<std::string>::iterator iter;
 
     token();
+    if (_token.empty())
     for (iter = _token.begin(); iter != _token.end(); iter++)
     {
+        std::cout << "TOKEN IS: " << *iter << std::endl;
         if (*iter == "server")
-        {
-            serverToken(i, iter);
-        }
+            serverToken(iter);
         else
             throw InvalidBlock();
     }
-    if (_server.empty())
-        throw EmptyServer();
 }
 
 const char *ConfigFile::EmptyFile::what() const throw()
@@ -202,4 +228,9 @@ const char *ConfigFile::InvalidBlock::what() const throw()
 const char *ConfigFile::EmptyServer::what() const throw()
 {
 	return "Empty server";
+}
+
+const char *ConfigFile::InvalidFile::what() const throw()
+{
+	return "Invalid file";
 }
