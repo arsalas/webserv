@@ -6,7 +6,7 @@ Config::Config() : _parent(NULL)
 	// Request re;
 	// addListen(re.getPort());
 	// TODO quitar harcodeo
-	
+
 	addListen(7001);
 	// addListen(3000);
 	// addListen(3001);
@@ -17,18 +17,24 @@ Config::Config() : _parent(NULL)
 	addCgi(".py", "/usr/bin/python3");
 	setRoot("www");
 	addIndex("index.html");
-	Config * location = new Config(this);
+	Config *location = new Config(this);
 	// addLocation(re.getPath(), location);
 	addLocation("/data", location);
-	addErrorPage(404, "/404.html");
+	addErrorPage(404, "/src/Templates/NotFound.html");
 	setAutoindex(false);
 }
 
-Config::Config(Config *parent) : _parent (parent)
+Config::Config(Config *parent) : _parent(parent)
 {
 	setRoot("www/data");
 	addIndex("index.html");
-	addLimitExcept("GET");
+	setUpload("uploads");
+	// setClientMaxBodySize(5000);
+	// addIndex("index.html");
+	// addLimitExcept("GET");
+	setAutoindex(true);
+	// setRewrite("https://www.liquidweb.com/kb/redirecting-urls-using-nginx/");
+
 	// addLimitExcept(re.getMethod());
 }
 
@@ -48,7 +54,7 @@ Config::~Config()
 	// std::cout << "destr\n";
 }
 
-Config * Config::getParent() const
+Config *Config::getParent() const
 {
 	return _parent;
 }
@@ -108,6 +114,11 @@ std::string Config::getUpload() const
 	return _upload;
 }
 
+std::string Config::getRewrite() const
+{
+	return _rewrite;
+}
+
 void Config::addListen(int listen)
 {
 	_listen.push_back(listen);
@@ -163,4 +174,9 @@ void Config::setClientMaxBodySize(float limit)
 void Config::setUpload(std::string path)
 {
 	_upload = path;
+}
+
+void Config::setRewrite(std::string url)
+{
+	_rewrite = url;
 }

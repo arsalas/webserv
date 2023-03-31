@@ -10,6 +10,7 @@ private:
 	std::vector<int> _listen;
 	std::vector<std::string> _serverName;
 	std::string _root;
+	std::string _rewrite;
 	std::map<std::string, std::string> _cgi;
 	std::vector<std::string> _index;
 	std::map<std::string, Config *> _location;
@@ -43,6 +44,7 @@ public:
 	bool getAutoindex() const;
 	long getClientMaxBodySize() const;
 	std::string getUpload() const;
+	std::string getRewrite() const;
 
 private:
 	//  SETTERS
@@ -57,4 +59,5 @@ private:
 	void setAutoindex(bool autoindex);
 	void setClientMaxBodySize(float limit);
 	void setUpload(std::string path);
+	void setRewrite(std::string url);
 };

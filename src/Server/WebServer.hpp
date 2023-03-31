@@ -7,7 +7,7 @@
 #include "Server.hpp"
 
 #define RECV_BUFFER_SIZE 50000
-#define MAX_CLIENTS 5
+#define MAX_CLIENTS 10
 
 class WebServer
 {

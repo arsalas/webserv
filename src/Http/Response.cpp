@@ -5,6 +5,8 @@
 #include "Response.hpp"
 #include "Utils/Strings.hpp"
 #include "Utils/File.hpp"
+#include "Utils/Dirs.hpp"
+#include "Pages/Autoindex.hpp"
 
 Response::Response()
 {
@@ -46,6 +48,8 @@ size_t Response::render(std::string body)
 }
 size_t Response::sendFile(std::string filename)
 {
+	std::cout << "TYPE: " << _mimeTypes[File::getExtension(filename)] << std::endl;
+	type(_mimeTypes[File::getExtension(filename)]);
 	try
 	{
 		File file(filename);
@@ -54,18 +58,31 @@ size_t Response::sendFile(std::string filename)
 	}
 	catch (const std::exception &e)
 	{
+		// TODO esto no va aqui, hay que buscar el path en el server
 		(void)e;
 		status(404);
-		return sendFile("www/404.html");
+		return sendFile("src/Templates/InternalServerError.html");
 	}
-
 }
 size_t Response::attachment(std::string filename)
 {
+	std::cout << "TYPE: " << _mimeTypes[File::getExtension(filename)] << std::endl;
+	type(_mimeTypes[File::getExtension(filename)]);
 	File file(filename);
 	// Con el content-disposition se envian archivos
-	append("Content-Disposition", "attachment; filename=\"picture.html\"");
+	std::string disposition = "attachment; filename=\"" + Dirs::getFilenameFromPath(filename) + "\"";
+	std::cout << "disposition: " << disposition << std::endl;
+
+	append("Content-Disposition", disposition);
 	_body = file.toStr();
+	status(200);
+	return end();
+}
+
+size_t Response::redirect(std::string url)
+{
+	status(301);
+	_headers["Location"] = url;
 	return end();
 }
 
@@ -83,4 +100,42 @@ Response Response::type(std::string contentType)
 {
 	_headers["Content-Type"] = contentType + "; charset=UTF-8";
 	return *this;
+}
+
+void Response::notAllowed()
+{
+	status(405);
+	sendFile("src/Templates/NotAllowed.html");
+}
+
+void Response::notFound()
+{
+	status(404);
+	sendFile("src/Templates/NotFound.html");
+}
+
+void Response::notFound(std::string path)
+{
+	status(404);
+	sendFile(path);
+}
+
+void Response::limitExced()
+{
+	status(413);
+	sendFile("src/Templates/PayloadTooLarge.html");
+}
+
+void Response::limitExced(std::string path)
+{
+	status(413);
+	sendFile(path);
+}
+
+void Response::autoindex(std::string path, std::string root)
+{
+	status(200);
+	std::cout << "Path: " << path << std::endl;
+	Autoindex autoindex(path, root);
+	render(autoindex.toStr());
 }

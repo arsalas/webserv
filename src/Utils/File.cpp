@@ -1,5 +1,6 @@
 #include "File.hpp"
 #include <string>
+#include "Utils/Strings.hpp"
 
 File::File() {}
 File::File(std::string path) : _path(path)
@@ -30,10 +31,31 @@ std::string File::toStr()
 	return str;
 }
 
+void File::move(std::string path)
+{
+	std::ofstream newFile(path, std::ios::binary);
+	newFile << toStr();
+	newFile.close();
+	_file.clear();
+}
+
+std::string File::getExtension()
+{
+	return getExtension(_path);
+}
+
+std::string File::getExtension(std::string filename)
+{
+	std::vector<std::string> parts;
+	parts = Strings::split(filename, ".");
+	if (parts.size() == 1)
+		return "";
+	return parts[parts.size() - 1];
+}
+
 // Exceptions
 
 const char *File::NotFoundException::what() const throw()
 {
 	return "File not found";
 }
-

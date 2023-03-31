@@ -21,6 +21,39 @@ Request::Request(std::string req)
 {
 
 	tokenRequest(req);
+
+	// std::cout << YEL "method: " << _method << std::endl;
+	// std::cout << YEL "_path: " << _path << std::endl;
+
+	// std::map<std::string, std::string>::iterator it = _payload.begin();
+	// // Iterate over the map using Iterator till end.
+	// while (it != _payload.end())
+	// {
+	// 	// Accessing KEY from element pointed by it.
+	// 	std::string key = it->first;
+	// 	// Accessing VALUE from element pointed by it.
+	// 	std::string value = it->second;
+	// 	std::cout << key << " => " << value << std::endl;
+	// 	// Increment the Iterator to point to next entry
+	// 	it++;
+	// }
+	// std::map<std::string, fileStruct>::iterator it2 = _files.begin();
+	// // Iterate over the map using Iterator till end.
+	// while (it2 != _files.end())
+	// {
+	// 	// Accessing KEY from element pointed by it.
+	// 	std::string key = it2->first;
+	// 	// Accessing VALUE from element pointed by it.
+	// 	fileStruct value = it2->second;
+	// 	std::cout << key << " => {" << std::endl;
+	// 	std::cout << "\tname: " << value.name << std::endl;
+	// 	std::cout << "\ttype: " << value.type << std::endl;
+	// 	std::cout << "\ttmp_name: " << value.tmp_name << std::endl;
+	// 	std::cout << "}\n";
+	// 	// Increment the Iterator to point to next entry
+	// 	it2++;
+	// }
+
 	// TODO
 	// excepciones
 }
@@ -47,7 +80,7 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 	{
 		if ((*itVector).find(":") != std::string::npos)
 		{
-			newVector = Strings::vectorSplit(*itVector, ":");
+			newVector = Strings::split(*itVector, ":");
 			firstIter = newVector.begin();
 			secondtIter = newVector.begin();
 			secondtIter++;
@@ -65,7 +98,7 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 				return (auxMap);
 		}
 	}
-	newVector = Strings::vectorSplit(*itVector, ":");
+	newVector = Strings::split(*itVector, ":");
 	firstIter = newVector.begin();
 	auxMap.insert(std::pair<std::string, std::string>(*firstIter, ""));
 	return (auxMap);
@@ -82,7 +115,7 @@ void Request::setMethod(std::vector<std::string> lineVector)
 	std::vector<std::string>::iterator iter;
 
 	iter = lineVector.begin();
-	newVector = Strings::vectorSplit(*iter, " /");
+	newVector = Strings::split(*iter, " /");
 	iter = newVector.begin();
 	_method = *iter;
 }
@@ -93,7 +126,7 @@ void Request::setHttp(std::vector<std::string> lineVector)
 	std::vector<std::string>::iterator iter;
 
 	iter = lineVector.begin();
-	newVector = Strings::vectorSplit(*iter, " ");
+	newVector = Strings::split(*iter, " ");
 	iter = newVector.begin();
 	iter++;
 	iter++;
@@ -111,48 +144,25 @@ void Request::setPath(std::vector<std::string> lineVector)
 	std::vector<std::string>::iterator iter;
 
 	iter = lineVector.begin();
-	newVector = Strings::vectorSplit(*iter, " ");
+	newVector = Strings::split(*iter, " ");
 	iter = newVector.begin();
 	iter++;
-	_path = *iter;
+	_path = Strings::trim(*iter, "/");
 }
 
 void Request::setHeader(std::vector<std::string> lineVector)
 {
-	_header = mapSplit(lineVector, ":");
+	_headers = mapSplit(lineVector, ":");
 
-	for (std::map<std::string, std::string>::iterator iter = _header.begin(); iter != _header.end(); iter++)
+	for (std::map<std::string, std::string>::iterator iter = _headers.begin(); iter != _headers.end(); iter++)
 	{
-		if ((_header.find("\n")) != _header.end())
+		if ((_headers.find("\n")) != _headers.end())
 		{
-			_header.erase(iter, _header.end());
+			_headers.erase(iter, _headers.end());
 			break;
 		}
 	}
 }
-
-/**
- * @brief Parseamos el body
- * Hacemos match con "Connection: close"
- * Y a partir de ahí insertamos dentro del body
- *
- * @param lineVector
- */
-// void Request::setBody(std::vector<std::string> lineVector)
-// {
-// 	for (std::vector<std::string>::iterator iter = lineVector.begin(); iter != lineVector.end(); iter++)
-// 	{
-// 		if (*iter == "Connection: close")
-// 		{
-// 			iter = iter + 2;
-// 			while (iter != lineVector.end() - 1)
-// 			{
-// 				_body = _body + *iter;
-// 				iter++;
-// 			}
-// 		}
-// 	}
-// }
 
 void Request::setHostPort(std::vector<std::string> lineVector)
 {
@@ -164,10 +174,10 @@ void Request::setHostPort(std::vector<std::string> lineVector)
 	{
 		if ((*iter).find("Host: ") != std::string::npos)
 		{
-			auxVector = Strings::vectorSplit(*iter, " ");
+			auxVector = Strings::split(*iter, " ");
 			iter = auxVector.begin();
 			iter++;
-			auxVector = Strings::vectorSplit(*iter, ":");
+			auxVector = Strings::split(*iter, ":");
 			auxIter = auxVector.begin();
 			_host = *auxIter;
 			auxIter++;
@@ -179,8 +189,6 @@ void Request::setHostPort(std::vector<std::string> lineVector)
 
 /**
  * @brief If the method is not correct, we send and error
- * // TODO Alberto, que mas??
- *
  * @return true
  * @return false
  */
@@ -195,154 +203,6 @@ int Request::errorsToken()
 	return (0);
 }
 
-// void Request::setFormData(std::vector<std::string> lineVector)
-// {
-// 	std::vector<std::string>::iterator iter = lineVector.begin();
-// 	std::vector<std::string>::iterator auxIter;
-// 	std::vector<std::string> auxVector;
-
-// 	for (std::vector<std::string>::iterator auxIter; iter < lineVector.end(); iter++)
-// 	{
-// 		if ((*iter).find("/?") != std::string::npos)
-// 		{
-// 			auxVector = Strings::vectorSplit(*iter, " ");
-// 			auxIter = auxVector.begin();
-// 			auxIter++;
-// 			auxVector = Strings::vectorSplit(*auxIter, "&");
-// 			auxIter = auxVector.begin();
-// 			auxIter++;
-// 		}
-// 	}
-// }
-
-/**
- * @brief Guardamos el nombre del archivo y la extensión cuando nos envían un documento
- *
- */
-// void Request::setFilename(void)
-// {
-// 	std::vector<std::string>::iterator iter = _ContentDisposition.begin();
-// 	std::vector<std::string> auxVector;
-// 	std::vector<std::string>::iterator auxIter;
-
-// 	for (; iter != _ContentDisposition.end(); iter++)
-// 	{
-// 		if ((*iter).find("filename") != std::string::npos)
-// 		{
-// 			std::cout << "YES I HAVE FIND IT!!!\n";
-// 			auxVector = Strings::vectorSplit(*iter, ";");
-// 			auxIter = auxVector.begin();
-// 			for (; auxIter != auxVector.end(); auxIter++)
-// 			{
-// 				if ((*auxIter).find("filename") != std::string::npos)
-// 				{
-// 					auxVector = Strings::vectorSplit(*auxIter, "=");
-// 					iter = auxVector.begin();
-// 					iter++;
-// 					auxVector = Strings::vectorSplit(*iter, ".");
-// 					iter = auxVector.begin();
-// 					_filename = Strings::deleteQuotes(*iter);
-// 					iter++;
-// 					std::cout << YEL << *iter << std::endl;
-// 					_extension = Strings::deleteQuotes(*iter);
-// 					break;
-// 				}
-// 			}
-// 			break;
-// 		}
-// 	}
-// }
-
-/**
- * @brief Cuando envían un archivo, debemos crearlo
- *
- */
-void Request::createFilename(void)
-{
-	if (!_filename.empty())
-	{
-		std::cout << "YES, ITS NOT EMPTY\n";
-		// std::ofstream file(_filename + "." + _extension, std::ios::out);
-		std::string name = "";
-		name += (_filename + "." + _extension);
-		std::cout << GRN "filename: ->" << _filename << "<-" RESET << std::endl;
-		std::cout << GRN "extension: ->" << _extension << "<-" RESET << std::endl;
-		std::ofstream file(name, std::ios_base::binary);
-		std::cout << RED << _filename << "." << _extension << std::endl;
-		std::cout << GRN "is open: " RESET << file.is_open() << std::endl;
-		for (std::vector<std::string>::iterator iter = _fileContent.begin(); iter != _fileContent.end(); iter++)
-		{
-			// std::cout << "MY ITER IS: " << *iter << std::endl;
-			file << *iter;
-			file << "\n";
-
-			// file2 << "console.log()\n";
-		}
-		file.close();
-	}
-}
-
-// void Request::setFileContent(std::vector<std::string> lineVector)
-// {
-// 	std::vector<std::string>::iterator iter = lineVector.begin();
-// 	std::vector<std::string>::iterator cdIter;
-
-// 	for (; iter != lineVector.end() && iter < lineVector.end(); iter++)
-// 	{
-// 		if (iter != lineVector.end() && iter < lineVector.end())
-// 		{
-// 			if ((*iter).find("filename=") != std::string::npos)
-// 			{
-// 				iter++;
-// 				iter++;
-// 				while (iter != lineVector.end() && (*iter).find("Content-Disposition:") == std::string::npos && (*iter).find("WebKitFormBoundary:") == std::string::npos)
-// 				{
-// 					cdIter = _fileContent.end();
-// 					_fileContent.insert(cdIter, *iter);
-// 					iter++;
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-void Request::setFileName(std::string str)
-{
-	std::vector<std::string> filename = Strings::vectorSplit(str, "filename");
-	std::vector<std::string>::iterator iter = filename.begin();
-	iter++;
-	_filename = (*iter).substr(1, (*iter).length() - 2);
-}
-
-/**
- * @brief Cuando envían un archivo, debemos guardar su contenido
- *
- * @param lineBody
- */
-void Request::setFile(std::vector<std::string> lineBody)
-{
-	std::vector<std::string>::iterator iter = lineBody.begin();
-	std::vector<std::string>::iterator cdIter;
-
-	for (; iter != lineBody.end() && (*iter).find(_boundary) != std::string::npos; iter++)
-	{
-	}
-	for (; iter != lineBody.end(); iter++)
-	{
-		if ((*iter).find("filename=") != std::string::npos)
-		{
-			setFileName(*iter);
-			// TODO guardar contenido
-			// setFileContent(lineVector);
-		}
-	}
-	// if ((*iter).find("Content-Disposition:") != std::string::npos)
-	// {
-	// 	cdIter = _ContentDisposition.end();
-	// 	_ContentDisposition.insert(cdIter, *iter);
-	// }
-}
-
 /**
  * @brief Guardamos lo que hay despues de "boundary="
  * Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryIbYhOcGT9mbVEAXA
@@ -352,8 +212,8 @@ void Request::setBoundary(void)
 {
 	std::map<std::string, std::string>::iterator iterMap;
 
-	iterMap = _header.find("Content-Type");
-	std::vector<std::string> boundary = Strings::vectorSplit(iterMap->second, "=");
+	iterMap = _headers.find("Content-Type");
+	std::vector<std::string> boundary = Strings::split(iterMap->second, "=");
 	std::vector<std::string>::iterator iterV = boundary.begin();
 	iterV++;
 	// Le añade -- y al final en el form data y no esta en el boundary
@@ -369,45 +229,9 @@ void Request::setBoundary(void)
  */
 bool Request::isContentType(void)
 {
-	if ((_header.find("Content-Type")) != _header.end())
+	if ((_headers.find("Content-Type")) != _headers.end())
 		return (true);
 	return (false);
-}
-
-void Request::setMapFiles(std::vector<std::string> lineBody)
-{
-	std::vector<std::string>::iterator iterV = lineBody.begin();
-	std::vector<std::string>::iterator iterName;
-	std::vector<std::string> name;
-
-	for (; iterV != lineBody.end(); iterV++)
-	{
-		if ((*iterV).find(_boundary) != std::string::npos)
-		{
-			break;
-		}
-	}
-	iterV++;
-	for (; iterV != lineBody.end(); iterV++)
-	{
-		if ((*iterV).find(_boundary) != std::string::npos)
-		{
-			iterV++;
-			name = Strings::vectorSplit(*iterV, "name=");
-			if (!name.empty())
-			{
-				iterName = name.begin();
-				iterName++;
-				std::string name = (*iterName).substr(0, (*iterName).find(";"));
-
-				std::map<std::string, std::string>::iterator it = _mapFiles.end();
-				_mapFiles.insert(it, std::pair<std::string, std::string>(name, _filename));
-				// _mapFiles.insert (std::pair<std::string, std::string>(_filename, name));
-				// _mapFiles[_filename] = name;
-			}
-			break;
-		}
-	}
 }
 
 void Request::setPayload(std::vector<std::string> rawBoundary)
@@ -418,13 +242,7 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 	{
 		if ((*iterV).empty())
 			continue;
-		// std::string content = Strings::ltrim((*iterV), "\n");
 
-		// std::ofstream file("file", std::ios::out);
-		// file << *iterV;
-		// file.close();
-
-		// std::cout << "ALL MY rawBoundary IS: " << *iterV << std::endl;
 		if ((*iterV).find("name=") != std::string::npos)
 		{
 			// Comprobar si es un filename
@@ -433,6 +251,13 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 			std::string aux = (*iterV).substr(i, (*iterV).length() - i);
 			int end = (aux).find("\"");
 
+			// Extraemos el content-type
+			std::string contentType = "Content-Type: ";
+			int startType = (*iterV).find(contentType);
+			startType += contentType.length();
+			std::string auxType = (*iterV).substr(startType, 50);
+			int endType = auxType.find("\n");
+			contentType = auxType.substr(0, endType);
 			// Extraemos el name
 			std::string name = (*iterV).substr(i, end);
 			int startFile = (*iterV).find("filename=");
@@ -443,58 +268,39 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				std::string aux = (*iterV).substr(startFile, (*iterV).length() - startFile);
 				int end = (aux).find("\"");
 				std::string content = (*iterV).substr(startFile, end);
-				// std::cout << GRN "key: " << name << "|" << std::endl;
-				// std::cout << YEL "value: " << content << "|" << std::endl;
-
-				int n = (*iterV).find("\n\n");
-				n += 2;
 				// TODO tenemos que ver en que path se crea
 				std::ofstream file(content, std::ios::binary);
-				// int endFile = (*iterV).find(EOF);
-				// if (endFile < 0)
-				// std::cout << YEL"" << (*iterV) << std::endl;
-
 				std::string search = "filename=\"" + content + "\"";
 				int start1 = _auxReq.find(search);
 				// TODO comprobar que lo encuentra
-				// start1 = start1 + search.length();
 				std::string sample = _auxReq.substr(start1, _auxReq.length() - start1);
 				int start2 = sample.find("\r\n\r\n");
 				std::cout << "START 2 IS: " << start2 << std::endl;
 				start2 = start2 + 4;
 				int end1 = sample.find(_boundary + "--");
-				std::string fileRawContent = sample.substr(start2, end1  - start2);			
-				// std::cout << "CONTENT IS: \n";
-				// std::cout << fileRawContent;
-				
-
-				// int endFile = (*iterV).length() - n - 1;
-				// std::cout << "EOF: " << endFile << std::endl;
-				// std::cout << Strings::ltrim((*iterV).substr(n, endFile), "\n") << std::endl;
+				std::string fileRawContent = sample.substr(start2, end1 - start2);
 				file << fileRawContent;
 				file.close();
+				// TODO poner el path correcto;
+				fileStruct fileData = {content, contentType, "./"};
+				// std::cout << fileData.name << std::endl;
+				// std::cout << fileData.type << std::endl;
+				// std::cout << fileData.tmp_name << std::endl;
+				std::map<std::string, fileStruct>::iterator it = _files.end();
+				_files.insert(it, std::pair<std::string, fileStruct>(name, fileData));
 			}
 			else
 			{
-
 				// Extraemos el content
 				int n = (*iterV).find("\n\n");
 				n++;
 				std::string content = Strings::ltrim((*iterV).substr(n, (*iterV).length() - n - 1), "\n");
 
-				std::map<std::string, std::string>::iterator it = _mapPayload.end();
-				_mapPayload.insert(it, std::pair<std::string, std::string>(name, content));
+				std::map<std::string, std::string>::iterator it = _payload.end();
+				_payload.insert(it, std::pair<std::string, std::string>(name, content));
 			}
 		}
 	}
-
-	// std::map<std::string, std::string>::iterator iter = _mapPayload.begin();
-	// for (; iter != _mapPayload.end(); iter++)
-	// {
-
-	// 	std::cout << GRN "key: " << iter->first << "|" << std::endl;
-	// 	std::cout << YEL "value: " << iter->second << "|" << std::endl;
-	// }
 }
 
 std::string setRawHeader(std::string str)
@@ -526,8 +332,8 @@ int Request::tokenRequest(std::string req)
 	// Obtenemos el body
 	std::string rawBody = setRawBody(req);
 
-	std::vector<std::string> lineVector = Strings::vectorSplit(rawHeader, "\n");
-	// std::vector<std::string> lineBody = Strings::vectorSplit(rawBody, "\n");
+	std::vector<std::string> lineVector = Strings::split(rawHeader, "\n");
+	// std::vector<std::string> lineBody = Strings::split(rawBody, "\n");
 
 	setMethod(lineVector);
 	setHttp(lineVector);
@@ -539,13 +345,11 @@ int Request::tokenRequest(std::string req)
 		return 0;
 
 	setBoundary();
-	std::vector<std::string> rawBoundary = Strings::vectorSplit(rawBody, _boundary);
+	std::vector<std::string> rawBoundary = Strings::split(rawBody, _boundary);
 
 	// std::vector<std::string>::iterator iter = rawBoundary.begin();
 
-	// setFile(lineBody);
 	setPayload(rawBoundary);
-	// setMapFiles(lineBody);
 
 	return (errorsToken());
 	return (0);
@@ -556,55 +360,30 @@ std::string Request::getMethod(void) const
 	return (_method);
 }
 
-std::string Request::getHttp(void) const
-{
-	return (_http);
-}
-
 std::string Request::getPath(void) const
 {
 	return (_path);
 }
 
-std::string Request::getHost(void) const
+int Request::getPort() const
 {
-	return (_host);
+	return _port;
 }
 
-int Request::getPort(void) const
+std::map<std::string, std::string> Request::getHeaders(void) const
 {
-	return (_port);
+	return (_headers);
 }
 
-std::map<std::string, std::string> Request::getHeader(void) const
+std::map<std::string, std::string> Request::getPayload(void) const
 {
-	return (_header);
+	return (_payload);
 }
 
-std::string Request::getBoundary(void) const
+std::map<std::string, fileStruct> Request::getFiles(void) const
 {
-	return (_boundary);
+	return (_files);
 }
-
-std::string Request::getFilename(void) const
-{
-	return (_filename);
-}
-
-std::map<std::string, std::string> Request::getMapFiles(void) const
-{
-	return (_mapFiles);
-}
-
-std::map<std::string, std::string> Request::getMapPayload(void) const
-{
-	return (_mapPayload);
-}
-
-// std::string Request::getBody(void) const
-// {
-// 	return (_body);
-// }
 
 const char *Request::InvalidMethod::what() const throw()
 {
@@ -614,4 +393,43 @@ const char *Request::InvalidMethod::what() const throw()
 const char *Request::InvalidProtocol::what() const throw()
 {
 	return "Invalid protocol";
+}
+
+std::ostream &operator<<(std::ostream &out, const Request &value)
+{
+	out << YEL "method: " << value.getMethod() << std::endl;
+	out << YEL "_path: " << value.getPath() << std::endl;
+
+	std::map<std::string, std::string> _payload = value.getPayload();
+	std::map<std::string, fileStruct> _files = value.getFiles();
+	std::map<std::string, std::string>::iterator it = _payload.begin();
+	// Iterate over the map using Iterator till end.
+	while (it != _payload.end())
+	{
+		// Accessing KEY from element pointed by it.
+		std::string key = it->first;
+		// Accessing VALUE from element pointed by it.
+		std::string value = it->second;
+		out << key << " => " << value << std::endl;
+		// Increment the Iterator to point to next entry
+		it++;
+	}
+	std::map<std::string, fileStruct>::iterator it2 = _files.begin();
+	// Iterate over the map using Iterator till end.
+	while (it2 != _files.end())
+	{
+		// Accessing KEY from element pointed by it.
+		std::string key = it2->first;
+		// Accessing VALUE from element pointed by it.
+		fileStruct value = it2->second;
+		out << key << " => {" << std::endl;
+		out << "\tname: " << value.name << std::endl;
+		out << "\ttype: " << value.type << std::endl;
+		out << "\ttmp_name: " << value.tmp_name << std::endl;
+		out << "}\n";
+		// Increment the Iterator to point to next entry
+		it2++;
+	}
+
+	return out;
 }

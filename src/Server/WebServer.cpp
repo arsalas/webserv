@@ -16,8 +16,10 @@
 #include "Http/Request.hpp"
 #include "Utils/Strings.hpp"
 #include "Utils/Colors.hpp"
+#include "Server/Controller.hpp"
 
 #include "Pages/Autoindex.hpp"
+#include "Logs/Log.hpp"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -55,7 +57,7 @@
 WebServer::WebServer()
 {
 	// TODO Vaciamos la array. mover a otro sitio
-	for (size_t i = 0; i < 5; i++)
+	for (size_t i = 0; i < MAX_CLIENTS; i++)
 	{
 		_lens[i] = 0;
 		_initLens[i] = 0;
@@ -128,45 +130,62 @@ void WebServer::startSockets()
 void WebServer::initPoll()
 {
 	struct pollfd pollfds[_poll.size() + MAX_CLIENTS];
-	std::memset(&pollfds, 0, sizeof(pollfds));
+	FD_ZERO(pollfds);
+	// std::memset(&pollfds, 0, sizeof(pollfds));
+	// Dar los fd del server
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
 		pollfds[i].fd = _poll[i].fd;
 		pollfds[i].events = POLLIN | POLLPRI;
 	}
-
 	int useClient = 0;
-
-	std::ofstream reqF("req", std::ios::out);
-
 	while (1)
 	{
 
 		// std::memset(buf, 0, sizeof(buf));
-		printf("Waiting on poll()...\n");
-		int res = poll(pollfds, _poll.size() + useClient, WebServer::timeout);
-		// int res = poll(&_poll[0], _poll.size(), WebServer::timeout);
-		std::cout << RED "res: " << res << RESET "\n";
-		if (res < 1)
+		std::cout << "Waiting on poll()...\n";
+		int pollSize = _poll.size() + useClient;
+		int res = poll(pollfds, pollSize, WebServer::timeout);
+		std::cout << "Recived poll\n";
+		if (res < 0)
+		{
+
+			std::cout << RED "Poll error\n" RESET;
 			return;
+		}
+		// CERRAR CLIENTES SI PILLA EL TIMEOUT
+		if (res == 0)
+		{
+			for (int i = _poll.size(); i < MAX_CLIENTS; i++)
+			{
+				if (pollfds[i].fd == 0)
+					continue;
+				pollfds[i].fd = 0;
+				pollfds[i].events = 0;
+				pollfds[i].revents = 0;
+				_fdContent[i] = "";
+				close(pollfds[i].fd);
+				useClient--;
+			}
+			continue;
+		}
 
 		// BUSCAR EL SERVER
 		struct sockaddr_in cli_addr;
-		// char buf[RECV_BUFFER_SIZE];
 		std::string content;
-		// int n;
 		socklen_t clilen = sizeof(cli_addr);
+		std::cout << YEL "Buscando server...\n" RESET;
 		for (size_t i = 0; i < _poll.size(); i++)
 		{
 			if (pollfds[i].revents & POLLIN)
 			{
-				printf("  Descriptor %d is readable\n", pollfds[i].fd);
+				std::cout << BLU "Server find\n" RESET;
 				int newsockfd = accept(pollfds[i].fd, (struct sockaddr *)&cli_addr, &clilen);
-				std::cout << YEL "fd: " << newsockfd << RESET "\n";
 				for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 				{
 					if (pollfds[i].fd == 0)
 					{
+						std::cout << BLU "New client fd: " << newsockfd << "\n" RESET;
 						pollfds[i].fd = newsockfd;
 						pollfds[i].events = POLLIN | POLLPRI;
 						useClient++;
@@ -176,111 +195,119 @@ void WebServer::initPoll()
 			}
 		}
 		// LEER LOS CLIENTES (recorres en array a ver qué fd ha cambiado en el poll)
+		std::cout << YEL "Buscando client...\n" RESET;
 		for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 		{
 			if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
 			{
 
-				std::cout << "recv: " << std::endl;
+				std::cout << BLU "Client find fd: " << pollfds[i].fd << "\n" RESET;
 				char buf[RECV_BUFFER_SIZE];
 				std::memset(buf, 0, RECV_BUFFER_SIZE);
 				int bufSize = recv(pollfds[i].fd, buf, RECV_BUFFER_SIZE, 0); // recv
-				
-				std::cout << "buf: " << bufSize << std::endl;
 				if (bufSize == -1)
 				{
+					std::cout << RED "Error reciv\n" RESET;
+					close(pollfds[i].fd);
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
 					_fdContent[i] = "";
-					close(pollfds[i].fd);
 					useClient--;
 				}
 				else if (bufSize == 0)
 				{
+					std::cout << RED "Client close\n" RESET;
+					close(pollfds[i].fd);
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
 					_fdContent[i] = "";
-					close(pollfds[i].fd);
 					useClient--;
 				}
 				else
 				{
-					// buf[bufSize] = '\0';
-					//  std::cout << "size: " << buf << std::endl;
+					std::cout << BLU "Request reciving...\n" RESET;
 					std::string newStr = std::string(buf, bufSize);
-					reqF << newStr;
-					std::cout << "new len: " << newStr.length() << std::endl;
 					_fdContent[i] += newStr;
-					// std::cout << buf;
-
-					// Comprobar si hay body
 					int st = _fdContent[i].find("Content-Length: ");
-
 					if (st > 0)
 					{
 						std::string aux = _fdContent[i].substr(st + 16, _fdContent[i].length() - st - 16);
 						int end = aux.find("\n");
 						_maxLens[i] = std::stoi(aux.substr(0, end));
-
 						int currentLenInit = _fdContent[i].find("\n\n");
 						std::string auxLen = _fdContent[i].substr(currentLenInit + 2, _fdContent[i].length() - currentLenInit - 2);
 
-						int currentLen = auxLen.length();
+						// int currentLen = auxLen.length();
 						if (_initLens[i] == 0)
 							_initLens[i] = bufSize;
 						else
 							_lens[i] += bufSize;
-						// int endHead = _fdContent[i].find("\n\n");
-						std::cout << "bytes: " << currentLen << std::endl;
-						std::cout << "max: " << _maxLens[i] << std::endl;
 						if (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))
 						{
-							std::cout << GRN "FIN\n";
-							std::cout << _fdContent[i].length() << GRN "\n";
-							// std::cout << _lens[i] - endHead << std::endl;
-							std::cout << _maxLens[i] << std::endl;
-							reqF << _fdContent[i];
-							reqF.close();
+							std::cout << YEL "Request recived\n" RESET;
 							Request req(_fdContent[i]);
-
-							sendResponse(pollfds[i].fd);
+							Response resp(pollfds[i].fd);
+							Controller ctl(_servers, req, resp);
+							// sendResponse(pollfds[i].fd);
 							_fdContent[i] = "";
 							close(pollfds[i].fd);
+
+							std::cout << RED "Close client fd: " << pollfds[i].fd << "\n" RESET;
 							pollfds[i].fd = 0;
 							pollfds[i].events = 0;
 							pollfds[i].revents = 0;
 							_lens[i] = 0;
 							_maxLens[i] = 0;
 
+							// TODO realloc all fd;
+							for (size_t n = i; n < MAX_CLIENTS - 1; n++)
+							{
+								pollfds[n].fd = pollfds[n + 1].fd;
+								pollfds[n].events = pollfds[n + 1].events;
+								pollfds[n].revents = pollfds[n + 1].revents;
+								_lens[i] = _lens[n + 1];
+								_maxLens[i] = _maxLens[n + 1];
+							}
+
 							useClient--;
-							break;
+							// break;
 						}
 					}
 					else if (st < 0 && bufSize < RECV_BUFFER_SIZE - 1)
 					{
-
-						// std::cout << "|\n"
-						// 		  << _fdContent[i] << "|" << std::endl;
-
+						std::cout << YEL "Request recived\n" RESET;
+						Log::Info("Request recived");
 						Request req(_fdContent[i]);
+						Response resp(pollfds[i].fd);
+						Controller ctl(_servers, req, resp);
 
-						sendResponse(pollfds[i].fd);
+						// sendResponse(pollfds[i].fd);
 						_fdContent[i] = "";
 						close(pollfds[i].fd);
+						std::cout << RED "Close client fd: " << pollfds[i].fd << "\n" RESET;
+
 						pollfds[i].fd = 0;
 						pollfds[i].events = 0;
 						pollfds[i].revents = 0;
 						_lens[i] = 0;
 						_maxLens[i] = 0;
-
+						// TODO realloc all fd;
+						for (size_t n = i; n < MAX_CLIENTS - 1; n++)
+						{
+							pollfds[n].fd = pollfds[n + 1].fd;
+							pollfds[n].events = pollfds[n + 1].events;
+							pollfds[n].revents = pollfds[n + 1].revents;
+							_lens[i] = _lens[n + 1];
+							_maxLens[i] = _maxLens[n + 1];
+						}
 						useClient--;
-						break;
+						// break;
 					}
 					else
 					{
-						std::cout << GRN "ELSE\n";
+						std::cout << RED "ERROR\n" RESET;
 						exit(1);
 					}
 				}
@@ -379,7 +406,7 @@ void WebServer::sendResponse(int fd)
 	Response resp(fd);
 	// TODO todo esto habra que hacerlo con un controller
 	// resp.status(200);
-	Autoindex autoindex("www");
+	// Autoindex autoindex("www");
 	// resp.status(200).render(autoindex.toStr());
 	// resp.status(200).attachment(path);
 	// resp.render(autoindex.toStr());

@@ -1,12 +1,13 @@
 #pragma once
 #include <iostream>
-class Utils;
+#include <sstream>
 
 class Log
 {
-    private:
-    std::string _log;
-
-    public:
-    static void printLog(std::string method);
+public:
+	static void Message(std::string out);
+	static void Info(std::string out);
+	static void Error(std::string out);
+	static void Success(std::string out);
+	static void Warning(std::string out);
 };
