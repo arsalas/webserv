@@ -1,6 +1,7 @@
 #include "Server.hpp"
 
 Server::Server() {}
+
 Server::Server(Config config) : _config(config)
 {
 	std::vector<int> listens = config.getListen();

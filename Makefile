@@ -24,7 +24,8 @@ SRCS 			=  main.cpp \
 				Log.cpp \
 				APage.cpp Autoindex.cpp ServerError.cpp \
 				Config.cpp Server.cpp Sockets.cpp WebServer.cpp \
-				File.cpp Strings.cpp 
+				File.cpp Strings.cpp \
+				ConfigFile.cpp
 
 # FOLDERS
 OBJS_DIR		:= obj

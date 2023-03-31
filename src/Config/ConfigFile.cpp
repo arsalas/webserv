@@ -1,18 +1,9 @@
-#include <unistd.h>
-#include <algorithm>
-#include <cctype>
-#include <vector>
-#include <locale>
-#include <iostream>    
-#include <fstream> 
-#include <string>
 #include "ConfigFile.hpp"
 #include "Utils/File.hpp"
 #include "Utils/Strings.hpp"
 
 ConfigFile::ConfigFile(std::string path)
 {
-
     File file(path);
     _file = file.toStr();
     if (_file.empty())
@@ -45,7 +36,7 @@ void ConfigFile::openBrackets(std::stack<bool> &brackets, std::string &tmp)
  * @param tmp
  * @param line_idx
  */
-void ConfigFile::closeBrackets(std::stack<bool> &brackets, std::string &tmp, int line_idx)
+void ConfigFile::closeBrackets(std::stack<bool> &brackets, std::string &tmp)
 {
     if (tmp.find('}') < tmp.length())
     {
@@ -118,8 +109,26 @@ void ConfigFile::pushToken(std::string &tmp)
     _token.push_back(tmp);
 }
 
+/**
+ * @brief El token es "server"
+ * Le asignamos un id y hacemos un push_back en _servers
+ *
+ * @param i
+ * @param it
+ */
+void ConfigFile::serverToken(int i, std::vector<std::string>::iterator &it)
+{
+    Server serv;
+
+    std::cout << "it is:" << *(++it) << std::endl;
+    serv._id = i++;
+    // serv._configServer(++it);
+    _server.push_back(serv);
+}
+
 void ConfigFile::token()
 {
+    std::cout << "ENTRAMOS EN EL TOKEN\n";
     std::string line;
     std::string tmp;
     std::stack<bool> brackets;
@@ -134,7 +143,7 @@ void ConfigFile::token()
         if (tmp[0] != '#' && tmp.length() > 0)
         {
             openBrackets(brackets, tmp);
-            closeBrackets(brackets, tmp, line_idx);
+            closeBrackets(brackets, tmp);
             if (isValidDirective(tmp) && line[line.length()] != ';')
                 throw MissingDot();
             if (tmp.find(';', tmp.length() - 1) != std::string::npos)
@@ -152,6 +161,7 @@ void ConfigFile::token()
 
 void ConfigFile::parse()
 {
+    std::cout << "ENTRAMOS EN PARSE\n";
     int i = 1;
     std::vector<std::string>::iterator iter;
 
@@ -159,8 +169,9 @@ void ConfigFile::parse()
     for (iter = _token.begin(); iter != _token.end(); iter++)
     {
         if (*iter == "server")
-            std::cout << "SERVER!\n";
-            // serverToken(i, iter);
+        {
+            serverToken(i, iter);
+        }
         else
             throw InvalidBlock();
     }
@@ -188,7 +199,7 @@ const char *ConfigFile::InvalidBlock::what() const throw()
 	return "Invalid block";
 }
 
-const char *ConfigFile::InvalidBlock::what() const throw()
+const char *ConfigFile::EmptyServer::what() const throw()
 {
 	return "Empty server";
 }

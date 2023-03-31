@@ -1,11 +1,11 @@
 #include "Server/WebServer.hpp"
 #include "Http/Request.hpp"
-// #include "Config/Config.hpp"
+#include "Config/ConfigFile.hpp"
 
 int main()
 {
-	WebServer server = WebServer();
-	// Config config(getPath());
+	ConfigFile configFile("config/default.conf");
+	// WebServer server = WebServer();
 
     // config.parse();
 	return 0;
