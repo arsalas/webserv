@@ -34,8 +34,16 @@ private:
     void configToken(std::vector<std::string>::iterator &it);
     void checkValidDir(std::vector<std::string>::iterator &it);
 
-    void listen(std::vector<std::string>::iterator &it);
+    uint32_t listen(std::vector<std::string>::iterator &it);
     void savePort(std::string &str, std::string &ip, uint32_t &port);
+    void servername(std::vector<std::string>::iterator &it, Config &conf);
+    void root(std::vector<std::string>::iterator &it, Config &conf);
+    void cgi(std::vector<std::string>::iterator &it, Config &conf);
+    void index(std::vector<std::string>::iterator &it, Config &conf);
+    void limitExcept(std::vector<std::string>::iterator &it, Config conf);
+    void errorPage(std::vector<std::string>::iterator &it, Config conf);
+    void client_max_body_size(std::vector<std::string>::iterator &it, Config conf);
+    void autoindex(std::vector<std::string>::iterator &it, Config conf);
 
 public:
     class EmptyFile : public std::exception

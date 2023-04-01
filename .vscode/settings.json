@@ -95,6 +95,7 @@
 		"xlocmon": "cpp",
 		"xloctime": "cpp",
 		"__bits": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"__memory": "cpp"
 	}
 }

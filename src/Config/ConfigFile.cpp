@@ -123,7 +123,7 @@ void	ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
 		throw InvalidValue();
 }
 
-void    ConfigFile::listen(std::vector<std::string>::iterator &it)
+uint32_t    ConfigFile::listen(std::vector<std::string>::iterator &it)
 {
 	std::string	str = *it;
 	std::string	ip = "0.0.0.0";
@@ -135,14 +135,162 @@ void    ConfigFile::listen(std::vector<std::string>::iterator &it)
 		ip = str;
 	else
 		port = std::stoi(str);
-    Config conf;
-    conf.addListen(port);
+    return (port);
 }
+
+/**
+ * @brief SERVER NAME
+ * Guardamos el "server name"
+ * 
+ * @param it 
+ */
+void    ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf)
+{
+    while (*it != ";")
+        conf.addServerName(*it++);
+}
+
+/**
+ * @brief ROOT
+ * Guardamos el "root"
+ * Después de root solo puede venir una palabra.
+ * Si tiene más y no acaba en ";", es incorrecto.
+ * 
+ * @param it 
+ */
+void	ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
+{
+	conf.setRoot(*it);
+	if (*++it != ";")
+        throw InvalidValue();
+}
+
+/**
+ * @brief CGI
+ * Guardamos el "cgi"
+ * Después de root solo pueden venir dos palabras.
+ * Si no hay cgi + 2 palabras + ';', es incorrecto.
+ * 
+ * @param it 
+ */
+void	ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
+{
+	std::string &ext = *it++;
+	std::string &exec = *it++;
+    conf.addCgi(ext, exec);
+	if (*it != ";")
+		throw InvalidValue();
+}
+
+/**
+ * @brief INDEX
+ * Guardamos el "index".
+ * Después de index solo puede venir una palabra.
+ * Si no hay index + 1 palabra + ';', es incorrecto.
+ * 
+ * @param it 
+ */
+void	ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
+{
+	while (*it != ";")
+        conf.addIndex(*it);
+}
+
+/**
+ * @brief LIMIT EXCEPT
+ * Guardamos el "limitExcept".
+ * Después de limitExcept solo puede venir una palabra.
+ * Si no hay limitExcept + 1 palabra + ';', es incorrecto.
+ * limitExcept nos va a dar la orden: PUT, GET, POST, etc.
+ * 
+ * @param it 
+ */
+void	ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf)
+{
+	while (*it != ";")
+        conf.addLimitExcept(*it++);
+}
+
+
+/**
+ * @brief ERROR_PAGE
+ * Guardamos el "error_page"
+ * Tienen que dar el código de error y el path
+ * El código de error solo pueden ser números
+ * Ej.: error_page 404 /my_errors/404.html;
+ * 
+ * @param it 
+ */
+void	ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
+{
+	std::vector<int> codes;
+    int nbr = 0;
+
+	while (it->find_first_not_of("0123456789") == std::string::npos)
+        nbr = std::stoi(*it++);
+	conf.addErrorPage(nbr, *it);
+	if (*++it != ";")
+		throw InvalidValue();
+}
+
+/**
+ * @brief CLIENT MAX BODY SIZE
+ * Checkeamos que client max body size sea solo un número
+ * 
+ * @param it 
+ */
+void	ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config conf)
+{
+	if (it->find_first_not_of("0123456789") != std::string::npos)
+		throw InvalidValue();
+	conf.setClientMaxBodySize(std::stoi(*it));
+	if (*++it != ";")
+		throw InvalidValue();
+};
+
+/**
+ * @brief AUTOINDEX
+ * procesa las solicitudes que terminan con el carácter de slash (' /')
+ * y produce una lista de directorios
+ * Tenemos que saber si está en on o off, ninguna otra y que después haya un ';'
+ * 
+ * @param it 
+ */
+void	ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
+{
+	if (*it == "on")
+		conf.setAutoindex(true);
+	else if (*it == "off")
+		conf.setAutoindex(false);
+	else
+		throw InvalidValue();
+	if (*++it != ";")
+		throw InvalidValue();
+};
+
 
 void    ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
 {
+    Config conf;
+
     if (*it == "listen")
-        listen(++it);
+        conf.addListen(listen(++it));
+    if (*it == "server_name")
+        servername(++it, conf);
+    if (*it == "root")
+        root(++it, conf);
+    if (*it == "cgi")
+        cgi(++it, conf);
+    if (*it == "index")
+        index(++it, conf);
+    if (*it == "limit_except")
+        limitExcept(++it, conf);
+    if (*it == "error_page")
+        errorPage(++it, conf);
+    if (*it == "client_max_body_size")
+        client_max_body_size(++it, conf);
+    // TODO 	void setAutoindex(bool autoindex);
+    
 }
 
 /**
@@ -158,7 +306,7 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     std::vector<std::string>::iterator itV = _configToken.end();
 
     std::cout << "INSIDE\n";
-    std::cout << "ITV IS " << *iter <<  "\n";
+    // std::cout << "ITV IS " << *iter <<  "\n";
     
 
     _configToken.insert(itV, *iter);
