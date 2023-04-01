@@ -15,7 +15,8 @@ ConfigFile::ConfigFile(std::string path)
 }
 
 ConfigFile::~ConfigFile()
-{}
+{
+}
 
 /**
  * @brief Si encontramos "{", hacemos un push de true
@@ -111,40 +112,40 @@ void ConfigFile::pushToken(std::string &tmp)
     _token.push_back(tmp);
 }
 
-void	ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
+void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
 {
-	ip = str.substr(0, str.find(':'));
-	std::string port_str = str.substr(str.find(':') + 1);
-	port = std::stoi(port_str);
+    ip = str.substr(0, str.find(':'));
+    std::string port_str = str.substr(str.find(':') + 1);
+    port = std::stoi(port_str);
 
-	if (port_str.find_first_not_of("0123456789") != std::string::npos)
-		throw InvalidValue();
-	if (port > 65535)
-		throw InvalidValue();
+    if (port_str.find_first_not_of("0123456789") != std::string::npos)
+        throw InvalidValue();
+    if (port > 65535)
+        throw InvalidValue();
 }
 
-uint32_t    ConfigFile::listen(std::vector<std::string>::iterator &it)
+void ConfigFile::listen(std::vector<std::string>::iterator &it, Config conf)
 {
-	std::string	str = *it;
-	std::string	ip = "0.0.0.0";
-	uint32_t	port = 8000;
+    std::string str = *it;
+    std::string ip = "0.0.0.0";
+    uint32_t port = 8000;
 
-	if (str.find(':') != std::string::npos)
-		savePort(str, ip, port);
-	else if (str.find_first_not_of("0123456789") != std::string::npos)
-		ip = str;
-	else
-		port = std::stoi(str);
-    return (port);
+    if (str.find(':') != std::string::npos)
+        savePort(str, ip, port);
+    else if (str.find_first_not_of("0123456789") != std::string::npos)
+        ip = str;
+    else
+        port = std::stoi(str);
+    conf.addListen(port);
 }
 
 /**
  * @brief SERVER NAME
  * Guardamos el "server name"
- * 
- * @param it 
+ *
+ * @param it
  */
-void    ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf)
 {
     while (*it != ";")
         conf.addServerName(*it++);
@@ -155,13 +156,13 @@ void    ConfigFile::servername(std::vector<std::string>::iterator &it, Config &c
  * Guardamos el "root"
  * Después de root solo puede venir una palabra.
  * Si tiene más y no acaba en ";", es incorrecto.
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
 {
-	conf.setRoot(*it);
-	if (*++it != ";")
+    conf.setRoot(*it);
+    if (*++it != ";")
         throw InvalidValue();
 }
 
@@ -170,16 +171,16 @@ void	ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
  * Guardamos el "cgi"
  * Después de root solo pueden venir dos palabras.
  * Si no hay cgi + 2 palabras + ';', es incorrecto.
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
 {
-	std::string &ext = *it++;
-	std::string &exec = *it++;
+    std::string &ext = *it++;
+    std::string &exec = *it++;
     conf.addCgi(ext, exec);
-	if (*it != ";")
-		throw InvalidValue();
+    if (*it != ";")
+        throw InvalidValue();
 }
 
 /**
@@ -187,13 +188,17 @@ void	ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
  * Guardamos el "index".
  * Después de index solo puede venir una palabra.
  * Si no hay index + 1 palabra + ';', es incorrecto.
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
 {
-	while (*it != ";")
+    if (*it != ";")
         conf.addIndex(*it);
+    else
+        throw InvalidValue();
+    if (*(++it) != ";")
+        throw InvalidValue();
 }
 
 /**
@@ -202,15 +207,14 @@ void	ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
  * Después de limitExcept solo puede venir una palabra.
  * Si no hay limitExcept + 1 palabra + ';', es incorrecto.
  * limitExcept nos va a dar la orden: PUT, GET, POST, etc.
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf)
 {
-	while (*it != ";")
+    while (*it != ";")
         conf.addLimitExcept(*it++);
 }
-
 
 /**
  * @brief ERROR_PAGE
@@ -218,34 +222,34 @@ void	ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf
  * Tienen que dar el código de error y el path
  * El código de error solo pueden ser números
  * Ej.: error_page 404 /my_errors/404.html;
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
 {
-	std::vector<int> codes;
+    std::vector<int> codes;
     int nbr = 0;
 
-	while (it->find_first_not_of("0123456789") == std::string::npos)
+    while (it->find_first_not_of("0123456789") == std::string::npos)
         nbr = std::stoi(*it++);
-	conf.addErrorPage(nbr, *it);
-	if (*++it != ";")
-		throw InvalidValue();
+    conf.addErrorPage(nbr, *it);
+    if (*++it != ";")
+        throw InvalidValue();
 }
 
 /**
  * @brief CLIENT MAX BODY SIZE
  * Checkeamos que client max body size sea solo un número
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config conf)
 {
-	if (it->find_first_not_of("0123456789") != std::string::npos)
-		throw InvalidValue();
-	conf.setClientMaxBodySize(std::stoi(*it));
-	if (*++it != ";")
-		throw InvalidValue();
+    if (it->find_first_not_of("0123456789") != std::string::npos)
+        throw InvalidValue();
+    conf.setClientMaxBodySize(std::stoi(*it));
+    if (*++it != ";")
+        throw InvalidValue();
 };
 
 /**
@@ -253,44 +257,86 @@ void	ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Co
  * procesa las solicitudes que terminan con el carácter de slash (' /')
  * y produce una lista de directorios
  * Tenemos que saber si está en on o off, ninguna otra y que después haya un ';'
- * 
- * @param it 
+ *
+ * @param it
  */
-void	ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
 {
-	if (*it == "on")
-		conf.setAutoindex(true);
-	else if (*it == "off")
-		conf.setAutoindex(false);
-	else
-		throw InvalidValue();
-	if (*++it != ";")
-		throw InvalidValue();
+    if (*it == "on")
+        conf.setAutoindex(true);
+    else if (*it == "off")
+        conf.setAutoindex(false);
+    else
+        throw InvalidValue();
+    if (*++it != ";")
+        throw InvalidValue();
 };
 
+/**
+ * @brief Miramos en bucle lo que tenemos dentro de location
+ * Si encontramos algún modificador, checkeamos que sea correcto
+ * 
+ * @param it 
+ * @param locations 
+ */
+void	ConfigFile::locationLoop(std::vector<std::string>::iterator &it, Config &conf)
+{
+    (void) it;
+    (void) conf;
+	// if (isLocationModifier(*it))
+	// {
+	// 	modificateLocation(*it);
+	// 	it++;
+	// }
+	// else
+	// 	_modifier = NONE;
+	// _uri = *it++;
+	// if (*it != "{")
+	// 	throw std::runtime_error("missing opening bracket in server block");
+	// while (*(++it) != "}")
+	// 	checkValidDir(it);
+	// locations.push_back(*this);
+}
 
-void    ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
+/**
+ * @brief LOCATIONS
+ * Guardamos "locations"
+ * Podemos encontrar varios "locations", por lo que vamos a necesitar guardarlos con _locationsloop
+ * Location es la ubicación del directorio
+ * @param it
+ */
+void ConfigFile::location(std::vector<std::string>::iterator &it, Config &conf)
+{
+    locationLoop(it, conf);
+};
+
+void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
 {
     Config conf;
 
+    // std::cout << "ITV is ->" << *it <<  "<-\n";
     if (*it == "listen")
-        conf.addListen(listen(++it));
-    if (*it == "server_name")
+        listen(++it, conf);
+    else if (*it == "server_name")
         servername(++it, conf);
-    if (*it == "root")
+    else if (*it == "root")
         root(++it, conf);
-    if (*it == "cgi")
+    else if (*it == "cgi")
         cgi(++it, conf);
-    if (*it == "index")
+    else if (*it == "index")
         index(++it, conf);
-    if (*it == "limit_except")
+    else if (*it == "location")
+        location(++it, conf);
+    else if (*it == "limit_except")
         limitExcept(++it, conf);
-    if (*it == "error_page")
+    else if (*it == "error_page")
         errorPage(++it, conf);
-    if (*it == "client_max_body_size")
+    else if (*it == "client_max_body_size")
         client_max_body_size(++it, conf);
-    // TODO 	void setAutoindex(bool autoindex);
-    
+    else if (*it == "autoindex")
+        autoindex(++it, conf);
+    // else
+    // std::cout << "NNGUN IF\n";
 }
 
 /**
@@ -305,15 +351,10 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     Config config;
     std::vector<std::string>::iterator itV = _configToken.end();
 
-    std::cout << "INSIDE\n";
-    // std::cout << "ITV IS " << *iter <<  "\n";
-    
-
     _configToken.insert(itV, *iter);
     iter++;
     for (; iter != _token.end() && *iter != "server"; iter++)
     {
-        std::cout << "ITV IS " << *iter <<  "\n";
         itV = _configToken.end();
         _configToken.insert(itV, *iter);
     }
@@ -322,9 +363,10 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     if (*itV != "{")
         throw InvalidValue();
     while (*(++itV) != "}")
-		checkValidDir(itV);
-	// locations.push_back(*this)
-    
+    {
+        checkValidDir(itV);
+    }
+    // locations.push_back(*this)
 
     // std::string _root = "/";
     // si hay un location
@@ -380,16 +422,14 @@ void ConfigFile::parse()
     token();
     for (iter = _token.begin(); iter != _token.end(); iter++)
     {
-        std::cout << "ITER IS: " << *iter << std::endl;
-        std::cout << "TOKEN IS: " << *iter << std::endl;
         if ((*iter).empty())
-            continue ;
+            continue;
         if (*iter == "server")
         {
             configToken(iter);
             iter--;
         }
-        
+
         // else
         //     throw InvalidBlock();
     }
@@ -397,35 +437,35 @@ void ConfigFile::parse()
 
 const char *ConfigFile::EmptyFile::what() const throw()
 {
-	return "Empty file";
+    return "Empty file";
 }
 
 const char *ConfigFile::ExtraClosing::what() const throw()
 {
-	return "Extra closing }";
+    return "Extra closing }";
 }
 
 const char *ConfigFile::MissingDot::what() const throw()
 {
-	return "Missing ;";
+    return "Missing ;";
 }
 
 const char *ConfigFile::InvalidBlock::what() const throw()
 {
-	return "Invalid block";
+    return "Invalid block";
 }
 
 const char *ConfigFile::EmptyServer::what() const throw()
 {
-	return "Empty server";
+    return "Empty server";
 }
 
 const char *ConfigFile::InvalidFile::what() const throw()
 {
-	return "Invalid file";
+    return "Invalid file";
 }
 
 const char *ConfigFile::InvalidValue::what() const throw()
 {
-	return "Invalid value in the file";
+    return "Invalid value in the file";
 }
