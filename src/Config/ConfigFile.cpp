@@ -137,6 +137,9 @@ void ConfigFile::listen(std::vector<std::string>::iterator &it, Config conf)
     else
         port = std::stoi(str);
     conf.addListen(port);
+
+    // COMPROBACION
+    std::cout << "listen: " << port << std::endl;
 }
 
 /**
@@ -149,6 +152,11 @@ void ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf
 {
     while (*it != ";")
         conf.addServerName(*it++);
+    
+    // COMPROBACION
+    std::vector<std::string> vect = conf.getServerName();
+    std::vector<std::string>::iterator iter = vect.begin();
+    std::cout << "serverName: " << *iter << std::endl;
 }
 
 /**
@@ -164,6 +172,9 @@ void ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
     conf.setRoot(*it);
     if (*++it != ";")
         throw InvalidValue();
+    
+    // COMPROBACION
+    std::cout << "root: " << conf.getRoot() << std::endl;
 }
 
 /**
@@ -181,6 +192,11 @@ void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
     conf.addCgi(ext, exec);
     if (*it != ";")
         throw InvalidValue();
+
+    // COMPROBACION
+    std::map<std::string, std::string> mapa = conf.getCgi();
+    std::map<std::string, std::string>::iterator iter = mapa.begin();
+    std::cout << "cgi: " << iter->first << " | " << iter->second << std::endl;
 }
 
 /**
@@ -199,6 +215,11 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
         throw InvalidValue();
     if (*(++it) != ";")
         throw InvalidValue();
+    
+    // COMPROBACION
+    std::vector<std::string> vect = conf.getIndex();
+    std::vector<std::string>::iterator iter = vect.begin();
+    std::cout << "index: " << *iter << std::endl;
 }
 
 /**
@@ -214,6 +235,11 @@ void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf
 {
     while (*it != ";")
         conf.addLimitExcept(*it++);
+    
+    // COMPROBACION
+    std::vector<std::string> vect = conf.getLimitExcept();
+    std::vector<std::string>::iterator iter = vect.begin();
+    std::cout << "limit: " << *iter << std::endl;
 }
 
 /**
@@ -235,6 +261,11 @@ void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
     conf.addErrorPage(nbr, *it);
     if (*++it != ";")
         throw InvalidValue();
+
+    // COMPROBACION
+    std::map<int, std::string> mapa = conf.getErrorPage();
+    std::map<int, std::string>::iterator iter = mapa.begin();
+    std::cout << "errorPage: " << iter->first << " | " << iter->second << std::endl;
 }
 
 /**
@@ -250,7 +281,10 @@ void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Co
     conf.setClientMaxBodySize(std::stoi(*it));
     if (*++it != ";")
         throw InvalidValue();
-};
+    
+    // COMPROBACION
+    std::cout << "client_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
+}
 
 /**
  * @brief AUTOINDEX
@@ -270,32 +304,71 @@ void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
         throw InvalidValue();
     if (*++it != ";")
         throw InvalidValue();
-};
+
+    // COMPROBACION
+    std::cout << "autoindex: " << conf.getAutoindex() << std::endl;
+}
+
+/**
+ * @brief Miramos si el string es alguno de la lista.
+ * Función auxiliar en locationLoop.
+ * https://www.thegeekstuff.com/2017/05/nginx-location-examples/
+ * Un modificador es opcional y actua como un prefijo para la URL entrante
+ * -> = <- fo all server errors Ex.: location = /404.html (coincidencia de expresion regular)
+ * -> ~ <- no distingue de mayusculas y minusculas Ex.: location ~* .(png|gif|ico|jpg|jpe?g)$ (coincidencia de prefijo)
+ * Hay mas modificadores, como (), | 
+ * 
+ * TODO ASK ALBERTO : Hacemos el location modifier ????
+ *
+ * @param str
+ * @return true
+ * @return false
+ */
+bool isLocationModifier(std::string &str)
+{
+    return (str == "=" ||
+            str == "~");
+}
+
+/**
+ * @brief Checkeamos si el modificador que nos han pasado se puede aplicar a nuestro location
+ * Si no es válido, mandamos excepción
+ * 
+ * @param str 
+ */
+// void	ConfigFile::modificateLocation(std::string &str)
+// {
+// 	if (str == "=")
+// 		_modifier = EXACT;
+// 	else if (str == "~")
+// 		_modifier = CASE_SENSITIVE_REG;
+// 	else
+// 		throw InvalidValue();
+// }
 
 /**
  * @brief Miramos en bucle lo que tenemos dentro de location
  * Si encontramos algún modificador, checkeamos que sea correcto
- * 
- * @param it 
- * @param locations 
+ * Enviamos el iterador a checkValidDir, enviandole el nuevo archivo de configuracion
+ *
+ * @param it
+ * @param locations
  */
-void	ConfigFile::locationLoop(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::locationLoop(std::vector<std::string>::iterator &it)
 {
-    (void) it;
-    (void) conf;
-	// if (isLocationModifier(*it))
-	// {
-	// 	modificateLocation(*it);
-	// 	it++;
-	// }
-	// else
-	// 	_modifier = NONE;
-	// _uri = *it++;
-	// if (*it != "{")
-	// 	throw std::runtime_error("missing opening bracket in server block");
-	// while (*(++it) != "}")
-	// 	checkValidDir(it);
-	// locations.push_back(*this);
+    if (isLocationModifier(*it))
+    {
+    // 	modificateLocation(*it);
+    	it++;
+    }
+    // else
+    // 	_modifier = NONE;
+
+    Config conf;
+    // _uri = *it++;
+    while (*(++it) != "}")
+    	checkValidDir(it, conf);
+    // locations.push_back(*this);
 }
 
 /**
@@ -305,16 +378,13 @@ void	ConfigFile::locationLoop(std::vector<std::string>::iterator &it, Config &co
  * Location es la ubicación del directorio
  * @param it
  */
-void ConfigFile::location(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::location(std::vector<std::string>::iterator &it)
 {
-    locationLoop(it, conf);
+    locationLoop(it);
 };
 
-void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
+void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it, Config conf)
 {
-    Config conf;
-
-    // std::cout << "ITV is ->" << *it <<  "<-\n";
     if (*it == "listen")
         listen(++it, conf);
     else if (*it == "server_name")
@@ -326,7 +396,7 @@ void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
     else if (*it == "index")
         index(++it, conf);
     else if (*it == "location")
-        location(++it, conf);
+        location(++it);
     else if (*it == "limit_except")
         limitExcept(++it, conf);
     else if (*it == "error_page")
@@ -335,8 +405,6 @@ void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
         client_max_body_size(++it, conf);
     else if (*it == "autoindex")
         autoindex(++it, conf);
-    // else
-    // std::cout << "NNGUN IF\n";
 }
 
 /**
@@ -348,7 +416,6 @@ void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it)
  */
 void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
 {
-    Config config;
     std::vector<std::string>::iterator itV = _configToken.end();
 
     _configToken.insert(itV, *iter);
@@ -362,11 +429,13 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     itV++;
     if (*itV != "{")
         throw InvalidValue();
+    
+    std::cout << "VOY A CREAR EL ARCHIVO DE CONFIGURACION\n";
+    Config conf;
     while (*(++itV) != "}")
     {
-        checkValidDir(itV);
+        checkValidDir(itV, &conf);
     }
-    // locations.push_back(*this)
 
     // std::string _root = "/";
     // si hay un location
@@ -419,6 +488,7 @@ void ConfigFile::parse()
 {
     std::vector<std::string>::iterator iter = _token.begin();
 
+    int i = 1;
     token();
     for (iter = _token.begin(); iter != _token.end(); iter++)
     {
@@ -426,6 +496,8 @@ void ConfigFile::parse()
             continue;
         if (*iter == "server")
         {
+            std::cout << "PASO POR AQUI " << i << " veces\n";
+            i++;
             configToken(iter);
             iter--;
         }
@@ -442,7 +514,12 @@ const char *ConfigFile::EmptyFile::what() const throw()
 
 const char *ConfigFile::ExtraClosing::what() const throw()
 {
-    return "Extra closing }";
+    return "Extra {";
+}
+
+const char *ConfigFile::ExtraOpening::what() const throw()
+{
+    return "Extra }";
 }
 
 const char *ConfigFile::MissingDot::what() const throw()

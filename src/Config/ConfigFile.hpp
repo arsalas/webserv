@@ -33,16 +33,16 @@ private:
     void endOfLine(std::string &tmp);
     void pushToken(std::string &tmp);
     void configToken(std::vector<std::string>::iterator &it);
-    void checkValidDir(std::vector<std::string>::iterator &it);
+    void checkValidDir(std::vector<std::string>::iterator &it, Config conf);
 
     void listen(std::vector<std::string>::iterator &it, Config conf);
     void savePort(std::string &str, std::string &ip, uint32_t &port);
     void servername(std::vector<std::string>::iterator &it, Config &conf);
     void root(std::vector<std::string>::iterator &it, Config &conf);
     void cgi(std::vector<std::string>::iterator &it, Config &conf);
-    void index(std::vector<std::string>::iterator &it, Config &conf);
-    void location(std::vector<std::string>::iterator &it, Config &conf);
-    void locationLoop(std::vector<std::string>::iterator &it, Config &conf);
+    void index(std::vector<std::string>::iterator &it,  Config &conf);
+    void location(std::vector<std::string>::iterator &it);
+    void locationLoop(std::vector<std::string>::iterator &it);
     void limitExcept(std::vector<std::string>::iterator &it, Config conf);
     void errorPage(std::vector<std::string>::iterator &it, Config conf);
     void client_max_body_size(std::vector<std::string>::iterator &it, Config conf);
@@ -56,6 +56,12 @@ public:
 
 public:
     class ExtraClosing : public std::exception
+    {
+        virtual const char *what() const throw();
+    };
+
+public:
+    class ExtraOpening : public std::exception
     {
         virtual const char *what() const throw();
     };
