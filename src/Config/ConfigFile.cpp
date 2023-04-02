@@ -152,7 +152,7 @@ void ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf
 {
     while (*it != ";")
         conf.addServerName(*it++);
-    
+
     // COMPROBACION
     std::vector<std::string> vect = conf.getServerName();
     std::vector<std::string>::iterator iter = vect.begin();
@@ -172,7 +172,7 @@ void ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
     conf.setRoot(*it);
     if (*++it != ";")
         throw InvalidValue();
-    
+
     // COMPROBACION
     std::cout << "root: " << conf.getRoot() << std::endl;
 }
@@ -215,7 +215,7 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
         throw InvalidValue();
     if (*(++it) != ";")
         throw InvalidValue();
-    
+
     // COMPROBACION
     std::vector<std::string> vect = conf.getIndex();
     std::vector<std::string>::iterator iter = vect.begin();
@@ -235,7 +235,7 @@ void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf
 {
     while (*it != ";")
         conf.addLimitExcept(*it++);
-    
+
     // COMPROBACION
     std::vector<std::string> vect = conf.getLimitExcept();
     std::vector<std::string>::iterator iter = vect.begin();
@@ -281,7 +281,7 @@ void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Co
     conf.setClientMaxBodySize(std::stoi(*it));
     if (*++it != ";")
         throw InvalidValue();
-    
+
     // COMPROBACION
     std::cout << "client_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
 }
@@ -310,43 +310,6 @@ void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
 }
 
 /**
- * @brief Miramos si el string es alguno de la lista.
- * Función auxiliar en locationLoop.
- * https://www.thegeekstuff.com/2017/05/nginx-location-examples/
- * Un modificador es opcional y actua como un prefijo para la URL entrante
- * -> = <- fo all server errors Ex.: location = /404.html (coincidencia de expresion regular)
- * -> ~ <- no distingue de mayusculas y minusculas Ex.: location ~* .(png|gif|ico|jpg|jpe?g)$ (coincidencia de prefijo)
- * Hay mas modificadores, como (), | 
- * 
- * TODO ASK ALBERTO : Hacemos el location modifier ????
- *
- * @param str
- * @return true
- * @return false
- */
-bool isLocationModifier(std::string &str)
-{
-    return (str == "=" ||
-            str == "~");
-}
-
-/**
- * @brief Checkeamos si el modificador que nos han pasado se puede aplicar a nuestro location
- * Si no es válido, mandamos excepción
- * 
- * @param str 
- */
-// void	ConfigFile::modificateLocation(std::string &str)
-// {
-// 	if (str == "=")
-// 		_modifier = EXACT;
-// 	else if (str == "~")
-// 		_modifier = CASE_SENSITIVE_REG;
-// 	else
-// 		throw InvalidValue();
-// }
-
-/**
  * @brief Miramos en bucle lo que tenemos dentro de location
  * Si encontramos algún modificador, checkeamos que sea correcto
  * Enviamos el iterador a checkValidDir, enviandole el nuevo archivo de configuracion
@@ -356,19 +319,11 @@ bool isLocationModifier(std::string &str)
  */
 void ConfigFile::locationLoop(std::vector<std::string>::iterator &it)
 {
-    if (isLocationModifier(*it))
-    {
-    // 	modificateLocation(*it);
-    	it++;
-    }
-    // else
-    // 	_modifier = NONE;
-
     Config conf;
-    // _uri = *it++;
+
     while (*(++it) != "}")
-    	checkValidDir(it, conf);
-    // locations.push_back(*this);
+        checkValidDir(it, conf);
+    _configs.push_back(conf);
 }
 
 /**
@@ -429,13 +384,17 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     itV++;
     if (*itV != "{")
         throw InvalidValue();
-    
+
     std::cout << "VOY A CREAR EL ARCHIVO DE CONFIGURACION\n";
+
     Config conf;
     while (*(++itV) != "}")
     {
         checkValidDir(itV, &conf);
     }
+    _configs.push_back(conf);
+
+    // config dentro de locattion con el new
 
     // std::string _root = "/";
     // si hay un location
@@ -444,9 +403,15 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     // el constructor : Config::Config(Config *parent) : _parent (parent)
     // es cuando tengamos el addlocation, iremos a esa configuracion a darle los valores
 
-    // config.setRoot(_root);
-    // serv._configServer(++it);
-    // _configs.push_back(configs);
+    // TODO LOCATION
+    // TODO CGI
+    // Buscamos que archivo de html hay que mostrar. El CGI es una extension que indicas el programa a ejecutar e indicas la respuesta
+    // Es un texto generado a traves de un programa
+    // si tiene ext .py no p
+    // hay que procesarlo mediante programa
+
+    // le pasamos un archivo  y un path
+    // ececv del ejjecutable con el programa
 }
 
 void ConfigFile::token()
@@ -478,10 +443,6 @@ void ConfigFile::token()
         }
         line_idx++;
     }
-    // for (std::size_t i = 0; i < _token.size(); i++)
-    // {
-    //     std::cout << "token: " << _token[i] << "\n";
-    // }
 }
 
 void ConfigFile::parse()
@@ -501,9 +462,6 @@ void ConfigFile::parse()
             configToken(iter);
             iter--;
         }
-
-        // else
-        //     throw InvalidBlock();
     }
 }
 

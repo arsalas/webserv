@@ -23,6 +23,7 @@ private:
 public:
     ConfigFile(std::string path);
     ~ConfigFile();
+    std::vector<Config> getConfigs();
 
 private:
     void token();
