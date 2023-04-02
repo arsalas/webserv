@@ -3,6 +3,26 @@
 #include "CGI.hpp"
 #include <string>
 
+/*
+    CGI es una interfaz de puerta de enlace comun.
+    Significa que es una interffaz entre el servidor web y los programas escritos
+    CGI recoge los datos del cliente y luego envia una respuesta al cliente
+    La respuesta no es como un request, sino que puede ser documentos HTML, GIF, imágenes, etc.
+
+    Cuando un cliente solicita un documento de un servidor, el servidor encuentra el archivo y lo envía al cliente
+    Pero si un cliente solicita un programa CGI, el servidor simplemente actúa como intermediario entre el cliente y el programa CGI.
+
+    Proceso:
+    (1) El cliente envía una solicitud al servidor
+    (2) El servidor crea un proceso CGI
+    (3) El proceso CGI convierte la información solicitada en variables de entorno
+    (4) Conecta el servidor y un programa CGI externo
+    (5) Envía la respuesta al cliente
+   
+
+    http://www.mnuwer.dbasedeveloper.co.uk/dlearn/web/session01.htm
+*/
+
 CGI::CGI(Request &request)
 {
     initEnviron(request);
@@ -21,7 +41,7 @@ void    CGI::initEnviron(Request request)
     _env["PROTOCOL"] = request.getHttp();
     _env["PORT"] = request.getPort();
     _env["SERVER_NAME"] = header["Hostname"];
-    _env["CONTENT_TYPE"] = header["content-type"];
+    _env["CONTENT_TYPE"] = header["Content-type"];
 }
 
 
