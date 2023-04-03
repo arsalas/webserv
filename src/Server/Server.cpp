@@ -48,7 +48,7 @@ std::string Server::getPathFolder(std::string path)
 			return finalPath;
 		}
 	}
-	return _config.getRoot() + path;
+	return _config.getRoot() + "/" + path;
 }
 
 bool Server::isMethodAllow(std::string method)

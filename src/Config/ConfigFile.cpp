@@ -14,6 +14,11 @@ ConfigFile::ConfigFile(std::string path)
     parse();
 }
 
+std::vector<Config> ConfigFile::getConfigs()
+{
+    return (_configs);
+}
+
 ConfigFile::~ConfigFile()
 {
 }
@@ -116,8 +121,8 @@ void ConfigFile::pushToken(std::string &tmp)
  * @brief LISTEN
  * Guardamos el token "listen"
  * Si encontramos ':' guardamos la ip, el puerto y comprobamos que ambos sean correctos
- * 
- * @param it 
+ *
+ * @param it
  */
 void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
 {
@@ -135,25 +140,26 @@ void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
  * @brief LISTEN
  * Guardamos el token "listen"
  * Si encontramos ':' guardamos la ip, el puerto y comprobamos que ambos sean correctos
- * 
- * @param it 
+ * // TODO CAMBIAR PUERTO Y QUITAR COSAS
+ * @param it
  */
-void ConfigFile::listen(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::listen(std::vector<std::string>::iterator &it, Config *conf)
 {
-    std::string str = *it;
-    std::string ip = "0.0.0.0";
-    uint32_t port = 8000;
+    // std::string str = *it;
+    // std::string ip = "0.0.0.0";
+    // uint32_t port = std::stoi(str);
 
-    if (str.find(':') != std::string::npos)
-        savePort(str, ip, port);
-    else if (str.find_first_not_of("0123456789") != std::string::npos)
-        ip = str;
-    else
-        port = std::stoi(str);
-    conf.addListen(port);
+    // if (str.find(':') != std::string::npos)
+    //     savePort(str, ip, port);
+    // else if (str.find_first_not_of("0123456789") != std::string::npos)
+    //     ip = str;
+    // conf->addListen(port);
+    std::cout << "it is " << *it << std::endl;
+
+    conf->addListen(std::stoi(*it));
 
     // COMPROBACION
-    std::cout << "listen: " << port << std::endl;
+    // std::cout << "listen: " << conf->getListen << std::endl;
 }
 
 /**
@@ -162,13 +168,13 @@ void ConfigFile::listen(std::vector<std::string>::iterator &it, Config conf)
  *
  * @param it
  */
-void ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::servername(std::vector<std::string>::iterator &it, Config *conf)
 {
     while (*it != ";")
-        conf.addServerName(*it++);
+        conf->addServerName(*it++);
 
     // COMPROBACION
-    std::vector<std::string> vect = conf.getServerName();
+    std::vector<std::string> vect = conf->getServerName();
     std::vector<std::string>::iterator iter = vect.begin();
     std::cout << "serverName: " << *iter << std::endl;
 }
@@ -181,14 +187,14 @@ void ConfigFile::servername(std::vector<std::string>::iterator &it, Config &conf
  *
  * @param it
  */
-void ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::root(std::vector<std::string>::iterator &it, Config *conf)
 {
-    conf.setRoot(*it);
+    conf->setRoot(*it);
     if (*++it != ";")
         throw myException("Invalid root", 0);
 
     // COMPROBACION
-    std::cout << "root: " << conf.getRoot() << std::endl;
+    std::cout << "root: " << conf->getRoot() << std::endl;
 }
 
 /**
@@ -199,16 +205,16 @@ void ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
  *
  * @param it
  */
-void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config *conf)
 {
     std::string &ext = *it++;
     std::string &exec = *it++;
-    conf.addCgi(ext, exec);
+    conf->addCgi(ext, exec);
     if (*it != ";")
         throw myException("Invalid CGI", 0);
 
     // COMPROBACION
-    std::map<std::string, std::string> mapa = conf.getCgi();
+    std::map<std::string, std::string> mapa = conf->getCgi();
     std::map<std::string, std::string>::iterator iter = mapa.begin();
     std::cout << "cgi: " << iter->first << " | " << iter->second << std::endl;
 }
@@ -221,17 +227,17 @@ void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
  *
  * @param it
  */
-void ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
+void ConfigFile::index(std::vector<std::string>::iterator &it, Config *conf)
 {
     if (*it != ";")
-        conf.addIndex(*it);
+        conf->addIndex(*it);
     else
         throw myException("Invalid index", 0);
     if (*(++it) != ";")
         throw myException("Invalid index", 0);
 
     // COMPROBACION
-    std::vector<std::string> vect = conf.getIndex();
+    std::vector<std::string> vect = conf->getIndex();
     std::vector<std::string>::iterator iter = vect.begin();
     std::cout << "index: " << *iter << std::endl;
 }
@@ -245,13 +251,13 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
  *
  * @param it
  */
-void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config *conf)
 {
     while (*it != ";")
-        conf.addLimitExcept(*it++);
+        conf->addLimitExcept(*it++);
 
     // COMPROBACION
-    std::vector<std::string> vect = conf.getLimitExcept();
+    std::vector<std::string> vect = conf->getLimitExcept();
     std::vector<std::string>::iterator iter = vect.begin();
     std::cout << "limit: " << *iter << std::endl;
 }
@@ -265,19 +271,19 @@ void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config conf
  *
  * @param it
  */
-void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config *conf)
 {
     std::vector<int> codes;
     int nbr = 0;
 
     while (it->find_first_not_of("0123456789") == std::string::npos)
         nbr = std::stoi(*it++);
-    conf.addErrorPage(nbr, *it);
+    conf->addErrorPage(nbr, *it);
     if (*++it != ";")
         throw myException("Invalid error page", 0);
 
     // COMPROBACION
-    std::map<int, std::string> mapa = conf.getErrorPage();
+    std::map<int, std::string> mapa = conf->getErrorPage();
     std::map<int, std::string>::iterator iter = mapa.begin();
     std::cout << "errorPage: " << iter->first << " | " << iter->second << std::endl;
 }
@@ -288,16 +294,16 @@ void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
  *
  * @param it
  */
-void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config *conf)
 {
     if (it->find_first_not_of("0123456789") != std::string::npos)
         throw myException("Invalid client max body size", 0);
-    conf.setClientMaxBodySize(std::stoi(*it));
+    conf->setClientMaxBodySize(std::stoi(*it));
     if (*++it != ";")
         throw myException("Invalid client max body size", 0);
 
     // COMPROBACION
-    std::cout << "client_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
+    std::cout << "client_max_body_size: " << conf->getClientMaxBodySize() << std::endl;
 }
 
 /**
@@ -308,36 +314,35 @@ void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Co
  *
  * @param it
  */
-void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config *conf)
 {
     if (*it == "on")
-        conf.setAutoindex(true);
+        conf->setAutoindex(true);
     else if (*it == "off")
-        conf.setAutoindex(false);
+        conf->setAutoindex(false);
     else
         throw myException("Invalid autoindex", 0);
     if (*++it != ";")
         throw myException("Invalid autoindex", 0);
 
     // COMPROBACION
-    std::cout << "autoindex: " << conf.getAutoindex() << std::endl;
+    std::cout << "autoindex: " << conf->getAutoindex() << std::endl;
 }
 
 /**
  * @brief Miramos en bucle lo que tenemos dentro de location
  * Si encontramos algún modificador, checkeamos que sea correcto
- * Enviamos el iterador a checkValidDir, enviandole el nuevo archivo de configuracion
+ * Enviamos el iterador a setTokens, enviandole el nuevo archivo de configuracion
  *
  * @param it
  * @param locations
  */
-void ConfigFile::locationLoop(std::vector<std::string>::iterator &it)
+void ConfigFile::locationLoop(std::vector<std::string>::iterator &it, Config *conf)
 {
-    Config conf;
+    Config *location = new Config(conf);
 
     while (*(++it) != "}")
-        checkValidDir(it, conf);
-    _configs.push_back(conf);
+        setTokens(it, location);
 }
 
 /**
@@ -347,12 +352,12 @@ void ConfigFile::locationLoop(std::vector<std::string>::iterator &it)
  * Location es la ubicación del directorio
  * @param it
  */
-void ConfigFile::location(std::vector<std::string>::iterator &it)
+void ConfigFile::location(std::vector<std::string>::iterator &it, Config *conf)
 {
-    locationLoop(it);
+    locationLoop(it, conf);
 };
 
-void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it, Config conf)
+void ConfigFile::setTokens(std::vector<std::string>::iterator &it, Config *conf)
 {
     if (*it == "listen")
         listen(++it, conf);
@@ -365,7 +370,7 @@ void ConfigFile::checkValidDir(std::vector<std::string>::iterator &it, Config co
     else if (*it == "index")
         index(++it, conf);
     else if (*it == "location")
-        location(++it);
+        location(++it, conf);
     else if (*it == "limit_except")
         limitExcept(++it, conf);
     else if (*it == "error_page")
@@ -402,9 +407,10 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     Config conf;
     while (*(++itV) != "}")
     {
-        checkValidDir(itV, &conf);
+        setTokens(itV, &conf);
     }
     _configs.push_back(conf);
+    _configToken.clear();
 
     // TODO CGI
     // Buscamos que archivo de html hay que mostrar. El CGI es una extension que indicas el programa a ejecutar e indicas la respuesta
@@ -462,7 +468,15 @@ void ConfigFile::parse()
         if (*iter == "server")
         {
             std::cout << "PASO POR AQUI " << i << " veces\n";
+            // std::cout << "iter is: " << *iter << std::endl;
+            // std::cout << "iter is: " << *++iter << std::endl;
+            // std::cout << "iter is: " << *++iter << std::endl;
+            // std::cout << "iter is: " << *++iter << std::endl;
+            // iter--;
+            // iter--;
+            // iter--;
             i++;
+            std::cout << "======CONFIG\n";
             configToken(iter);
             iter--;
         }

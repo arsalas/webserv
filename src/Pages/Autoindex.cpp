@@ -35,7 +35,10 @@ std::vector<std::string> Autoindex::readDir() const
 	std::cout << _path.c_str();
 	DIR *dirFd = opendir(_path.c_str());
 	if (!dirFd)
+	{
+		std::cout << "2\n";
 		throw NotFoundException(); 
+	}
 
 	struct dirent *dirFile;
 	while ((dirFile = readdir(dirFd)))

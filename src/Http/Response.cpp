@@ -59,7 +59,7 @@ size_t Response::sendFile(std::string filename)
 	{
 		// TODO esto no va aqui, hay que buscar el path en el server
 		(void)e;
-		status(404);
+		status(500);
 		return sendFile("src/Templates/InternalServerError.html");
 	}
 }

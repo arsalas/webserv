@@ -21,12 +21,15 @@ private:
 	std::vector<struct pollfd> _poll;
 	std::string _fdContent[MAX_CLIENTS];
 	int _maxLens[MAX_CLIENTS];
+	std::string _configPath;
 
 public:
 	WebServer();
+	WebServer(std::string configPath);
 	~WebServer();
 
 private:
+	void start();
 	std::set<int> getPorts();
 	void startSockets();
 	void initPoll();

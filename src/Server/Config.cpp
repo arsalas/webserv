@@ -34,32 +34,32 @@ Config::Config() : _parent(NULL)
 	// addListen(re.getPort());
 	// TODO quitar harcodeo
 
-	addListen(7000);
+	// addListen(7001);
 	// addListen(3000);
 	// addListen(3001);
 	// addListen(3002);
 	// addListen(8080);
 	// addServerName(re.getHost());
-	addServerName("localhost");
-	addCgi(".py", "/usr/bin/python3");
-	setRoot("www");
-	addIndex("index.html");
-	Config *location = new Config(this);
+	// addServerName("localhost");
+	// addCgi(".py", "/usr/bin/python3");
+	// setRoot("www");
+	// addIndex("index.html");
+	// Config *location = new Config(this);
 	// addLocation(re.getPath(), location);
-	addLocation("/data", location);
-	addErrorPage(404, "/src/Templates/NotFound.html");
-	setAutoindex(false);
+	// addLocation("/data", location);
+	// addErrorPage(404, "/src/Templates/NotFound.html");
+	// setAutoindex(false);
 }
 
 Config::Config(Config *parent) : _parent(parent)
 {
-	setRoot("www/data");
-	addIndex("index.html");
-	setUpload("uploads");
+	// setRoot("www/data");
+	// addIndex("index.html");
+	// setUpload("uploads");
 	// setClientMaxBodySize(5000);
 	// addIndex("index.html");
 	// addLimitExcept("GET");
-	setAutoindex(true);
+	// setAutoindex(true);
 	// setRewrite("https://www.liquidweb.com/kb/redirecting-urls-using-nginx/");
 
 	// addLimitExcept(re.getMethod());
@@ -148,6 +148,7 @@ std::string Config::getRewrite() const
 
 void Config::addListen(int listen)
 {
+	std::cout << "--------SET PORT: " << listen << std::endl;
 	_listen.push_back(listen);
 }
 

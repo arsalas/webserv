@@ -21,6 +21,8 @@
 #include "Pages/Autoindex.hpp"
 #include "Logs/Log.hpp"
 
+#include "Config/ConfigFile.hpp"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -50,20 +52,17 @@
  *
  */
 
+WebServer::WebServer() : _configPath("config/default.conf")
+{
+	start();
+}
 /**
  * @brief Construct a new Web Server:: Web Server object
  * Inicia los diferentes servidores en funcion de la configuracion
  */
-WebServer::WebServer()
+WebServer::WebServer(std::string configPath) : _configPath(configPath)
 {
-	// TODO cambiar por la configuracion
-	for (size_t i = 0; i < 1; i++)
-	{
-		Config conf;
-		_servers.push_back(Server(conf));
-	}
-	startSockets();
-	initPoll();
+	start();
 }
 
 /**
@@ -71,6 +70,28 @@ WebServer::WebServer()
  */
 WebServer::~WebServer()
 {
+}
+
+void WebServer::start()
+{
+	ConfigFile configFile(_configPath);
+
+	for (size_t i = 0; i < configFile.getConfigs().size(); i++)
+	{
+		// configFile.getConfigs()[i];
+		_servers.push_back(Server(configFile.getConfigs()[i]));
+		std::cout << "Congfig " << i << std::endl;
+	}
+
+	// TODO cambiar por la configuracion
+	// for (size_t i = 0; i < 1; i++)
+	// {
+
+	// 	Config conf;
+	// 	_servers.push_back(Server(conf));
+	// }
+	startSockets();
+	initPoll();
 }
 
 /**
@@ -100,8 +121,11 @@ void WebServer::startSockets()
 {
 	std::set<int> ports = getPorts();
 	std::set<int>::iterator it;
+	std::cout << "START PORTS\n";
 	for (it = ports.begin(); it != ports.end(); ++it)
 	{
+		std::cout << "PORT: " << (*it);
+		std::cout << "\n"; 
 		sockaddr_in servAddr;
 		servAddr.sin_family = AF_INET;
 		servAddr.sin_port = htons(*it);

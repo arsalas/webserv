@@ -7,7 +7,9 @@ File::File(std::string path) : _path(path)
 {
 	_file.open(_path.c_str());
 	if (!_file.is_open())
+	{
 		throw NotFoundException();
+	}
 }
 
 File::~File()
@@ -28,9 +30,8 @@ std::string File::toStr()
 	std::string str;
 	if (_file.is_open())
 	{
-		while (_file)
+		while (std::getline(_file, line))
 		{
-			std::getline(_file, line);
 			str += line;
 			str += "\n";
 		}
