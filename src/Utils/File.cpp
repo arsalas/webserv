@@ -14,6 +14,13 @@ File::~File()
 	_file.close();
 }
 
+std::string File::getExecPath(std::string path)
+{
+    int i = path.find_last_not_of('/');
+    std::string str = path.substr(i);
+    return (str);
+}
+
 std::string File::toStr()
 {
 	std::string line;

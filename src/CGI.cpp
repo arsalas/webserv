@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "CGI.hpp"
 #include "Server/Config.hpp"
+#include "Utils/File.hpp"
 #include <string>
 
 /*
@@ -51,28 +52,6 @@ void CGI::initEnviron(Request &request)
     _env["REDIRECT_STATUS"] = "200"; // The 200 OK status code means that the request was successful
 }
 
-// void    CGI::init()
-// {
-//     // _cwd = std::filesystem::current_path();
-//     if (_cwd.empty())
-//         return ;
-//     // TODO mirar si cgiBin comienza por '/'
-//     // si sí comienza:
-//     if (_cgiBin[0] == '/')
-//         _cgiPath = _cgiBin + "/" + _cgiExtension;
-//     else
-//         _cgiPath = _cwd + _cgiBin + "/" + _cgiExtension;
-// }
-// // *argv[] = {"/usr/bin/python3", "path"}
-// // std::string execute();
-
-std::string getExecPath(std::string path)
-{
-    int i = path.find_last_not_of('/');
-    std::string str = path.substr(i);
-    return (str);
-}
-
 /**
  * @brief EJECUTAMOS
  * Hacemos un fork. Estando en el hijo, cambiamos de directorio al dado por el path
@@ -114,7 +93,7 @@ int CGI::execute(Request &request, std::string CGIPath, std::string path)
             return (-1);
         }
 
-        _execPath = getExecPath(path);
+        _execPath = File::getExecPath(path);
         if (chdir(_execPath.c_str()) < 0)
             return (-1);
         close(outputFd[0]); // cerramos fd[1]

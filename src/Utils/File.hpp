@@ -18,6 +18,7 @@ public:
 	~File();
 
 	std::string toStr();
+	static std::string getExecPath(std::string path);
 
 	// EXCEPTIONS
 public:
