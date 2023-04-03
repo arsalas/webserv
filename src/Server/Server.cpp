@@ -3,10 +3,15 @@
 #include "Server.hpp"
 #include "Utils/Strings.hpp"
 
-Server::Server() {}
+Server::Server()
+{
+	setErrorPages();
+}
+
 Server::Server(Config config) : _config(config)
 {
 	std::vector<int> listens = config.getListen();
+	setErrorPages();
 }
 
 Server::~Server()
@@ -101,7 +106,7 @@ std::string Server::getErrorPageByStatus(int status)
 		}
 		catch (const std::exception &e)
 		{
-			return "src/Templates/NotFound.html";
+			return _errorPages[status];
 		}
 	}
 }
@@ -179,4 +184,12 @@ Config *Server::selectConfig(std::string path)
 			return (*it).second;
 	}
 	return NULL;
+}
+
+void Server::setErrorPages()
+{
+	_errorPages[404] = "src/Templates/NotFound.html";
+	_errorPages[405] = "src/Templates/NotAllowed.html";
+	_errorPages[413] = "src/Templates/PayloadTooLarge.html";
+	_errorPages[500] = "src/Templates/InternalServerError.html";
 }

@@ -6,7 +6,6 @@
 
 bool Dirs::existDir(std::string path)
 {
-	std::cout << "FILE: " << path << std::endl;
 	std::ifstream file(path.c_str());
 	if (!file.good())
 		return false;

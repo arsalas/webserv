@@ -18,11 +18,8 @@ private:
 	std::string _path;
 	std::vector<Server> _servers;
 	std::vector<struct pollfd> _poll;
-	// std::vector<std::string> _fdContent = 5;
 	std::string _fdContent[MAX_CLIENTS];
-	int _lens[MAX_CLIENTS];
 	int _maxLens[MAX_CLIENTS];
-	int _initLens[MAX_CLIENTS];
 
 public:
 	WebServer();

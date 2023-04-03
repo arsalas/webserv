@@ -9,11 +9,13 @@
 
 class Server
 {
+
 private:
 	Config _config;
 	std::vector<sockaddr_in> _servAddr;
 	std::vector<int> _socketFd;
 	std::string _activePath;
+	std::map<int, std::string> _errorPages;
 
 	// std::string _ip;
 	// int _port;
@@ -43,6 +45,8 @@ public:
 
 private:
 	Config *selectConfig(std::string path);
+	/// @brief
+	void setErrorPages();
 	// EXCEPTIONS
 public:
 };

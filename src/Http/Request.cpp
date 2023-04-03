@@ -19,43 +19,7 @@ Request::Request()
 
 Request::Request(std::string req)
 {
-
 	tokenRequest(req);
-
-	// std::cout << YEL "method: " << _method << std::endl;
-	// std::cout << YEL "_path: " << _path << std::endl;
-
-	// std::map<std::string, std::string>::iterator it = _payload.begin();
-	// // Iterate over the map using Iterator till end.
-	// while (it != _payload.end())
-	// {
-	// 	// Accessing KEY from element pointed by it.
-	// 	std::string key = it->first;
-	// 	// Accessing VALUE from element pointed by it.
-	// 	std::string value = it->second;
-	// 	std::cout << key << " => " << value << std::endl;
-	// 	// Increment the Iterator to point to next entry
-	// 	it++;
-	// }
-	// std::map<std::string, fileStruct>::iterator it2 = _files.begin();
-	// // Iterate over the map using Iterator till end.
-	// while (it2 != _files.end())
-	// {
-	// 	// Accessing KEY from element pointed by it.
-	// 	std::string key = it2->first;
-	// 	// Accessing VALUE from element pointed by it.
-	// 	fileStruct value = it2->second;
-	// 	std::cout << key << " => {" << std::endl;
-	// 	std::cout << "\tname: " << value.name << std::endl;
-	// 	std::cout << "\ttype: " << value.type << std::endl;
-	// 	std::cout << "\ttmp_name: " << value.tmp_name << std::endl;
-	// 	std::cout << "}\n";
-	// 	// Increment the Iterator to point to next entry
-	// 	it2++;
-	// }
-
-	// TODO
-	// excepciones
 }
 
 /**
@@ -242,7 +206,6 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 	{
 		if ((*iterV).empty())
 			continue;
-
 		if ((*iterV).find("name=") != std::string::npos)
 		{
 			// Comprobar si es un filename
@@ -250,7 +213,6 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 			i++;
 			std::string aux = (*iterV).substr(i, (*iterV).length() - i);
 			int end = (aux).find("\"");
-
 			// Extraemos el content-type
 			std::string contentType = "Content-Type: ";
 			int startType = (*iterV).find(contentType);
@@ -275,17 +237,13 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				// TODO comprobar que lo encuentra
 				std::string sample = _auxReq.substr(start1, _auxReq.length() - start1);
 				int start2 = sample.find("\r\n\r\n");
-				std::cout << "START 2 IS: " << start2 << std::endl;
 				start2 = start2 + 4;
 				int end1 = sample.find(_boundary + "--");
 				std::string fileRawContent = sample.substr(start2, end1 - start2);
 				file << fileRawContent;
 				file.close();
-				// TODO poner el path correcto;
+				// TODO poner el path correcto, en otra carpeta temporal;
 				fileStruct fileData = {content, contentType, "./"};
-				// std::cout << fileData.name << std::endl;
-				// std::cout << fileData.type << std::endl;
-				// std::cout << fileData.tmp_name << std::endl;
 				std::map<std::string, fileStruct>::iterator it = _files.end();
 				_files.insert(it, std::pair<std::string, fileStruct>(name, fileData));
 			}
@@ -328,29 +286,21 @@ int Request::tokenRequest(std::string req)
 	_auxReq = req;
 	// Obtenemos el header
 	std::string rawHeader = setRawHeader(req);
-	// std::cout << RED "" << req << "|" RESET << std::endl;
 	// Obtenemos el body
 	std::string rawBody = setRawBody(req);
-
 	std::vector<std::string> lineVector = Strings::split(rawHeader, "\n");
 	// std::vector<std::string> lineBody = Strings::split(rawBody, "\n");
-
 	setMethod(lineVector);
 	setHttp(lineVector);
 	setPath(lineVector);
 	setHeader(lineVector);
 	setHostPort(lineVector);
-
 	if (!isContentType())
 		return 0;
 
 	setBoundary();
 	std::vector<std::string> rawBoundary = Strings::split(rawBody, _boundary);
-
-	// std::vector<std::string>::iterator iter = rawBoundary.begin();
-
 	setPayload(rawBoundary);
-
 	return (errorsToken());
 	return (0);
 }
@@ -397,39 +347,30 @@ const char *Request::InvalidProtocol::what() const throw()
 
 std::ostream &operator<<(std::ostream &out, const Request &value)
 {
-	out << YEL "method: " << value.getMethod() << std::endl;
-	out << YEL "_path: " << value.getPath() << std::endl;
-
+	out << BLU "method: " RESET << value.getMethod() << std::endl;
+	out << BLU "path: " RESET << value.getPath() << std::endl;
 	std::map<std::string, std::string> _payload = value.getPayload();
 	std::map<std::string, fileStruct> _files = value.getFiles();
 	std::map<std::string, std::string>::iterator it = _payload.begin();
-	// Iterate over the map using Iterator till end.
+	out << BLU "payload: " RESET << std::endl;
 	while (it != _payload.end())
 	{
-		// Accessing KEY from element pointed by it.
 		std::string key = it->first;
-		// Accessing VALUE from element pointed by it.
 		std::string value = it->second;
-		out << key << " => " << value << std::endl;
-		// Increment the Iterator to point to next entry
+		out << BLU "" << key << " => " RESET << value << std::endl;
 		it++;
 	}
 	std::map<std::string, fileStruct>::iterator it2 = _files.begin();
-	// Iterate over the map using Iterator till end.
 	while (it2 != _files.end())
 	{
-		// Accessing KEY from element pointed by it.
 		std::string key = it2->first;
-		// Accessing VALUE from element pointed by it.
 		fileStruct value = it2->second;
 		out << key << " => {" << std::endl;
-		out << "\tname: " << value.name << std::endl;
-		out << "\ttype: " << value.type << std::endl;
-		out << "\ttmp_name: " << value.tmp_name << std::endl;
+		out << BLU "\tname: " RESET << value.name << std::endl;
+		out << BLU "\ttype: " RESET << value.type << std::endl;
+		out << BLU "\ttmp_name: " RESET << value.tmp_name << std::endl;
 		out << "}\n";
-		// Increment the Iterator to point to next entry
 		it2++;
 	}
-
 	return out;
 }

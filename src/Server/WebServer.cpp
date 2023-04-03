@@ -56,12 +56,6 @@
  */
 WebServer::WebServer()
 {
-	// TODO Vaciamos la array. mover a otro sitio
-	for (size_t i = 0; i < MAX_CLIENTS; i++)
-	{
-		_lens[i] = 0;
-		_initLens[i] = 0;
-	}
 	// TODO cambiar por la configuracion
 	for (size_t i = 0; i < 1; i++)
 	{
@@ -130,8 +124,7 @@ void WebServer::startSockets()
 void WebServer::initPoll()
 {
 	struct pollfd pollfds[_poll.size() + MAX_CLIENTS];
-	FD_ZERO(pollfds);
-	// std::memset(&pollfds, 0, sizeof(pollfds));
+	std::memset(&pollfds, 0, sizeof(pollfds));
 	// Dar los fd del server
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
@@ -141,19 +134,16 @@ void WebServer::initPoll()
 	int useClient = 0;
 	while (1)
 	{
-
-		// std::memset(buf, 0, sizeof(buf));
-		std::cout << "Waiting on poll()...\n";
+		Log::Info("Waiting on poll...");
 		int pollSize = _poll.size() + useClient;
 		int res = poll(pollfds, pollSize, WebServer::timeout);
-		std::cout << "Recived poll\n";
+		Log::Success("Recived poll");
 		if (res < 0)
 		{
-
-			std::cout << RED "Poll error\n" RESET;
+			Log::Error("Poll error");
 			return;
 		}
-		// CERRAR CLIENTES SI PILLA EL TIMEOUT
+		// CERRAR CLIENTES SI ALCANZA EL TIMEOUT
 		if (res == 0)
 		{
 			for (int i = _poll.size(); i < MAX_CLIENTS; i++)
@@ -169,23 +159,22 @@ void WebServer::initPoll()
 			}
 			continue;
 		}
-
 		// BUSCAR EL SERVER
 		struct sockaddr_in cli_addr;
 		std::string content;
 		socklen_t clilen = sizeof(cli_addr);
-		std::cout << YEL "Buscando server...\n" RESET;
+		bool find = false;
 		for (size_t i = 0; i < _poll.size(); i++)
 		{
 			if (pollfds[i].revents & POLLIN)
 			{
-				std::cout << BLU "Server find\n" RESET;
+				Log::Success("New Client");
+				find = true;
 				int newsockfd = accept(pollfds[i].fd, (struct sockaddr *)&cli_addr, &clilen);
 				for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 				{
 					if (pollfds[i].fd == 0)
 					{
-						std::cout << BLU "New client fd: " << newsockfd << "\n" RESET;
 						pollfds[i].fd = newsockfd;
 						pollfds[i].events = POLLIN | POLLPRI;
 						useClient++;
@@ -194,20 +183,22 @@ void WebServer::initPoll()
 				}
 			}
 		}
+		if (find)
+			continue;
 		// LEER LOS CLIENTES (recorres en array a ver qué fd ha cambiado en el poll)
-		std::cout << YEL "Buscando client...\n" RESET;
+		find = false;
 		for (int i = _poll.size(); i < MAX_CLIENTS; i++)
 		{
 			if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
 			{
-
-				std::cout << BLU "Client find fd: " << pollfds[i].fd << "\n" RESET;
+				find = true;
+				Log::Success("Find Client");
 				char buf[RECV_BUFFER_SIZE];
 				std::memset(buf, 0, RECV_BUFFER_SIZE);
 				int bufSize = recv(pollfds[i].fd, buf, RECV_BUFFER_SIZE, 0); // recv
 				if (bufSize == -1)
 				{
-					std::cout << RED "Error reciv\n" RESET;
+					Log::Error("Error reciv");
 					close(pollfds[i].fd);
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
@@ -217,7 +208,7 @@ void WebServer::initPoll()
 				}
 				else if (bufSize == 0)
 				{
-					std::cout << RED "Client close\n" RESET;
+					Log::Error("Client close");
 					close(pollfds[i].fd);
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
@@ -227,94 +218,42 @@ void WebServer::initPoll()
 				}
 				else
 				{
-					std::cout << BLU "Request reciving...\n" RESET;
 					std::string newStr = std::string(buf, bufSize);
 					_fdContent[i] += newStr;
 					int st = _fdContent[i].find("Content-Length: ");
+					// Si tiene content length hay que esperar hasta tener todo el content
 					if (st > 0)
 					{
 						std::string aux = _fdContent[i].substr(st + 16, _fdContent[i].length() - st - 16);
 						int end = aux.find("\n");
 						_maxLens[i] = std::stoi(aux.substr(0, end));
-						int currentLenInit = _fdContent[i].find("\n\n");
-						std::string auxLen = _fdContent[i].substr(currentLenInit + 2, _fdContent[i].length() - currentLenInit - 2);
-
-						// int currentLen = auxLen.length();
-						if (_initLens[i] == 0)
-							_initLens[i] = bufSize;
-						else
-							_lens[i] += bufSize;
-						if (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))
-						{
-							std::cout << YEL "Request recived\n" RESET;
-							Request req(_fdContent[i]);
-							Response resp(pollfds[i].fd);
-							Controller ctl(_servers, req, resp);
-							// sendResponse(pollfds[i].fd);
-							_fdContent[i] = "";
-							close(pollfds[i].fd);
-
-							std::cout << RED "Close client fd: " << pollfds[i].fd << "\n" RESET;
-							pollfds[i].fd = 0;
-							pollfds[i].events = 0;
-							pollfds[i].revents = 0;
-							_lens[i] = 0;
-							_maxLens[i] = 0;
-
-							// TODO realloc all fd;
-							for (size_t n = i; n < MAX_CLIENTS - 1; n++)
-							{
-								pollfds[n].fd = pollfds[n + 1].fd;
-								pollfds[n].events = pollfds[n + 1].events;
-								pollfds[n].revents = pollfds[n + 1].revents;
-								_lens[i] = _lens[n + 1];
-								_maxLens[i] = _maxLens[n + 1];
-							}
-
-							useClient--;
-							// break;
-						}
 					}
-					else if (st < 0 && bufSize < RECV_BUFFER_SIZE - 1)
+					if ((st < 0 && bufSize < RECV_BUFFER_SIZE - 1) || (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i])))
 					{
-						std::cout << YEL "Request recived\n" RESET;
-						Log::Info("Request recived");
 						Request req(_fdContent[i]);
 						Response resp(pollfds[i].fd);
 						Controller ctl(_servers, req, resp);
-
-						// sendResponse(pollfds[i].fd);
 						_fdContent[i] = "";
 						close(pollfds[i].fd);
-						std::cout << RED "Close client fd: " << pollfds[i].fd << "\n" RESET;
-
 						pollfds[i].fd = 0;
 						pollfds[i].events = 0;
 						pollfds[i].revents = 0;
-						_lens[i] = 0;
 						_maxLens[i] = 0;
-						// TODO realloc all fd;
-						for (size_t n = i; n < MAX_CLIENTS - 1; n++)
+						// REALOCAR LOS CLIENTES
+						for (int n = i; n < MAX_CLIENTS - 1; n++)
 						{
 							pollfds[n].fd = pollfds[n + 1].fd;
 							pollfds[n].events = pollfds[n + 1].events;
 							pollfds[n].revents = pollfds[n + 1].revents;
-							_lens[i] = _lens[n + 1];
-							_maxLens[i] = _maxLens[n + 1];
+							_maxLens[n] = _maxLens[n + 1];
 						}
 						useClient--;
-						// break;
-					}
-					else
-					{
-						std::cout << RED "ERROR\n" RESET;
-						exit(1);
 					}
 				}
 			}
 		}
-
-		// recivedPoll();
+		if (find)
+			continue;
 	}
 }
 
@@ -329,91 +268,6 @@ void WebServer::addPoll(int fd)
 	pfd.fd = fd;
 	pfd.events = POLLIN | POLLPRI;
 	_poll.push_back(pfd);
-}
-
-/**
- * @brief Recive una conexion a un puerto gestionado por el poll de conexiones
- *
- */
-void WebServer::recivedPoll()
-{
-	struct sockaddr_in cli_addr;
-	char buffer[RECV_BUFFER_SIZE];
-	std::string content;
-	int n;
-	socklen_t clilen = sizeof(cli_addr);
-	for (size_t i = 0; i < _poll.size(); i++)
-	{
-		std::cout << "FOR\n";
-		// TODO? realmente necesito saber de donde viene o me vale con el request
-		// TODO* Refactorizar en otra funcion
-		if (_poll[i].revents & POLLIN)
-		{
-			std::cout << "IF\n";
-			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
-			printf("accept success %s\n", inet_ntoa(cli_addr.sin_addr));
-			std::cout << "newsockfd: " << newsockfd << "\n";
-
-			if (newsockfd < 0)
-				throw AcceptSocketException();
-			// close(newsockfd);
-			while (1)
-			{
-				std::cout << "reciv\n";
-				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
-				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
-				std::cout << GRN "n: " RESET << n << "\n";
-				if (n == 0)
-				{
-					std::cout << RED "END\n";
-					close(newsockfd);
-				}
-				if (n <= 0)
-				{
-					break;
-					return;
-				}
-				// if (n == -1)
-				// 	throw RecivedSocketException();
-				content += std::string(buffer);
-				// std::bzero(buffer, RECV_BUFFER_SIZE);
-
-				if (n < RECV_BUFFER_SIZE)
-					break;
-			}
-
-			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
-			// TODO machear la request con el server y la response
-			// Request req(buffer);
-			std::cout << "CONTENT:\n"
-					  << content << "|" << std::endl;
-
-			std::ifstream file;
-
-			sendResponse(newsockfd);
-			break;
-		}
-	}
-}
-
-/**
- * @brief Envia la respuesta al cliente que se ha conectado al servidor
- * @param fd fd del socket del cliente
- */
-void WebServer::sendResponse(int fd)
-{
-	std::string path = "www/index" + Strings::intToString(1) + ".html";
-	Response resp(fd);
-	// TODO todo esto habra que hacerlo con un controller
-	// resp.status(200);
-	// Autoindex autoindex("www");
-	// resp.status(200).render(autoindex.toStr());
-	// resp.status(200).attachment(path);
-	// resp.render(autoindex.toStr());
-	int n = resp.sendFile(path);
-	if (n == -1)
-		throw SendSocketException();
-	// close(fd);
 }
 
 // Exceptions

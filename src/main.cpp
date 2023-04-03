@@ -2,11 +2,10 @@
 #include "Http/Request.hpp"
 // #include "Config/Config.hpp"
 
+#include "Errors/Errors.hpp"
+
 int main()
 {
 	WebServer server = WebServer();
-	// Config config(getPath());
-
-    // config.parse();
 	return 0;
 }

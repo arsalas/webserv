@@ -39,6 +39,7 @@ public:
 	void notFound(std::string path);
 	void limitExced();
 	void limitExced(std::string path);
+	void sendError(std::string path);
 	void autoindex(std::string path, std::string root);
 
 

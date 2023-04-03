@@ -10,21 +10,23 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 {
 	try
 	{
-		std::cout << GRN "CONTROLLER\n" RESET;
 		std::cout << req << std::endl;
 		int index = findServer(servers);
 		_server = servers[index];
 		_server.setActivePath(_req.getPath());
+
+		// Metodo no permitido
 		if (!_server.isMethodAllow(req.getMethod()))
 		{
-			_res.notAllowed();
+			// TODO buscar en el config el archivo de error
+			std::string errorPath = Strings::trim(_server.getErrorPageByStatus(405), "/");
+			_res.status(405).sendError(errorPath);
+			// _res.notAllowed();
 			return;
 		}
 
 		// Comprobar si hay rewrite
 		std::string rewrite = _server.getRewrite();
-		std::cout << BLU "redir: " << rewrite << "\n" RESET;
-
 		if (!rewrite.empty())
 		{
 			res.redirect(rewrite);
@@ -41,7 +43,10 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 				// TODO OBTENER PAGINAS DE ERROR
 				if (limit > maxBodySize)
 				{
-					res.limitExced();
+					// getErrorPageByStatus 413
+					std::string errorPath = Strings::trim(_server.getErrorPageByStatus(413), "/");
+					_res.status(413).sendError(errorPath);
+					// res.limitExced();
 					return;
 				}
 			}
@@ -59,8 +64,6 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			for (; it != files.end(); it++)
 			{
 				File tmpFile((*it).second.name);
-				std::cout << (*it).second.name << std::endl;
-				std::cout << pathUpload + "/" + (*it).second.name << std::endl;
 				tmpFile.move(pathUpload + "/" + (*it).second.name);
 			}
 
@@ -83,17 +86,17 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 				{
 					// NOT FOUND
 					std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
-					std::cout << RED "ERROR: " << errorPath << std::endl;
-					_res.notFound(errorPath);
+					std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
+					_res.status(404).sendError(errorPath);
+
+					// _res.notFound(errorPath);
 					return;
 				}
 			}
 			// Comprobar si no tiene extension buscar en el index index
 			std::vector<std::string> index = _server.findIndex();
-			std::cout << GRN "INDEX\n";
 			for (size_t i = 0; i < index.size(); i++)
 			{
-				std::cout << path << "/" << index[i] << std::endl;
 				if (Dirs::existDir(path + "/" + index[i]))
 				{
 					path += "/" + index[i];
@@ -107,7 +110,8 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 		std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
 		if (ext.empty())
 		{
-			_res.notFound(errorPath);
+			_res.status(404).sendError(errorPath);
+			// _res.notFound(errorPath);
 			return;
 		}
 
@@ -153,8 +157,7 @@ int Controller::findServer(std::vector<Server> servers)
 				return i;
 		}
 	}
-	throw std::invalid_argument("AddPositiveIntegers arguments must be positive");
-	// return -1;
+	throw std::invalid_argument("Server not found");
 }
 
 const char *Controller::ServerException::what() const throw()

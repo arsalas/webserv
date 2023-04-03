@@ -48,7 +48,6 @@ size_t Response::render(std::string body)
 }
 size_t Response::sendFile(std::string filename)
 {
-	std::cout << "TYPE: " << _mimeTypes[File::getExtension(filename)] << std::endl;
 	type(_mimeTypes[File::getExtension(filename)]);
 	try
 	{
@@ -66,13 +65,10 @@ size_t Response::sendFile(std::string filename)
 }
 size_t Response::attachment(std::string filename)
 {
-	std::cout << "TYPE: " << _mimeTypes[File::getExtension(filename)] << std::endl;
 	type(_mimeTypes[File::getExtension(filename)]);
 	File file(filename);
 	// Con el content-disposition se envian archivos
 	std::string disposition = "attachment; filename=\"" + Dirs::getFilenameFromPath(filename) + "\"";
-	std::cout << "disposition: " << disposition << std::endl;
-
 	append("Content-Disposition", disposition);
 	_body = file.toStr();
 	status(200);
@@ -132,10 +128,14 @@ void Response::limitExced(std::string path)
 	sendFile(path);
 }
 
+void Response::sendError(std::string path)
+{
+	sendFile(path);
+}
+
 void Response::autoindex(std::string path, std::string root)
 {
 	status(200);
-	std::cout << "Path: " << path << std::endl;
 	Autoindex autoindex(path, root);
 	render(autoindex.toStr());
 }
