@@ -41,10 +41,10 @@ CGI::CGI(Request &request)
 void CGI::initEnviron(Request &request)
 {
     Config config;
-    std::map<std::string, std::string> header = request.getHeader();
+    std::map<std::string, std::string> header = request.getHeaders();
 
     _env["METHOD"] = request.getMethod();
-    _env["PROTOCOL"] = request.getHttp();
+    _env["PROTOCOL"] = "HTTP/1.1";
     _env["PORT"] = request.getPort();
     _env["SERVER_NAME"] = header["Hostname"];
     _env["CONTENT_TYPE"] = header["Content-type"];

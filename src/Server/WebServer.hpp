@@ -5,6 +5,7 @@
 #include <set>
 #include <poll.h>
 #include "Server.hpp"
+#include "Config.hpp"
 
 #define RECV_BUFFER_SIZE 50000
 #define MAX_CLIENTS 10

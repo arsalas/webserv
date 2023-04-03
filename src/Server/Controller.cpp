@@ -86,7 +86,6 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 				{
 					// NOT FOUND
 					std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
-					std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
 					_res.status(404).sendError(errorPath);
 
 					// _res.notFound(errorPath);
