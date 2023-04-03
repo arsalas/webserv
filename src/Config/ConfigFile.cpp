@@ -10,7 +10,7 @@ ConfigFile::ConfigFile(std::string path)
 
     _file = path;
     if (_file.empty())
-        throw EmptyFile();
+        throw myException("Empty file", 0);
     parse();
 }
 
@@ -44,7 +44,7 @@ void ConfigFile::closeBrackets(std::stack<bool> &brackets, std::string &tmp)
     if (tmp.find('}') < tmp.length())
     {
         if (brackets.empty())
-            throw ExtraClosing();
+            throw myException("Incorrect use of brackets { }", 0);
         brackets.pop();
     }
 }
@@ -119,9 +119,9 @@ void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
     port = std::stoi(port_str);
 
     if (port_str.find_first_not_of("0123456789") != std::string::npos)
-        throw InvalidValue();
+        throw myException("Invalid port", 0);
     if (port > 65535)
-        throw InvalidValue();
+        throw myException("Invalid port", 0);
 }
 
 void ConfigFile::listen(std::vector<std::string>::iterator &it, Config conf)
@@ -171,7 +171,7 @@ void ConfigFile::root(std::vector<std::string>::iterator &it, Config &conf)
 {
     conf.setRoot(*it);
     if (*++it != ";")
-        throw InvalidValue();
+        throw myException("Invalid root", 0);
 
     // COMPROBACION
     std::cout << "root: " << conf.getRoot() << std::endl;
@@ -191,7 +191,7 @@ void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config &conf)
     std::string &exec = *it++;
     conf.addCgi(ext, exec);
     if (*it != ";")
-        throw InvalidValue();
+        throw myException("Invalid CGI", 0);
 
     // COMPROBACION
     std::map<std::string, std::string> mapa = conf.getCgi();
@@ -212,9 +212,9 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config &conf)
     if (*it != ";")
         conf.addIndex(*it);
     else
-        throw InvalidValue();
+        throw myException("Invalid index", 0);
     if (*(++it) != ";")
-        throw InvalidValue();
+        throw myException("Invalid index", 0);
 
     // COMPROBACION
     std::vector<std::string> vect = conf.getIndex();
@@ -260,7 +260,7 @@ void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
         nbr = std::stoi(*it++);
     conf.addErrorPage(nbr, *it);
     if (*++it != ";")
-        throw InvalidValue();
+        throw myException("Invalid error page", 0);
 
     // COMPROBACION
     std::map<int, std::string> mapa = conf.getErrorPage();
@@ -277,10 +277,10 @@ void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config conf)
 void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config conf)
 {
     if (it->find_first_not_of("0123456789") != std::string::npos)
-        throw InvalidValue();
+        throw myException("Invalid client max body size", 0);
     conf.setClientMaxBodySize(std::stoi(*it));
     if (*++it != ";")
-        throw InvalidValue();
+        throw myException("Invalid client max body size", 0);
 
     // COMPROBACION
     std::cout << "client_max_body_size: " << conf.getClientMaxBodySize() << std::endl;
@@ -301,11 +301,9 @@ void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
     else if (*it == "off")
         conf.setAutoindex(false);
     else
-        // throw myException("Invalid autoindex", 0, "");
-        //  TODO ALBERTO AYUDA
-        throw InvalidValue();
+        throw myException("Invalid autoindex", 0);
     if (*++it != ";")
-        throw InvalidValue();
+        throw myException("Invalid autoindex", 0);
 
     // COMPROBACION
     std::cout << "autoindex: " << conf.getAutoindex() << std::endl;
@@ -385,7 +383,7 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     itV = _configToken.begin();
     itV++;
     if (*itV != "{")
-        throw InvalidValue();
+        throw myException("Incorrect use of brackets { }", 0);
 
     std::cout << "VOY A CREAR EL ARCHIVO DE CONFIGURACION\n";
 
@@ -395,15 +393,6 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
         checkValidDir(itV, &conf);
     }
     _configs.push_back(conf);
-
-    // config dentro de locattion con el new
-
-    // std::string _root = "/";
-    // si hay un location
-    // 	addLocation("/data", location); Crea un puntero de un config
-    // esto es otro config con sus propias funciones
-    // el constructor : Config::Config(Config *parent) : _parent (parent)
-    // es cuando tengamos el addlocation, iremos a esa configuracion a darle los valores
 
     // TODO CGI
     // Buscamos que archivo de html hay que mostrar. El CGI es una extension que indicas el programa a ejecutar e indicas la respuesta
@@ -425,7 +414,7 @@ void ConfigFile::token()
     std::ifstream myfile(_file);
 
     if (!myfile || !myfile.is_open())
-        throw InvalidFile();
+        throw myException("Invalid file", 0);
 
     while (std::getline(myfile, line))
     {
@@ -436,7 +425,7 @@ void ConfigFile::token()
             openBrackets(brackets, tmp);
             closeBrackets(brackets, tmp);
             if (isValidDirective(tmp) && line[line.length()] != ';')
-                throw MissingDot();
+                throw myException("Missing semicolon ;", 0);
             if (tmp.find(';', tmp.length() - 1) != std::string::npos)
                 endOfLine(tmp);
             else
@@ -464,44 +453,4 @@ void ConfigFile::parse()
             iter--;
         }
     }
-}
-
-const char *ConfigFile::EmptyFile::what() const throw()
-{
-    return "Empty file";
-}
-
-const char *ConfigFile::ExtraClosing::what() const throw()
-{
-    return "Extra {";
-}
-
-const char *ConfigFile::ExtraOpening::what() const throw()
-{
-    return "Extra }";
-}
-
-const char *ConfigFile::MissingDot::what() const throw()
-{
-    return "Missing ;";
-}
-
-const char *ConfigFile::InvalidBlock::what() const throw()
-{
-    return "Invalid block";
-}
-
-const char *ConfigFile::EmptyServer::what() const throw()
-{
-    return "Empty server";
-}
-
-const char *ConfigFile::InvalidFile::what() const throw()
-{
-    return "Invalid file";
-}
-
-const char *ConfigFile::InvalidValue::what() const throw()
-{
-    return "Invalid value in the file";
 }

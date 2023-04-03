@@ -18,28 +18,28 @@ public:
 private:
 	Strings();
 
+};
+
+class myException : virtual public std::exception
+{
 public:
-	class myException : virtual public std::exception
+	myException(std::string errMsg, int errorCode = 0)
 	{
-	public:
-		myException(std::string errMsg, int errorCode = 0)
+		_errorMsg = errMsg;
+		_errorCode = errorCode;
+		if (_errorCode)
 		{
-			_errorMsg = errMsg;
-			_errorCode = errorCode;
-			if (_errorCode)
-			{
-				_errorMsg = _errorMsg + " (" + (std::to_string(_errorCode)) + ": " + strerror(_errorCode) + ")";
-			}
+			_errorMsg = _errorMsg + " (" + (std::to_string(_errorCode)) + ": " + strerror(_errorCode) + ")";
 		}
-		virtual ~myException() throw() {}
+	}
+	virtual ~myException() throw() {}
 
-		const char *what() const throw()
-		{
-			return (_errorMsg.c_str());
-		}
+	const char *what() const throw()
+	{
+		return (_errorMsg.c_str());
+	}
 
-	private:
-		int _errorCode;
-		std::string _errorMsg;
-	};
+private:
+	int _errorCode;
+	std::string _errorMsg;
 };
