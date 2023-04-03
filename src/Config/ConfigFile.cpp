@@ -301,6 +301,8 @@ void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config conf)
     else if (*it == "off")
         conf.setAutoindex(false);
     else
+        // throw myException("Invalid autoindex", 0, "");
+        //  TODO ALBERTO AYUDA
         throw InvalidValue();
     if (*++it != ";")
         throw InvalidValue();
