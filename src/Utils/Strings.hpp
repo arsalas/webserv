@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include "File.hpp"
 
 class Strings
 {
@@ -21,25 +22,24 @@ public:
 	class myException : virtual public std::exception
 	{
 	public:
-		myException(std::string msg, int err_num = 0, std::string arg = "") : errno_(err_num)
+		myException(std::string errMsg, int errorCode = 0)
 		{
-			error_msg_ = msg;
-			if (error_msg_.find('%') != std::string::npos)
-				error_msg_.replace(error_msg_.find('%'), 1, arg);
-			if (errno_)
+			_errorMsg = errMsg;
+			_errorCode = errorCode;
+			if (_errorCode)
 			{
-				error_msg_ = error_msg_ + " (" + ft::to_string(errno_) + ": " + strerror(errno_) + ")";
+				_errorMsg = _errorMsg + " (" + (std::to_string(_errorCode)) + ": " + strerror(_errorCode) + ")";
 			}
 		}
 		virtual ~myException() throw() {}
 
 		const char *what() const throw()
 		{
-			return error_msg_.c_str();
+			return (_errorMsg.c_str());
 		}
 
 	private:
-		int errno_;
-		std::string error_msg_;
+		int _errorCode;
+		std::string _errorMsg;
 	};
 };

@@ -60,7 +60,7 @@ void CGI::initEnviron(Request &request)
  *
  * @return int
  */
-int CGI::execute(Request &request, std::string CGIPath, std::string path)
+int CGI::execute(Request &request, std::string CGIPath, std::string file)
 {
     int outputFd[2];
     int inputFd[2];
@@ -93,7 +93,7 @@ int CGI::execute(Request &request, std::string CGIPath, std::string path)
             return (-1);
         }
 
-        _execPath = File::getExecPath(path);
+        _execPath = File::getExecPath(file);
         if (chdir(_execPath.c_str()) < 0)
             return (-1);
         close(outputFd[0]); // cerramos fd[1]

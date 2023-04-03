@@ -405,7 +405,6 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     // el constructor : Config::Config(Config *parent) : _parent (parent)
     // es cuando tengamos el addlocation, iremos a esa configuracion a darle los valores
 
-    // TODO LOCATION
     // TODO CGI
     // Buscamos que archivo de html hay que mostrar. El CGI es una extension que indicas el programa a ejecutar e indicas la respuesta
     // Es un texto generado a traves de un programa
