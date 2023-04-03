@@ -399,8 +399,6 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     if (*itV != "{")
         throw myException("Incorrect use of brackets { }", 0);
 
-    std::cout << "VOY A CREAR EL ARCHIVO DE CONFIGURACION\n";
-
     Config conf;
     while (*(++itV) != "}")
     {
@@ -413,9 +411,6 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     // Es un texto generado a traves de un programa
     // si tiene ext .py no p
     // hay que procesarlo mediante programa
-
-    // le pasamos un archivo  y un path
-    // ececv del ejjecutable con el programa
 }
 
 void ConfigFile::token()
