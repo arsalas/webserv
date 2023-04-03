@@ -13,16 +13,18 @@ class CGI
         std::string _cgiBin;
         std::string _cgiExtension; // .py ej
         std::string _cgiPath;
+        std::string _execPath;
         std::string _cwd;
+        int         _status;
         std::map<std::string, std::string>  _env;
 
         CGI(Request &request);
+        void    initEnviron(Request &request);
 
     public:
         CGI(std::string bin, std::string extension, std::string path);
         void    init();
-        void    initEnviron(Request request);
-        int     execute();
+        int     execute(Request &request, std::string CGIPath, std::string path);
 
         // Tiene que ejecutar el bin con el path
         // fork y execve solo para esto
