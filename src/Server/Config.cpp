@@ -1,8 +1,35 @@
 #include "Config.hpp"
 #include "Http/Request.hpp"
+#include <vector>
 
 Config::Config() : _parent(NULL)
 {
+	// std::vector<int>::iterator ints = _listen.begin();
+	// std::vector<std::string>::iterator strs = _serverName.begin();
+	// std::map<std::string, std::string>::iterator maps = _cgi.begin();
+	// std::map<int, std::string>::iterator error = _errorPage.begin();
+
+	// std::cout << "hola\n";
+	// if (ints != _listen.end())
+	// 	std::cout << "LISTEN: " << *ints << std::endl;
+	// if (strs != _serverName.end())
+	// 	std::cout << "SERVNAME: " << *strs << std::endl;
+	// if (!_root.empty())
+	// 	std::cout << "ROOT: " << _root << std::endl;
+	// if (maps != _cgi.end())
+	// 	std::cout << "CGI: " << maps->first << " | " << maps->second << std::endl;
+	// strs = _index.begin();
+	// if (strs != _index.end())
+	// 	std::cout << "INDEX: " << *strs << std::endl;
+	// // std::cout << "LOCATION: " << getLocation() << std::endl;
+	// strs = _limitExcept.begin();
+	// if (strs != _limitExcept.end())
+	// 	std::cout << "LIMEXP: " << *strs << std::endl;
+	// if (error != _errorPage.end())
+	// 	std::cout << "ERRORPG: " << error->first << " | " << error->second << std::endl;
+	// std::cout << "A.I.: " << getAutoindex() << std::endl;
+	// std::cout << "SIZE: " << getClientMaxBodySize() << std::endl;
+	// std::cout << "UPLOAD?: " << getUpload() << std::endl;
 	// Request re;
 	// addListen(re.getPort());
 	// TODO quitar harcodeo

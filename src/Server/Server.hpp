@@ -11,15 +11,20 @@ class Server
 {
 
 private:
-	Config _config;
 	std::vector<sockaddr_in> _servAddr;
 	std::vector<int> _socketFd;
 	std::string _activePath;
 	std::map<int, std::string> _errorPages;
+	Config _config;
+
 
 	// std::string _ip;
 	// int _port;
 	// int _socketFd;
+
+public:
+	int _id;
+	std::vector<Config> _configServer;
 
 public:
 	Server();

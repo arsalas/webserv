@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include "File.hpp"
 
 class Strings
 {
@@ -16,4 +17,28 @@ public:
 
 private:
 	Strings();
+};
+
+class myException : virtual public std::exception
+{
+public:
+	myException(std::string errMsg, int errorCode)
+	{
+		_errorMsg = errMsg;
+		_errorCode = errorCode;
+		if (_errorCode)
+		{
+			_errorMsg = _errorMsg + " (" + (std::to_string(_errorCode)) + ": " + strerror(_errorCode) + ")";
+		}
+	}
+	virtual ~myException() throw() {}
+
+	const char *what() const throw()
+	{
+		return (_errorMsg.c_str());
+	}
+
+private:
+	int _errorCode;
+	std::string _errorMsg;
 };

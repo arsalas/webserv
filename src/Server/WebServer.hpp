@@ -32,30 +32,4 @@ private:
 	void addPoll(int fd);
 	void recivedPoll();
 	void sendResponse(int fd);
-
-	// EXCEPTIONS
-public:
-	class AcceptSocketException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
-
-	class RecivedSocketException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
-
-	class SendSocketException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
-
-	class CreateSocketException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
-	class BindingException : public std::exception
-	{
-		virtual const char *what() const throw();
-	};
 };

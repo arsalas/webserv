@@ -20,11 +20,13 @@ RM 				:= rm -f
 
 # SRC
 SRCS 			=  main.cpp \
+				ConfigFile.cpp \
 				Request.cpp Response.cpp StatusCode.cpp \
 				Log.cpp \
 				APage.cpp Autoindex.cpp ServerError.cpp \
 				Config.cpp Controller.cpp Server.cpp WebServer.cpp \
-				Dirs.cpp File.cpp MimeTypes.cpp Strings.cpp 
+				Dirs.cpp File.cpp MimeTypes.cpp Strings.cpp \
+				CGI.cpp
 
 # FOLDERS
 OBJS_DIR		:= obj

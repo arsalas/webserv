@@ -22,6 +22,7 @@ public:
 
 	std::string getExtension();
 	static std::string getExtension(std::string);
+	static std::string getExecPath(std::string path);
 
 	// EXCEPTIONS
 public:

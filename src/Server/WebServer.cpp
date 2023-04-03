@@ -109,9 +109,9 @@ void WebServer::startSockets()
 		servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		int socketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (socketFd < 0)
-			throw CreateSocketException();
+			throw myException("Cannot create socket", 0);
 		if (bind(socketFd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
-			throw BindingException();
+			throw myException("ERROR on binding", 0);
 		// Backlog = 5, conexiones maximas que pueden estar esperando
 		listen(socketFd, 5);
 		addPoll(socketFd);
@@ -270,28 +270,87 @@ void WebServer::addPoll(int fd)
 	_poll.push_back(pfd);
 }
 
-// Exceptions
-
-const char *WebServer::AcceptSocketException::what() const throw()
+/**
+ * @brief Recive una conexion a un puerto gestionado por el poll de conexiones
+ *
+ */
+void WebServer::recivedPoll()
 {
-	return "Cannot create socket";
+	struct sockaddr_in cli_addr;
+	char buffer[RECV_BUFFER_SIZE];
+	std::string content;
+	int n;
+	socklen_t clilen = sizeof(cli_addr);
+	for (size_t i = 0; i < _poll.size(); i++)
+	{
+		std::cout << "FOR\n";
+		// TODO? realmente necesito saber de donde viene o me vale con el request
+		// TODO* Refactorizar en otra funcion
+		if (_poll[i].revents & POLLIN)
+		{
+			std::cout << "IF\n";
+			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
+			printf("accept success %s\n", inet_ntoa(cli_addr.sin_addr));
+			std::cout << "newsockfd: " << newsockfd << "\n";
+
+			if (newsockfd < 0)
+				throw myException("Cannot create socket", 0);
+			// close(newsockfd);
+			while (1)
+			{
+				std::cout << "reciv\n";
+				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
+				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
+				std::cout << GRN "n: " RESET << n << "\n";
+				if (n == 0)
+				{
+					std::cout << RED "END\n";
+					close(newsockfd);
+				}
+				if (n <= 0)
+				{
+					break;
+					return;
+				}
+				// if (n == -1)
+				// 	throw RecivedSocketException();
+				content += std::string(buffer);
+				// std::bzero(buffer, RECV_BUFFER_SIZE);
+
+				if (n < RECV_BUFFER_SIZE)
+					break;
+			}
+
+			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
+			// TODO machear la request con el server y la response
+			// Request req(buffer);
+			std::cout << "CONTENT:\n"
+					  << content << "|" << std::endl;
+
+			std::ifstream file;
+
+			sendResponse(newsockfd);
+			break;
+		}
+	}
 }
 
-const char *WebServer::RecivedSocketException::what() const throw()
+/**
+ * @brief Envia la respuesta al cliente que se ha conectado al servidor
+ * @param fd fd del socket del cliente
+ */
+void WebServer::sendResponse(int fd)
 {
-	return "ERROR on binding";
-}
-
-const char *WebServer::SendSocketException::what() const throw()
-{
-	return "ERROR on binding";
-}
-
-const char *WebServer::CreateSocketException::what() const throw()
-{
-	return "Cannot create socket";
-}
-const char *WebServer::BindingException::what() const throw()
-{
-	return "ERROR on binding";
+	std::string path = "www/index" + Strings::intToString(1) + ".html";
+	Response resp(fd);
+	// TODO todo esto habra que hacerlo con un controller
+	// resp.status(200);
+	// Autoindex autoindex("www");
+	// resp.status(200).render(autoindex.toStr());
+	// resp.status(200).attachment(path);
+	// resp.render(autoindex.toStr());
+	int n = resp.sendFile(path);
+	if (n == -1)
+		throw myException("ERROR on binding", 0);
+	// close(fd);
 }

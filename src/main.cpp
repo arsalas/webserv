@@ -1,8 +1,7 @@
 #include "Server/WebServer.hpp"
 #include "Http/Request.hpp"
-// #include "Config/Config.hpp"
+#include "Config/ConfigFile.hpp"
 
-#include "Errors/Errors.hpp"
 
 int main()
 {
