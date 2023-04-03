@@ -17,13 +17,12 @@ public:
 
 private:
 	Strings();
-
 };
 
 class myException : virtual public std::exception
 {
 public:
-	myException(std::string errMsg, int errorCode = 0)
+	myException(std::string errMsg, int errorCode)
 	{
 		_errorMsg = errMsg;
 		_errorCode = errorCode;
