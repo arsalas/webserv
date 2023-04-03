@@ -112,6 +112,13 @@ void ConfigFile::pushToken(std::string &tmp)
     _token.push_back(tmp);
 }
 
+/**
+ * @brief LISTEN
+ * Guardamos el token "listen"
+ * Si encontramos ':' guardamos la ip, el puerto y comprobamos que ambos sean correctos
+ * 
+ * @param it 
+ */
 void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
 {
     ip = str.substr(0, str.find(':'));
@@ -124,6 +131,13 @@ void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
         throw myException("Invalid port", 0);
 }
 
+/**
+ * @brief LISTEN
+ * Guardamos el token "listen"
+ * Si encontramos ':' guardamos la ip, el puerto y comprobamos que ambos sean correctos
+ * 
+ * @param it 
+ */
 void ConfigFile::listen(std::vector<std::string>::iterator &it, Config conf)
 {
     std::string str = *it;
@@ -435,6 +449,11 @@ void ConfigFile::token()
     }
 }
 
+/**
+ * @brief Recogemos los tokens
+ * Guardamos la información de server y workers en su respectiva estructura de Config
+ *
+ */
 void ConfigFile::parse()
 {
     std::vector<std::string>::iterator iter = _token.begin();

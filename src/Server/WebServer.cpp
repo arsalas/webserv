@@ -113,9 +113,9 @@ void WebServer::startSockets()
 		servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		int socketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (socketFd < 0)
-			throw CreateSocketException();
+			throw myException("Cannot create socket", 0);
 		if (bind(socketFd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
-			throw BindingException();
+			throw myException("ERROR on binding", 0);
 		// Backlog = 5, conexiones maximas que pueden estar esperando
 		listen(socketFd, 5);
 		addPoll(socketFd);
@@ -328,7 +328,7 @@ void WebServer::recivedPoll()
 			std::cout << "newsockfd: " << newsockfd << "\n";
 
 			if (newsockfd < 0)
-				throw AcceptSocketException();
+				throw myException("Cannot create socket", 0);
 			// close(newsockfd);
 			while (1)
 			{
@@ -385,32 +385,6 @@ void WebServer::sendResponse(int fd)
 	// resp.render(autoindex.toStr());
 	int n = resp.sendFile(path);
 	if (n == -1)
-		throw SendSocketException();
+		throw myException("ERROR on binding", 0);
 	// close(fd);
-}
-
-// Exceptions
-
-const char *WebServer::AcceptSocketException::what() const throw()
-{
-	return "Cannot create socket";
-}
-
-const char *WebServer::RecivedSocketException::what() const throw()
-{
-	return "ERROR on binding";
-}
-
-const char *WebServer::SendSocketException::what() const throw()
-{
-	return "ERROR on binding";
-}
-
-const char *WebServer::CreateSocketException::what() const throw()
-{
-	return "Cannot create socket";
-}
-const char *WebServer::BindingException::what() const throw()
-{
-	return "ERROR on binding";
 }

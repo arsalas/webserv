@@ -32,8 +32,4 @@ public:
 	// GETTERS
 	std::vector<int> getSocketFd() const;
 	std::vector<int> getPorts() const;
-
-private:
-	// EXCEPTIONS
-public:
 };
