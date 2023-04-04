@@ -51,9 +51,8 @@ CGI::~CGI()
  *
  * @param request
  */
-void CGI::initEnviron(Request &request)
+void CGI::initEnviron(Request &request, Config &config)
 {
-    Config config;
     std::map<std::string, std::string> header = request.getHeaders();
 
     _env["METHOD"] = request.getMethod();

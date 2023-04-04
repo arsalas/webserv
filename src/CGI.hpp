@@ -19,7 +19,7 @@ private:
     std::map<std::string, std::string> _env;
 
     CGI();
-    void initEnviron(Request &request);
+    void initEnviron(Request &request, Config &config);
     CGI(std::string bin, std::string extension, std::string path);
     int execute(Request &request, std::string CGIPath, std::string file);
 
