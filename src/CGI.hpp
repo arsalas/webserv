@@ -27,13 +27,6 @@ public:
     CGI(Request &request);
     ~CGI();
 
-    // Tiene que ejecutar el bin con el path
-    // fork y execve solo para esto
-    // luego se tendra que meter como body en una response
-    // *argv[] = {"/usr/bin/python3", "path"}
-    // execve(argv[0], argv, env)
-    // std::string execute();
-
 private:
     /*      GETTERS     */
     std::string getBin();

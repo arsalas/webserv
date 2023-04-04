@@ -88,6 +88,7 @@ int CGI::execute(Request &request, std::string CGIPath, std::string file)
     {
         _status = 500;
         throw myException("System error in pipe", 500);
+        return (500);
     }
 
     pid_t pid = fork();
