@@ -41,6 +41,7 @@ public:
 	void limitExced(std::string path);
 	void sendError(std::string path);
 	void autoindex(std::string path, std::string root);
+	void cgi(std::string cgiPath, std::string cgiFile);
 
 
 };

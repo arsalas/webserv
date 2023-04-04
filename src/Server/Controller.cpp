@@ -70,7 +70,7 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			// MOVER EL ARCHIVO A OTRO SITIO
 		}
 
-		std::string path =_server.getPathFolder(_req.getPath());
+		std::string path = _server.getPathFolder(_req.getPath());
 
 		std::string ext = File::getExtension(path);
 		if (ext.empty())
@@ -123,10 +123,15 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 		}
 
 		// Comprobar si la extension es la de algun cgi
+		std::string cgiPath = _server.includeCGIPath("." + ext);
+		std::cout << "CGI: " << cgiPath << std::endl;
+		if (!cgiPath.empty())
+		{
+			_res.cgi(cgiPath, path);
+			return;
+		}
 
-
-			// TODO mirar si la extension coincide con algun cgi y si coincide, llamar a cgi
-
+		// TODO mirar si la extension coincide con algun cgi y si coincide, llamar a cgi
 
 		// Enviar el file si es html
 		if (ext == "html" || ext == "png" || ext == "css")
@@ -134,7 +139,6 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 		// Atachment si es otro tipo
 		else
 		{
-			std::cout << "21\n";
 			_res.attachment(path);
 		}
 	}
@@ -159,7 +163,10 @@ int Controller::findServer(std::vector<Server> servers)
 		for (size_t i = 0; i < ports.size(); i++)
 		{
 			if (ports[i] == _req.getPort())
+			{
+				std::cout << "PORT: " << ports[i] << std::endl;
 				return i;
+			}
 		}
 	}
 	throw std::invalid_argument("Server not found");
@@ -169,3 +176,10 @@ const char *Controller::ServerException::what() const throw()
 {
 	return "Server error";
 }
+
+	// std::vector<int> vect = config.getListen();
+	// std::vector<int>::iterator iter = vect.begin();
+	// for (; iter != vect.end(); iter++ )
+	// {
+	// 	std::cout << "MY PORT: " << *iter << std::endl;
+	// }

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -7,6 +8,7 @@
 #include "Utils/File.hpp"
 #include "Utils/Dirs.hpp"
 #include "Pages/Autoindex.hpp"
+#include "CGI.hpp"
 
 Response::Response()
 {
@@ -138,4 +140,31 @@ void Response::autoindex(std::string path, std::string root)
 	status(200);
 	Autoindex autoindex(path, root);
 	render(autoindex.toStr());
+}
+
+void Response::cgi(std::string cgiPath, std::string cgiFile)
+{
+	CGI cgi(_fd, cgiPath, cgiFile);
+	status(202);
+
+	std::map<std::string, std::string>::iterator it;
+	std::ostringstream ss;
+	ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
+	for (it = _headers.begin(); it != _headers.end(); it++)
+	{
+		ss << it->first << ": " << it->second << std::endl;
+	}
+	ss << "\n";
+	std::string resp = ss.str();
+
+	try
+	{
+		send(_fd, resp.c_str(), resp.size(), 0);
+		cgi.execute();
+	}
+	catch(std::exception except)
+	{
+		sendFile("src/Templates/InternalServerError.html");
+		// throw myException();
+	}
 }

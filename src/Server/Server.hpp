@@ -40,6 +40,7 @@ public:
 	std::string getRewrite();
 	int getBodyMaxSize();
 	std::string getUploadPath();
+	std::string includeCGIPath(std::string ext);
 
 	// GETTERS
 	std::vector<int> getSocketFd() const;
@@ -50,8 +51,8 @@ public:
 
 private:
 	Config *selectConfig(std::string path);
-	/// @brief
+
 	void setErrorPages();
-	// EXCEPTIONS
+
 public:
 };

@@ -11,6 +11,7 @@ Server::Server()
 Server::Server(Config config) : _config(config)
 {
 	std::vector<int> listens = config.getListen();
+
 	setErrorPages();
 }
 
@@ -24,6 +25,7 @@ std::string Server::getPathFolder(std::string path)
 
 	std::map<std::string, Config *> location = _config.getLocation();
 	std::map<std::string, Config *>::iterator it = location.begin();
+
 	for (; it != location.end(); it++)
 	{
 		std::vector<std::string> partsServer = Strings::split(Strings::trim((*it).first, "/"), "/");
@@ -158,6 +160,29 @@ std::vector<int> Server::getPorts() const
 void Server::setActivePath(std::string activePath)
 {
 	_activePath = activePath;
+}
+
+std::string Server::includeCGIPath(std::string ext)
+{
+	Config *conf = selectConfig(_activePath);
+	try
+	{
+		if (conf)
+			return conf->getCgi().at(ext);
+		else
+			throw std::exception();
+	}
+	catch (const std::exception &e)
+	{
+		try
+		{
+			return _config.getCgi().at(ext);
+		}
+		catch (const std::exception &e)
+		{
+			return "";
+		}
+	}
 }
 
 Config *Server::selectConfig(std::string path)
