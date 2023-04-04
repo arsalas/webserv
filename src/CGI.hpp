@@ -24,7 +24,7 @@ private:
     int execute(Request &request, std::string CGIPath, std::string file);
 
 public:
-    CGI(Request &request);
+    CGI(Request &request, Config &config);
     ~CGI();
 
 private:

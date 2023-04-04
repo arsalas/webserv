@@ -36,9 +36,9 @@
     // si tiene ext .py no p
     // hay que procesarlo mediante programa
 
-CGI::CGI(Request &request)
+CGI::CGI(Request &request, Config &config)
 {
-    initEnviron(request);
+    initEnviron(request, config);
 }
 
 CGI::~CGI()
