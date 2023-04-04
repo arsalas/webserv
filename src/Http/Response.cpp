@@ -145,7 +145,7 @@ void Response::autoindex(std::string path, std::string root)
 void Response::cgi(std::string cgiPath, std::string cgiFile)
 {
 	CGI cgi(_fd, cgiPath, cgiFile);
-	status(202);
+	status(200);
 
 	std::map<std::string, std::string>::iterator it;
 	std::ostringstream ss;

@@ -12,12 +12,14 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 	{
 		std::cout << req << std::endl;
 		int index = findServer(servers);
+		std::cout << "Serve select: " << index << std::endl;
 		_server = servers[index];
 		_server.setActivePath(_req.getPath());
 		// Metodo no permitido
 		if (!_server.isMethodAllow(req.getMethod()))
 		{
 			// TODO buscar en el config el archivo de error
+			std::cout << "METHOD NOT\n";
 			std::string errorPath = Strings::trim(_server.getErrorPageByStatus(405), "/");
 			_res.status(405).sendError(errorPath);
 			// _res.notAllowed();
@@ -156,6 +158,7 @@ Controller::~Controller()
 int Controller::findServer(std::vector<Server> servers)
 {
 	std::vector<Server>::iterator it = servers.begin();
+	int index = 0;
 
 	for (; it != servers.end(); it++)
 	{
@@ -163,11 +166,9 @@ int Controller::findServer(std::vector<Server> servers)
 		for (size_t i = 0; i < ports.size(); i++)
 		{
 			if (ports[i] == _req.getPort())
-			{
-				std::cout << "PORT: " << ports[i] << std::endl;
-				return i;
-			}
+				return index;
 		}
+		index++;
 	}
 	throw std::invalid_argument("Server not found");
 }
@@ -177,9 +178,9 @@ const char *Controller::ServerException::what() const throw()
 	return "Server error";
 }
 
-	// std::vector<int> vect = config.getListen();
-	// std::vector<int>::iterator iter = vect.begin();
-	// for (; iter != vect.end(); iter++ )
-	// {
-	// 	std::cout << "MY PORT: " << *iter << std::endl;
-	// }
+// std::vector<int> vect = config.getListen();
+// std::vector<int>::iterator iter = vect.begin();
+// for (; iter != vect.end(); iter++ )
+// {
+// 	std::cout << "MY PORT: " << *iter << std::endl;
+// }
