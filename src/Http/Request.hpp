@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <iostream>
 #include <map>
@@ -31,6 +31,7 @@ private:
 	Request();
 	int tokenRequest(std::string req);
 	int errorsToken();
+	void executeCGI();
 
 public:
 	Request(std::string req);

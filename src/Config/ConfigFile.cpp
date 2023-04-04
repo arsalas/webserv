@@ -145,21 +145,15 @@ void ConfigFile::savePort(std::string &str, std::string &ip, uint32_t &port)
  */
 void ConfigFile::listen(std::vector<std::string>::iterator &it, Config *conf)
 {
-    // std::string str = *it;
-    // std::string ip = "0.0.0.0";
-    // uint32_t port = std::stoi(str);
+    std::string str = *it;
+    uint32_t port = std::stoi(str);
 
-    // if (str.find(':') != std::string::npos)
-    //     savePort(str, ip, port);
-    // else if (str.find_first_not_of("0123456789") != std::string::npos)
-    //     ip = str;
-    // conf->addListen(port);
-    std::cout << "it is " << *it << std::endl;
+    if (str.find_first_not_of("0123456789") != std::string::npos)
+        throw myException("Invalid port", 0);
+    if (port > 65535)
+        throw myException("Invalid port", 0);
 
     conf->addListen(std::stoi(*it));
-
-    // COMPROBACION
-    // std::cout << "listen: " << conf->getListen << std::endl;
 }
 
 /**
@@ -172,11 +166,6 @@ void ConfigFile::servername(std::vector<std::string>::iterator &it, Config *conf
 {
     while (*it != ";")
         conf->addServerName(*it++);
-
-    // COMPROBACION
-    std::vector<std::string> vect = conf->getServerName();
-    std::vector<std::string>::iterator iter = vect.begin();
-    std::cout << "serverName: " << *iter << std::endl;
 }
 
 /**
@@ -192,9 +181,6 @@ void ConfigFile::root(std::vector<std::string>::iterator &it, Config *conf)
     conf->setRoot(*it);
     if (*++it != ";")
         throw myException("Invalid root", 0);
-
-    // COMPROBACION
-    std::cout << "root: " << conf->getRoot() << std::endl;
 }
 
 /**
@@ -212,11 +198,6 @@ void ConfigFile::cgi(std::vector<std::string>::iterator &it, Config *conf)
     conf->addCgi(ext, exec);
     if (*it != ";")
         throw myException("Invalid CGI", 0);
-
-    // COMPROBACION
-    std::map<std::string, std::string> mapa = conf->getCgi();
-    std::map<std::string, std::string>::iterator iter = mapa.begin();
-    std::cout << "cgi: " << iter->first << " | " << iter->second << std::endl;
 }
 
 /**
@@ -235,11 +216,6 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config *conf)
         throw myException("Invalid index", 0);
     if (*(++it) != ";")
         throw myException("Invalid index", 0);
-
-    // COMPROBACION
-    std::vector<std::string> vect = conf->getIndex();
-    std::vector<std::string>::iterator iter = vect.begin();
-    std::cout << "index: " << *iter << std::endl;
 }
 
 /**
@@ -255,11 +231,6 @@ void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config *con
 {
     while (*it != ";")
         conf->addLimitExcept(*it++);
-
-    // COMPROBACION
-    std::vector<std::string> vect = conf->getLimitExcept();
-    std::vector<std::string>::iterator iter = vect.begin();
-    std::cout << "limit: " << *iter << std::endl;
 }
 
 /**
@@ -281,11 +252,6 @@ void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config *conf)
     conf->addErrorPage(nbr, *it);
     if (*++it != ";")
         throw myException("Invalid error page", 0);
-
-    // COMPROBACION
-    std::map<int, std::string> mapa = conf->getErrorPage();
-    std::map<int, std::string>::iterator iter = mapa.begin();
-    std::cout << "errorPage: " << iter->first << " | " << iter->second << std::endl;
 }
 
 /**
@@ -301,9 +267,6 @@ void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Co
     conf->setClientMaxBodySize(std::stoi(*it));
     if (*++it != ";")
         throw myException("Invalid client max body size", 0);
-
-    // COMPROBACION
-    std::cout << "client_max_body_size: " << conf->getClientMaxBodySize() << std::endl;
 }
 
 /**
@@ -324,9 +287,6 @@ void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config *conf)
         throw myException("Invalid autoindex", 0);
     if (*++it != ";")
         throw myException("Invalid autoindex", 0);
-
-    // COMPROBACION
-    std::cout << "autoindex: " << conf->getAutoindex() << std::endl;
 }
 
 /**
@@ -411,12 +371,6 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     }
     _configs.push_back(conf);
     _configToken.clear();
-
-    // TODO CGI
-    // Buscamos que archivo de html hay que mostrar. El CGI es una extension que indicas el programa a ejecutar e indicas la respuesta
-    // Es un texto generado a traves de un programa
-    // si tiene ext .py no p
-    // hay que procesarlo mediante programa
 }
 
 void ConfigFile::token()
@@ -467,16 +421,7 @@ void ConfigFile::parse()
             continue;
         if (*iter == "server")
         {
-            std::cout << "PASO POR AQUI " << i << " veces\n";
-            // std::cout << "iter is: " << *iter << std::endl;
-            // std::cout << "iter is: " << *++iter << std::endl;
-            // std::cout << "iter is: " << *++iter << std::endl;
-            // std::cout << "iter is: " << *++iter << std::endl;
-            // iter--;
-            // iter--;
-            // iter--;
             i++;
-            std::cout << "======CONFIG\n";
             configToken(iter);
             iter--;
         }

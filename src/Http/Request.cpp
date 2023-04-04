@@ -2,6 +2,7 @@
 #include "Logs/Log.hpp"
 #include "Utils/Strings.hpp"
 #include "Utils/Colors.hpp"
+#include "CGI.hpp"
 #include <string>
 #include <iostream>
 #include <exception>
@@ -159,8 +160,10 @@ void Request::setHostPort(std::vector<std::string> lineVector)
 int Request::errorsToken()
 {
 	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
-		// throw InvalidMethod();
+	{
+		throw myException("Incorrect method", 501); // TODO ALBERTO, EXCEPCION O RETURN??
 		return (501); // crear excepcion
+	}
 	if (_http != "HTTP/1.1")
 		// throw InvalidProtocol();
 		return (505);
@@ -372,5 +375,10 @@ std::ostream &operator<<(std::ostream &out, const Request &value)
 		out << "}\n";
 		it2++;
 	}
-	return out;
+	return (out);
+}
+
+void	Request::executeCGI()
+{
+	CGI cgi(*this);
 }

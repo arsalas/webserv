@@ -3,6 +3,7 @@
 #include "CGI.hpp"
 #include "Server/Config.hpp"
 #include "Utils/File.hpp"
+#include "Utils/Strings.hpp"
 #include <string>
 
 /*
@@ -28,13 +29,25 @@
     https://www.oreilly.com/library/view/cgi-programming-on/9781565921689/04_chapter-01.html#:~:text=With%20CGI%2C%20the%20Web%20server,back%20to%20the%20Web%20browser.
 */
 
+
+    // TODO CGI
+    // Buscamos que archivo de html hay que mostrar. El CGI es una extension que indicas el programa a ejecutar e indicas la respuesta
+    // Es un texto generado a traves de un programa
+    // si tiene ext .py no p
+    // hay que procesarlo mediante programa
+
 CGI::CGI(Request &request)
 {
     initEnviron(request);
 }
 
+CGI::~CGI()
+{
+}
+
 /**
  * @brief Introducimos en la variable _env toda la info
+ * http://flanagan.ugr.es/wap/curso/introcgi.htm#:~:text=CGI%20son%20las%20siglas%20de,la%20programaci%C3%B3n%20de%20p%C3%A1ginas%20interactivas.
  *
  * @param request
  */
@@ -47,16 +60,18 @@ void CGI::initEnviron(Request &request)
     _env["PROTOCOL"] = "HTTP/1.1";
     _env["PORT"] = request.getPort();
     _env["SERVER_NAME"] = header["Hostname"];
+    _env["SERVER_SOFTWARE"] = "Webserver";
     _env["CONTENT_TYPE"] = header["Content-type"];
     _env["CONTENT_LENGHT"] = config.getClientMaxBodySize();
     _env["REDIRECT_STATUS"] = "200"; // The 200 OK status code means that the request was successful
+    // _env["SCRIPT_NAME"] = ; // Nombre del CGI.
+    // _env["QUERY_STRING"] = ; // Argumentos pasado al CGI
 }
 
 /**
  * @brief EJECUTAMOS
  * Hacemos un fork. Estando en el hijo, cambiamos de directorio al dado por el path
  * Cerramos
- *
  *
  * @return int
  */
@@ -67,19 +82,21 @@ int CGI::execute(Request &request, std::string CGIPath, std::string file)
 
     _status = 0;
 
+    // create a pipe and puts the file descriptors for the reading and writing ends
+    // of the pipe into filedes [0] and filedes [1]
     if (pipe(inputFd) < 0 || pipe(outputFd) < 0)
     {
-        _status = -1;
-        return (-1);
+        _status = 500;
+        throw myException("System error in pipe", 500);
     }
 
     pid_t pid = fork();
 
     if (pid < 0)
     {
-        perror("System error\n");
-        _status = -1;
-        return (-1);
+        throw myException("System error in fork", 0);
+        _status = 500;
+        return (500);
     }
 
     if (pid == 0) // CHILD
@@ -90,12 +107,12 @@ int CGI::execute(Request &request, std::string CGIPath, std::string file)
             close(outputFd[1]);
             close(inputFd[0]);
             close(inputFd[1]);
-            return (-1);
+            return (500);
         }
 
         _execPath = File::getExecPath(file);
         if (chdir(_execPath.c_str()) < 0)
-            return (-1);
+            throw myException("Failed in execute CGI method", 0);
         close(outputFd[0]); // cerramos fd[1]
         close(outputFd[1]);
         close(inputFd[0]);
@@ -112,11 +129,7 @@ int CGI::execute(Request &request, std::string CGIPath, std::string file)
             i++;
         }
         execve(argv[0], argv, env); // int execve(const char *filename, char *const argv[], char *const envp[]);
-        return (0);
-        // execute
-        // argv = nombre rograma + nombre programa a ejecutar
-        // if (_output.size() == 0)
-        //     throw std::runtime_error("CGI: no output from cgi");
+        return (200);
     }
     else
     {
@@ -130,7 +143,7 @@ int CGI::execute(Request &request, std::string CGIPath, std::string file)
         if (request.getMethod() != "POST")
         {
             close(inputFd[1]);
-            return (-1);
+            throw myException("Failed in execute CGI method", 0);
         }
         else
         {
