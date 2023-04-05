@@ -20,6 +20,9 @@ Request::Request()
 
 Request::Request(std::string req)
 {
+	// if (req.empty())
+	// 	throw myException("Empty request", 0);
+	std::cout << "REQ IS: " << req << std::endl;
 	tokenRequest(req);
 }
 
@@ -77,12 +80,25 @@ std::map<std::string, std::string> mapSplit(std::vector<std::string> auxVector, 
 void Request::setMethod(std::vector<std::string> lineVector)
 {
 	std::vector<std::string> newVector;
-	std::vector<std::string>::iterator iter;
+	std::vector<std::string>::iterator iter = lineVector.begin();
 
-	iter = lineVector.begin();
-	newVector = Strings::split(*iter, " /");
+	while (iter != lineVector.end() && (*iter).empty())
+		iter++;
+	if (iter == lineVector.end())
+		throw myException("Incorrect method 1", 501);
+	std::cout << "primera linea de linevector: " << *iter << std::endl;
+	newVector = Strings::split(*iter, " ");
 	iter = newVector.begin();
 	_method = *iter;
+	
+	// iter = lineVector.begin();
+	// newVector = Strings::split(*iter, " /");
+	// iter = newVector.begin();
+	// _method = *iter;
+	std::cout << "METHOD IS: " << _method << std::endl;
+
+	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
+		throw myException("Incorrect method", 501);
 }
 
 void Request::setHttp(std::vector<std::string> lineVector)
@@ -105,14 +121,21 @@ void Request::setHttp(std::vector<std::string> lineVector)
  */
 void Request::setPath(std::vector<std::string> lineVector)
 {
+	std::cout << "setpath\n";
 	std::vector<std::string> newVector;
 	std::vector<std::string>::iterator iter;
 
 	iter = lineVector.begin();
 	newVector = Strings::split(*iter, " ");
+	std::cout << "2\n";
+	if (newVector.empty())
+		throw myException("Error in path", 0);
 	iter = newVector.begin();
 	iter++;
-	_path = Strings::trim(*iter, "/");
+	std::cout << "3\n";
+	if ((*iter).find("/") != std::string::npos)
+		_path = Strings::trim(*iter, "/");
+	std::cout << "setpath2\n";
 }
 
 void Request::setHeader(std::vector<std::string> lineVector)
@@ -131,7 +154,6 @@ void Request::setHeader(std::vector<std::string> lineVector)
 
 void Request::setHostPort(std::vector<std::string> lineVector)
 {
-	(void)lineVector;
 	std::vector<std::string> auxVector;
 	std::vector<std::string>::iterator iter = lineVector.begin();
 
@@ -291,8 +313,18 @@ int Request::tokenRequest(std::string req)
 	std::string rawHeader = setRawHeader(req);
 	// Obtenemos el body
 	std::string rawBody = setRawBody(req);
+	// if (rawHeader.empty())
+	// 	throw myException("Empty request", 0);
 	std::vector<std::string> lineVector = Strings::split(rawHeader, "\n");
-	// std::vector<std::string> lineBody = Strings::split(rawBody, "\n");
+
+	std::cout << "MI LINE VECTOR\n";
+	for (std::vector<std::string>::iterator it = lineVector.begin(); it != lineVector.end(); it++)
+	{
+		std::cout << "->" << *it << "<-\n";
+	}
+	std::cout << "FIN\n";
+	// if (lineVector.empty())
+	// 	throw myException("Empty request", 0);
 	setMethod(lineVector);
 	setHttp(lineVector);
 	setPath(lineVector);
@@ -304,7 +336,7 @@ int Request::tokenRequest(std::string req)
 	setBoundary();
 	std::vector<std::string> rawBoundary = Strings::split(rawBody, _boundary);
 	setPayload(rawBoundary);
-	return (errorsToken());
+
 	return (0);
 }
 

@@ -125,7 +125,7 @@ void WebServer::startSockets()
 	for (it = ports.begin(); it != ports.end(); ++it)
 	{
 		std::cout << "PORT: " << (*it);
-		std::cout << "\n"; 
+		std::cout << "\n";
 		sockaddr_in servAddr;
 		servAddr.sin_family = AF_INET;
 		servAddr.sin_port = htons(*it);
@@ -220,25 +220,47 @@ void WebServer::initPoll()
 				char buf[RECV_BUFFER_SIZE];
 				std::memset(buf, 0, RECV_BUFFER_SIZE);
 				int bufSize = recv(pollfds[i].fd, buf, RECV_BUFFER_SIZE, 0); // recv
+				std::cout << "RECIV: " << buf << std::endl;
 				if (bufSize == -1)
 				{
 					Log::Error("Error reciv");
+					_fdContent[i] = "";
 					close(pollfds[i].fd);
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
-					_fdContent[i] = "";
+					_maxLens[i] = 0;
+					// REALOCAR LOS CLIENTES
+					for (int n = i; n < MAX_CLIENTS - 1; n++)
+					{
+						pollfds[n].fd = pollfds[n + 1].fd;
+						pollfds[n].events = pollfds[n + 1].events;
+						pollfds[n].revents = pollfds[n + 1].revents;
+						_maxLens[n] = _maxLens[n + 1];
+					}
 					useClient--;
 				}
 				else if (bufSize == 0)
 				{
 					Log::Error("Client close");
+
+					_fdContent[i] = "";
 					close(pollfds[i].fd);
 					pollfds[i].fd = 0;
 					pollfds[i].events = 0;
 					pollfds[i].revents = 0;
-					_fdContent[i] = "";
+					_maxLens[i] = 0;
+					// REALOCAR LOS CLIENTES
+					for (int n = i; n < MAX_CLIENTS - 1; n++)
+					{
+						pollfds[n].fd = pollfds[n + 1].fd;
+						pollfds[n].events = pollfds[n + 1].events;
+						pollfds[n].revents = pollfds[n + 1].revents;
+						_maxLens[n] = _maxLens[n + 1];
+					}
 					useClient--;
+
+				
 				}
 				else
 				{
@@ -254,24 +276,33 @@ void WebServer::initPoll()
 					}
 					if ((st < 0 && bufSize < RECV_BUFFER_SIZE - 1) || (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i])))
 					{
-						Request req(_fdContent[i]);
-						Response resp(pollfds[i].fd);
-						Controller ctl(_servers, req, resp);
-						_fdContent[i] = "";
-						close(pollfds[i].fd);
-						pollfds[i].fd = 0;
-						pollfds[i].events = 0;
-						pollfds[i].revents = 0;
-						_maxLens[i] = 0;
-						// REALOCAR LOS CLIENTES
-						for (int n = i; n < MAX_CLIENTS - 1; n++)
+
+						try
 						{
-							pollfds[n].fd = pollfds[n + 1].fd;
-							pollfds[n].events = pollfds[n + 1].events;
-							pollfds[n].revents = pollfds[n + 1].revents;
-							_maxLens[n] = _maxLens[n + 1];
+							Request req(_fdContent[i]);
+							Response resp(pollfds[i].fd);
+							Controller ctl(_servers, req, resp);
 						}
-						useClient--;
+						catch (const std::exception &e)
+						{
+							std::cerr << e.what() << '\n';
+						}
+
+						_fdContent[i] = "";
+						// close(pollfds[i].fd);
+						// pollfds[i].fd = 0;
+						// pollfds[i].events = 0;
+						// pollfds[i].revents = 0;
+						// _maxLens[i] = 0;
+						// // REALOCAR LOS CLIENTES
+						// for (int n = i; n < MAX_CLIENTS - 1; n++)
+						// {
+						// 	pollfds[n].fd = pollfds[n + 1].fd;
+						// 	pollfds[n].events = pollfds[n + 1].events;
+						// 	pollfds[n].revents = pollfds[n + 1].revents;
+						// 	_maxLens[n] = _maxLens[n + 1];
+						// }
+						// useClient--;
 					}
 				}
 			}

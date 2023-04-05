@@ -12,14 +12,13 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 	{
 		std::cout << req << std::endl;
 		int index = findServer(servers);
-		std::cout << "Serve select: " << index << std::endl;
 		_server = servers[index];
+		std::cout << "active path: " << _req.getPath() << std::endl;
 		_server.setActivePath(_req.getPath());
 		// Metodo no permitido
 		if (!_server.isMethodAllow(req.getMethod()))
 		{
 			// TODO buscar en el config el archivo de error
-			std::cout << "METHOD NOT\n";
 			std::string errorPath = Strings::trim(_server.getErrorPageByStatus(405), "/");
 			_res.status(405).sendError(errorPath);
 			// _res.notAllowed();
@@ -30,7 +29,6 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 		std::string rewrite = _server.getRewrite();
 		if (!rewrite.empty())
 		{
-			std::cout << "5\n";
 			res.redirect(rewrite);
 			return;
 		}
@@ -74,12 +72,16 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 
 		std::string path = _server.getPathFolder(_req.getPath());
 
+		std::cout << "PATH: " << path << std::endl;
+
 		std::string ext = File::getExtension(path);
 		if (ext.empty())
 		{
+			std::cout << "empty\n";
 			// Comprobar si tiene autoindex
 			if (_server.haveAutoindex())
 			{
+				std::cout << "TIENE AUTOINDEX\n";
 				try
 				{
 					_res.autoindex(path, _req.getPath());
@@ -99,19 +101,23 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			std::vector<std::string> index = _server.findIndex();
 			for (size_t i = 0; i < index.size(); i++)
 			{
-				if (Dirs::existDir(path + "/" + index[i]))
-				{
-					path += "/" + index[i];
+				std::cout << "index: " << index[i] << std::endl;
+				std::cout << path << "/" << index[i] << std::endl;
+
+				path = _server.getPathFolder(index[i]);
+
+				if (Dirs::existDir(path))
 					break;
-				}
 			}
 		}
+		std::cout << "path final: " << path << std::endl;
 		ext = File::getExtension(path);
 
 		// Si definitivamente no tiene extension (COPIADO DE ARRIBA REFACTORIZAR)
 		std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
 		if (ext.empty())
 		{
+			std::cout << "NOT FOUND\n";
 			_res.status(404).sendError(errorPath);
 			// _res.notFound(errorPath);
 			return;
@@ -126,10 +132,10 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 
 		// Comprobar si la extension es la de algun cgi
 		std::string cgiPath = _server.includeCGIPath("." + ext);
-		std::cout << "CGI: " << cgiPath << std::endl;
 		if (!cgiPath.empty())
 		{
-			_res.cgi(cgiPath, path);
+
+			_res.cgi(cgiPath, path, _req, _server.getConf());
 			return;
 		}
 

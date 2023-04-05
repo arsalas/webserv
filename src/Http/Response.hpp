@@ -4,6 +4,8 @@
 #include <map>
 #include "StatusCode.hpp"
 #include "Utils/MimeTypes.hpp"
+#include "Http/Request.hpp"
+#include "Server/Config.hpp"
 
 class Response
 {
@@ -41,7 +43,7 @@ public:
 	void limitExced(std::string path);
 	void sendError(std::string path);
 	void autoindex(std::string path, std::string root);
-	void cgi(std::string cgiPath, std::string cgiFile);
+	void cgi(std::string cgiPath, std::string cgiFile, Request req, Config config);
 
 
 };

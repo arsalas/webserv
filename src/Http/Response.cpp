@@ -41,6 +41,8 @@ size_t Response::end()
 {
 	std::string resp = getHeaders();
 	resp += _body;
+	std::cout << "code: " << _code << std::endl; 
+	std::cout << "resp: " << resp.c_str() << std::endl; 
 	return send(_fd, resp.c_str(), resp.size(), 0);
 }
 size_t Response::render(std::string body)
@@ -142,9 +144,9 @@ void Response::autoindex(std::string path, std::string root)
 	render(autoindex.toStr());
 }
 
-void Response::cgi(std::string cgiPath, std::string cgiFile)
+void Response::cgi(std::string cgiPath, std::string cgiFile, Request req, Config config)
 {
-	CGI cgi(_fd, cgiPath, cgiFile);
+	CGI cgi(_fd, cgiPath, cgiFile, req, config);
 	status(200);
 
 	std::map<std::string, std::string>::iterator it;

@@ -17,7 +17,6 @@ private:
 	std::map<int, std::string> _errorPages;
 	Config _config;
 
-
 	// std::string _ip;
 	// int _port;
 	// int _socketFd;
@@ -45,6 +44,7 @@ public:
 	// GETTERS
 	std::vector<int> getSocketFd() const;
 	std::vector<int> getPorts() const;
+	Config getConf() const;
 
 	// SETTERS
 	void setActivePath(std::string activePath);

@@ -2,6 +2,7 @@
 #include <map>
 #include "Server.hpp"
 #include "Utils/Strings.hpp"
+#include "Config.hpp"
 
 Server::Server()
 {
@@ -55,25 +56,19 @@ std::string Server::getPathFolder(std::string path)
 
 bool Server::isMethodAllow(std::string method)
 {
-	std::cout << "PATH: " << _activePath << std::endl;
 	Config *conf = selectConfig(_activePath);
 	std::vector<std::string> methods;
 	if (conf)
 	{
 
-	std::cout << "LOCATION\n";
 		methods = conf->getLimitExcept();
 	}
 	else
 		methods = _config.getLimitExcept();
 	if (methods.size() == 0)
-	{
-		std::cout << "SIZE 0\n";
 		return true;
-	}
 	for (size_t i = 0; i < methods.size(); i++)
 	{
-		std::cout << "METH: " << methods[i] << std::endl;
 		if (method == methods[i])
 			return true;
 	}
@@ -156,9 +151,13 @@ std::string Server::getUploadPath()
 	return root + "/" + upload;
 }
 
+Config Server::getConf() const
+{
+    return _config;
+}
 std::vector<int> Server::getSocketFd() const
 {
-	return _socketFd;
+    return _socketFd;
 }
 
 std::vector<int> Server::getPorts() const
@@ -200,19 +199,14 @@ Config *Server::selectConfig(std::string path)
 
 	std::map<std::string, Config *> location = _config.getLocation();
 	std::map<std::string, Config *>::iterator it = location.begin();
-	std::cout << "locat: " << location.size() << std::endl;
 	for (; it != location.end(); it++)
 	{
 		std::vector<std::string> partsServer = Strings::split(Strings::trim((*it).first, "/"), "/");
 
 		bool isMatch = true;
 		size_t i = 0;
-			std::cout << "PARTS: " <<  partsServer.size() << std::endl;
 		for (; i < partsServer.size(); i++)
 		{
-			// if (partsServer[i] != parts[i])
-			std::cout << "1: " << Strings::trim(partsServer[i], "/") << std::endl;
-			std::cout << "2: " <<  parts[i] << std::endl;
 
 			if (Strings::trim(partsServer[i], "/") != parts[i])
 			{
