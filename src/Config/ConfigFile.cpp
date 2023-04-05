@@ -310,7 +310,7 @@ void ConfigFile::autoindex(std::vector<std::string>::iterator &it, Config *conf)
 void ConfigFile::locationLoop(std::vector<std::string>::iterator &it, Config *conf)
 {
     Config *location = new Config(conf);
-
+    conf->addLocation(*(it), location);
     while (*(++it) != "}")
         setTokens(it, location);
 }
