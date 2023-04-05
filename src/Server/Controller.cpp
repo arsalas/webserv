@@ -176,10 +176,3 @@ const char *Controller::ServerException::what() const throw()
 {
 	return "Server error";
 }
-
-	// std::vector<int> vect = config.getListen();
-	// std::vector<int>::iterator iter = vect.begin();
-	// for (; iter != vect.end(); iter++ )
-	// {
-	// 	std::cout << "MY PORT: " << *iter << std::endl;
-	// }

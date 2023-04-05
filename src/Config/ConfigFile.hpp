@@ -28,6 +28,7 @@ public:
 private:
     void token();
     void parse();
+    void errorConfig(Config *config);
     void openBrackets(std::stack<bool> &brackets, std::string &tmp);
     void closeBrackets(std::stack<bool> &brackets, std::string &tmp);
     bool isValidDirective(std::string const &str);

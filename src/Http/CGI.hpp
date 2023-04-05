@@ -14,10 +14,9 @@ private:
     int _fd;
     std::string _pathCgi;
     std::string _pathFile;
-    // std::map<std::string, std::string> _env;
 
+private:
     CGI();
-    // void initEnviron(Request &request, Config &config);
 
 public:
     CGI(int fd, std::string pathCgi, std::string pathFile);

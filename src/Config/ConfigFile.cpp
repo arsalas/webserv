@@ -23,6 +23,12 @@ ConfigFile::~ConfigFile()
 {
 }
 
+void ConfigFile::errorConfig(Config *config)
+{
+    if ((config->getListen()).empty())
+        throw myException("No port found", 0);
+}
+
 /**
  * @brief Si encontramos "{", hacemos un push de true
  *
@@ -230,7 +236,11 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config *conf)
 void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config *conf)
 {
     while (*it != ";")
+    {
+        if (*it != "POST" && *it != "DELETE" && *it != "GET" && *it != "PUT")
+            throw myException("Invalid limit_except", 0);
         conf->addLimitExcept(*it++);
+    }
 }
 
 /**
@@ -371,6 +381,7 @@ void ConfigFile::configToken(std::vector<std::string>::iterator &iter)
     }
     _configs.push_back(conf);
     _configToken.clear();
+    errorConfig(&conf);
 }
 
 void ConfigFile::token()
