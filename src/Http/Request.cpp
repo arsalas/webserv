@@ -127,7 +127,6 @@ void Request::setPath(std::vector<std::string> lineVector)
 
 	iter = lineVector.begin();
 	newVector = Strings::split(*iter, " ");
-	std::cout << "2\n";
 	if (newVector.empty())
 		throw myException("Error in path", 0);
 	iter = newVector.begin();
@@ -308,7 +307,10 @@ std::string setRawBody(std::string str)
  */
 int Request::tokenRequest(std::string req)
 {
+	std::cout << "REQ ANTES: " << req << std::endl;
+	req = Strings::ltrim(req, "\n");
 	_auxReq = req;
+	std::cout << "REQ DP: " << req << std::endl;
 	// Obtenemos el header
 	std::string rawHeader = setRawHeader(req);
 	// Obtenemos el body
