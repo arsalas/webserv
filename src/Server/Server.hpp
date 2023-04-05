@@ -37,6 +37,7 @@ public:
 	bool haveAutoindex();
 	std::string getErrorPageByStatus(int status);
 	std::string getRewrite();
+	std::string getRoot();
 	int getBodyMaxSize();
 	std::string getUploadPath();
 	std::string includeCGIPath(std::string ext);

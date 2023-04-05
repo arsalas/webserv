@@ -216,11 +216,10 @@ void WebServer::initPoll()
 			if (pollfds[i].fd > 0 && pollfds[i].revents & POLLIN)
 			{
 				find = true;
-				Log::Success("Find Client");
+				Log::Success("Find Client index: " + Strings::intToString(i));
 				char buf[RECV_BUFFER_SIZE];
 				std::memset(buf, 0, RECV_BUFFER_SIZE);
 				int bufSize = recv(pollfds[i].fd, buf, RECV_BUFFER_SIZE, 0); // recv
-				std::cout << "RECIV: " << buf << std::endl;
 				if (bufSize == -1)
 				{
 					Log::Error("Error reciv");
@@ -259,12 +258,13 @@ void WebServer::initPoll()
 						_maxLens[n] = _maxLens[n + 1];
 					}
 					useClient--;
-
-				
 				}
 				else
 				{
 					std::string newStr = std::string(buf, bufSize);
+					std::cout << YEL "BUFF SIZE:  " << newStr.length() << "" RESET << std::endl;
+					std::cout << GRN "RECIV |" << newStr << "|" RESET << std::endl;
+
 					_fdContent[i] += newStr;
 					int st = _fdContent[i].find("Content-Length: ");
 					// Si tiene content length hay que esperar hasta tener todo el content
@@ -274,36 +274,76 @@ void WebServer::initPoll()
 						int end = aux.find("\n");
 						_maxLens[i] = std::stoi(aux.substr(0, end));
 					}
-					if ((st < 0 && bufSize < RECV_BUFFER_SIZE - 1) || (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i])))
+
+					std::string lastChars;
+					// if (newStr.length() >= 2)
+					// {
+					// 	lastChars = newStr.substr(newStr.size() - 2);
+					// }
+					// std::cout << "string: " << lastChars << std::endl;
+					// std::cout << "len: " << lastChars.length() << std::endl;
+					// printf("last: %i %i\n", lastChars[0], lastChars[1]);
+					// std::cout << "eq: " << (lastChars[0] == 0) << std::endl;
+
+					// if ((st < 0 && bufSize < RECV_BUFFER_SIZE - 1) || (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i])))
+					// bool ig =
+					// std::cout << "IGUAL:" << (newStr.substr(newStr.size() - 2) == "\n\n") << std::endl;
+					// nonPrintable 0-31
+					// bool nonPrintables = (lastChars[0] >= 0 && lastChars[0] <= 31) && (lastChars[1] >= 0 && lastChars[1] <= 31);
+
+					// if (_fdContent[i].length() >= 3)
+					// {
+					// 	lastChars = _fdContent[i].substr(_fdContent[i].size() - 3);
+					// }
+
+
+					// bool nonPrintables = (lastChars[0] >= 0 && lastChars[0] <= 31) && (lastChars[1] >= 0 && lastChars[1] <= 31) && (lastChars[2] >= 0 && lastChars[2] <= 31);
+
+					bool finish = true;
+						int len = _fdContent[i].length() - 1;
+					for (size_t j = 0; j < 4; j++)
 					{
-
-						try
-						{
-							Request req(_fdContent[i]);
-							Response resp(pollfds[i].fd);
-							Controller ctl(_servers, req, resp);
-						}
-						catch (const std::exception &e)
-						{
-							std::cerr << e.what() << '\n';
-						}
-
-						_fdContent[i] = "";
-						// close(pollfds[i].fd);
-						// pollfds[i].fd = 0;
-						// pollfds[i].events = 0;
-						// pollfds[i].revents = 0;
-						// _maxLens[i] = 0;
-						// // REALOCAR LOS CLIENTES
-						// for (int n = i; n < MAX_CLIENTS - 1; n++)
-						// {
-						// 	pollfds[n].fd = pollfds[n + 1].fd;
-						// 	pollfds[n].events = pollfds[n + 1].events;
-						// 	pollfds[n].revents = pollfds[n + 1].revents;
-						// 	_maxLens[n] = _maxLens[n + 1];
-						// }
-						// useClient--;
+						printf("last: %i-%c\n", _fdContent[i][len - j],_fdContent[i][len - j]);
+						if (!(_fdContent[i][len - j] >= 0 && _fdContent[i][len - j] <= 31))
+							finish = false;
 					}
+
+					if ((st < 0 && finish) || (st > 0 && (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))))
+						// if (
+						// 	(st < 0 && (nonPrintables || (newStr.length() == 1 && newStr.substr(newStr.size() - 1) == "\n"))) || (st > 0 && (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))))
+						{
+							try
+							{
+								std::cout << BLU "REQ\n";
+								std::cout << _fdContent[i] << std::endl;
+								Request req(_fdContent[i]);
+								std::cout << "RESPONSE\n";
+								Response resp(pollfds[i].fd);
+								std::cout << "CONTROLLER\n";
+								Controller ctl(_servers, req, resp);
+							}
+							catch (const std::exception &e)
+							{
+								std::cerr << e.what() << '\n';
+								continue;
+							}
+
+							_fdContent[i] = "";
+							// close(pollfds[i].fd);
+							// pollfds[i].fd = 0;
+							// pollfds[i].events = 0;
+							// pollfds[i].revents = 0;
+							// _maxLens[i] = 0;
+							// // REALOCAR LOS CLIENTES
+							// for (int n = i; n < MAX_CLIENTS - 1; n++)
+							// {
+							// 	pollfds[n].fd = pollfds[n + 1].fd;
+							// 	pollfds[n].events = pollfds[n + 1].events;
+							// 	pollfds[n].revents = pollfds[n + 1].revents;
+							// 	_maxLens[n] = _maxLens[n + 1];
+							// }
+							// useClient--;
+						}
 				}
 			}
 		}

@@ -85,6 +85,18 @@ std::vector<std::string> Server::findIndex()
 		return _config.getIndex();
 }
 
+std::string Server::getRoot()
+{
+	Config *conf = selectConfig(_activePath);
+	if (conf)
+	{
+		if (!conf->getRoot().empty())
+			return conf->getRoot();
+	}
+	else
+		return _config.getRoot();
+}
+
 bool Server::haveAutoindex()
 {
 	Config *conf = selectConfig(_activePath);

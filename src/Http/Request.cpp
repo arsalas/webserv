@@ -22,7 +22,6 @@ Request::Request(std::string req)
 {
 	// if (req.empty())
 	// 	throw myException("Empty request", 0);
-	std::cout << "REQ IS: " << req << std::endl;
 	tokenRequest(req);
 }
 
@@ -82,22 +81,28 @@ void Request::setMethod(std::vector<std::string> lineVector)
 	std::vector<std::string> newVector;
 	std::vector<std::string>::iterator iter = lineVector.begin();
 
-	while (iter != lineVector.end() && (*iter).empty())
-		iter++;
-	if (iter == lineVector.end())
-		throw myException("Incorrect method 1", 501);
-	std::cout << "primera linea de linevector: " << *iter << std::endl;
-	newVector = Strings::split(*iter, " ");
-	iter = newVector.begin();
-	_method = *iter;
-	
-	// iter = lineVector.begin();
-	// newVector = Strings::split(*iter, " /");
+	// while (iter != lineVector.end() && (*iter).empty())
+	// 	iter++;
+	// if (iter == lineVector.end())
+	// 	throw myException("Incorrect method 1", 501);
+	// newVector = Strings::split(*iter, " ");
 	// iter = newVector.begin();
 	// _method = *iter;
-	std::cout << "METHOD IS: " << _method << std::endl;
+	std::cout << "line size: " << lineVector.size() << std::endl;
 
-	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
+	while (iter != lineVector.end() && ((*iter).find("HTTP/1.1") == std::string::npos))
+	{
+		std::cout << "iter: " << (*iter) << std::endl;
+		iter++;
+	}
+	if (iter == lineVector.end())
+		throw myException("Incorrect method", 501);
+	std::cout << "line: " << (*iter) << std::endl;
+	newVector = Strings::split(*iter, " /");
+	iter = newVector.begin();
+	_method = *iter;
+
+	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH" && _method != "HEAD")
 		throw myException("Incorrect method", 501);
 }
 
@@ -121,7 +126,6 @@ void Request::setHttp(std::vector<std::string> lineVector)
  */
 void Request::setPath(std::vector<std::string> lineVector)
 {
-	std::cout << "setpath\n";
 	std::vector<std::string> newVector;
 	std::vector<std::string>::iterator iter;
 
@@ -131,10 +135,8 @@ void Request::setPath(std::vector<std::string> lineVector)
 		throw myException("Error in path", 0);
 	iter = newVector.begin();
 	iter++;
-	std::cout << "3\n";
 	if ((*iter).find("/") != std::string::npos)
 		_path = Strings::trim(*iter, "/");
-	std::cout << "setpath2\n";
 }
 
 void Request::setHeader(std::vector<std::string> lineVector)
@@ -183,7 +185,7 @@ int Request::errorsToken()
 	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
 	{
 		throw myException("Incorrect method", 501); // TODO ALBERTO, EXCEPCION O RETURN??
-		return (501); // crear excepcion
+		return (501);								// crear excepcion
 	}
 	if (_http != "HTTP/1.1")
 		// throw InvalidProtocol();
@@ -200,13 +202,22 @@ void Request::setBoundary(void)
 {
 	std::map<std::string, std::string>::iterator iterMap;
 
-	iterMap = _headers.find("Content-Type");
-	std::vector<std::string> boundary = Strings::split(iterMap->second, "=");
-	std::vector<std::string>::iterator iterV = boundary.begin();
-	iterV++;
-	// Le añade -- y al final en el form data y no esta en el boundary
-	_boundary = "--";
-	_boundary += *iterV;
+	try
+	{
+		std::string content = _headers.at("Content-Type");
+		if (content.find("boundary") == std::string::npos)
+			return;
+		std::vector<std::string> boundary = Strings::split(content, "=");
+		std::vector<std::string>::iterator iterV = boundary.begin();
+		iterV++;
+		// Le añade -- y al final en el form data y no esta en el boundary
+		_boundary = "--";
+		_boundary += *iterV;
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << '\n';
+	}
 }
 
 /**
@@ -307,10 +318,29 @@ std::string setRawBody(std::string str)
  */
 int Request::tokenRequest(std::string req)
 {
-	std::cout << "REQ ANTES: " << req << std::endl;
-	req = Strings::ltrim(req, "\n");
+	std::string oldReq = Strings::ltrim(req, "\n");
+	std::cout << "new req: \n"
+			  << oldReq << std::endl;
+	std::vector<std::string> clean = Strings::split(oldReq, "\n");
+
+	bool init = false;
+	req = "";
+	for (size_t i = 0; i < clean.size(); i++)
+	{
+		std::cout << "line: " << clean[i] << std::endl;
+		if (clean[i].find("HTTP/1.1") != std::string::npos)
+		{
+std::cout << "FIND\n";
+			init = true;
+		}
+		if (init)
+			req += clean[i] + "\n";
+	}
+
+	std::cout << "other new req: \n"
+			  << req << std::endl;
+
 	_auxReq = req;
-	std::cout << "REQ DP: " << req << std::endl;
 	// Obtenemos el header
 	std::string rawHeader = setRawHeader(req);
 	// Obtenemos el body
@@ -319,20 +349,15 @@ int Request::tokenRequest(std::string req)
 	// 	throw myException("Empty request", 0);
 	std::vector<std::string> lineVector = Strings::split(rawHeader, "\n");
 
-	std::cout << "MI LINE VECTOR\n";
-	for (std::vector<std::string>::iterator it = lineVector.begin(); it != lineVector.end(); it++)
-	{
-		std::cout << "->" << *it << "<-\n";
-	}
-	std::cout << "FIN\n";
 	// if (lineVector.empty())
 	// 	throw myException("Empty request", 0);
+
 	setMethod(lineVector);
 	setHttp(lineVector);
 	setPath(lineVector);
 	setHeader(lineVector);
 	setHostPort(lineVector);
-	if (!isContentType())
+	if (!isContentType() || _boundary.empty())
 		return 0;
 
 	setBoundary();
