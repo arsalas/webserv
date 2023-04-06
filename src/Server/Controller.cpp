@@ -13,8 +13,9 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 		std::cout << req << std::endl;
 		int index = findServer(servers);
 		_server = servers[index];
-		std::cout << "active path: " << _req.getPath() << std::endl;
-		_server.setActivePath(_req.getPath());
+		std::cout << "active path: "
+				  << "/" + _req.getPath() << std::endl;
+		_server.setActivePath("/" + _req.getPath());
 		// Metodo no permitido
 		if (!_server.isMethodAllow(req.getMethod()))
 		{
@@ -70,7 +71,7 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			// MOVER EL ARCHIVO A OTRO SITIO
 		}
 
-		std::string path = _server.getPathFolder(_req.getPath());
+		std::string path = _server.getPathFolder("/" + _req.getPath());
 
 		std::cout << "PATH: " << path << std::endl;
 
@@ -101,13 +102,32 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			std::vector<std::string> index = _server.findIndex();
 			for (size_t i = 0; i < index.size(); i++)
 			{
-				std::cout << "index: " << index[i] << std::endl;
-				std::cout << path << "/" << index[i] << std::endl;
-
-				path = _server.getPathFolder(index[i]);
-
-				if (Dirs::existDir(path))
+				if (!Dirs::existDir(path))
+				{
+					std::cout << "NO EXIST\n";
 					break;
+				}
+				// if (!Dirs::existDir(path))
+				// {
+				// 	std::cout << "NO EXIST\n";
+				// 	break;
+				// }
+				std::cout << "index: " << index[i] << std::endl;
+				// std::cout << path << "/" << index[i] << std::endl;
+
+
+				// std::string auxPath = _server.getRoot() + "/" + index[i];
+				// std::cout << "aux: " << auxPath << std::endl;
+
+				std::string auxPath = _server.getPathFolder("/" + _req.getPath()) + "/" + index[i];
+				std::cout << "path auxPath: " << auxPath << std::endl;
+
+				if (Dirs::existDir(auxPath))
+				{
+					std::cout << "EXIST\n";
+					path = auxPath;
+					break;
+				}
 			}
 		}
 		std::cout << "path final: " << path << std::endl;

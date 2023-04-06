@@ -41,8 +41,8 @@ size_t Response::end()
 {
 	std::string resp = getHeaders();
 	resp += _body;
-	std::cout << "code: " << _code << std::endl; 
-	std::cout << "resp: " << resp.c_str() << std::endl; 
+	std::cout << "code: " << _code << std::endl;
+	std::cout << "resp: " << resp.c_str() << std::endl;
 	return send(_fd, resp.c_str(), resp.size(), 0);
 }
 size_t Response::render(std::string body)
@@ -149,24 +149,27 @@ void Response::cgi(std::string cgiPath, std::string cgiFile, Request req, Config
 	CGI cgi(_fd, cgiPath, cgiFile, req, config);
 	status(200);
 
-	std::map<std::string, std::string>::iterator it;
+	// std::map<std::string, std::string>::iterator it;
 	std::ostringstream ss;
 	ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
-	for (it = _headers.begin(); it != _headers.end(); it++)
-	{
-		ss << it->first << ": " << it->second << std::endl;
-	}
-	ss << "\n";
+	// for (it = _headers.begin(); it != _headers.end(); it++)
+	// {
+	// 	ss << it->first << ": " << it->second << std::endl;
+	// }
 	std::string resp = ss.str();
 
-	try
-	{
-		send(_fd, resp.c_str(), resp.size(), 0);
-		cgi.execute();
-	}
-	catch(std::exception except)
-	{
-		sendFile("src/Templates/InternalServerError.html");
-		// throw myException();
-	}
+	// try
+	// {
+	send(_fd, resp.c_str(), resp.size(), 0);
+	cgi.execute();
+	char eof[2] = {0, 0};
+	send(_fd,eof, 1, 0);
+	std::cout << "EOF\n";
+	// 	std::cout << "FIN CGI\n";
+	// }
+	// catch(std::exception except)
+	// {
+	// 	sendFile("src/Templates/InternalServerError.html");
+	// 	// throw myException();
+	// }
 }

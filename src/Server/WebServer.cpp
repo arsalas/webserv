@@ -329,20 +329,20 @@ void WebServer::initPoll()
 							}
 
 							_fdContent[i] = "";
-							// close(pollfds[i].fd);
-							// pollfds[i].fd = 0;
-							// pollfds[i].events = 0;
-							// pollfds[i].revents = 0;
-							// _maxLens[i] = 0;
-							// // REALOCAR LOS CLIENTES
-							// for (int n = i; n < MAX_CLIENTS - 1; n++)
-							// {
-							// 	pollfds[n].fd = pollfds[n + 1].fd;
-							// 	pollfds[n].events = pollfds[n + 1].events;
-							// 	pollfds[n].revents = pollfds[n + 1].revents;
-							// 	_maxLens[n] = _maxLens[n + 1];
-							// }
-							// useClient--;
+							close(pollfds[i].fd);
+							pollfds[i].fd = 0;
+							pollfds[i].events = 0;
+							pollfds[i].revents = 0;
+							_maxLens[i] = 0;
+							// REALOCAR LOS CLIENTES
+							for (int n = i; n < MAX_CLIENTS - 1; n++)
+							{
+								pollfds[n].fd = pollfds[n + 1].fd;
+								pollfds[n].events = pollfds[n + 1].events;
+								pollfds[n].revents = pollfds[n + 1].revents;
+								_maxLens[n] = _maxLens[n + 1];
+							}
+							useClient--;
 						}
 				}
 			}
