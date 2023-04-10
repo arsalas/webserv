@@ -78,18 +78,8 @@ void WebServer::start()
 
 	for (size_t i = 0; i < configFile.getConfigs().size(); i++)
 	{
-		// configFile.getConfigs()[i];
 		_servers.push_back(Server(configFile.getConfigs()[i]));
-		std::cout << "Congfig " << i << std::endl;
 	}
-
-	// TODO cambiar por la configuracion
-	// for (size_t i = 0; i < 1; i++)
-	// {
-
-	// 	Config conf;
-	// 	_servers.push_back(Server(conf));
-	// }
 	startSockets();
 	initPoll();
 }
@@ -121,11 +111,9 @@ void WebServer::startSockets()
 {
 	std::set<int> ports = getPorts();
 	std::set<int>::iterator it;
-	std::cout << "START PORTS\n";
+
 	for (it = ports.begin(); it != ports.end(); ++it)
 	{
-		std::cout << "PORT: " << (*it);
-		std::cout << "\n";
 		sockaddr_in servAddr;
 		servAddr.sin_family = AF_INET;
 		servAddr.sin_port = htons(*it);
@@ -262,8 +250,6 @@ void WebServer::initPoll()
 				else
 				{
 					std::string newStr = std::string(buf, bufSize);
-					std::cout << YEL "BUFF SIZE:  " << newStr.length() << "" RESET << std::endl;
-					std::cout << GRN "RECIV |" << newStr << "|" RESET << std::endl;
 
 					_fdContent[i] += newStr;
 					int st = _fdContent[i].find("Content-Length: ");
@@ -276,74 +262,45 @@ void WebServer::initPoll()
 					}
 
 					std::string lastChars;
-					// if (newStr.length() >= 2)
-					// {
-					// 	lastChars = newStr.substr(newStr.size() - 2);
-					// }
-					// std::cout << "string: " << lastChars << std::endl;
-					// std::cout << "len: " << lastChars.length() << std::endl;
-					// printf("last: %i %i\n", lastChars[0], lastChars[1]);
-					// std::cout << "eq: " << (lastChars[0] == 0) << std::endl;
-
-					// if ((st < 0 && bufSize < RECV_BUFFER_SIZE - 1) || (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i])))
-					// bool ig =
-					// std::cout << "IGUAL:" << (newStr.substr(newStr.size() - 2) == "\n\n") << std::endl;
-					// nonPrintable 0-31
-					// bool nonPrintables = (lastChars[0] >= 0 && lastChars[0] <= 31) && (lastChars[1] >= 0 && lastChars[1] <= 31);
-
-					// if (_fdContent[i].length() >= 3)
-					// {
-					// 	lastChars = _fdContent[i].substr(_fdContent[i].size() - 3);
-					// }
-
-
-					// bool nonPrintables = (lastChars[0] >= 0 && lastChars[0] <= 31) && (lastChars[1] >= 0 && lastChars[1] <= 31) && (lastChars[2] >= 0 && lastChars[2] <= 31);
 
 					bool finish = true;
-						int len = _fdContent[i].length() - 1;
+					int len = _fdContent[i].length() - 1;
 					for (size_t j = 0; j < 4; j++)
 					{
-						printf("last: %i-%c\n", _fdContent[i][len - j],_fdContent[i][len - j]);
 						if (!(_fdContent[i][len - j] >= 0 && _fdContent[i][len - j] <= 31))
 							finish = false;
 					}
-
+					std::cout << "st: " << st << std::endl;
 					if ((st < 0 && finish) || (st > 0 && (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))))
-						// if (
-						// 	(st < 0 && (nonPrintables || (newStr.length() == 1 && newStr.substr(newStr.size() - 1) == "\n"))) || (st > 0 && (_fdContent[i].length() >= static_cast<size_t>(_maxLens[i]))))
+					{
+						try
 						{
-							try
-							{
-								std::cout << BLU "REQ\n";
-								std::cout << _fdContent[i] << std::endl;
-								Request req(_fdContent[i]);
-								std::cout << "RESPONSE\n";
-								Response resp(pollfds[i].fd);
-								std::cout << "CONTROLLER\n";
-								Controller ctl(_servers, req, resp);
-							}
-							catch (const std::exception &e)
-							{
-								std::cerr << e.what() << '\n';
-								continue;
-							}
-
-							_fdContent[i] = "";
-							close(pollfds[i].fd);
-							pollfds[i].fd = 0;
-							pollfds[i].events = 0;
-							pollfds[i].revents = 0;
-							_maxLens[i] = 0;
-							// REALOCAR LOS CLIENTES
-							for (int n = i; n < MAX_CLIENTS - 1; n++)
-							{
-								pollfds[n].fd = pollfds[n + 1].fd;
-								pollfds[n].events = pollfds[n + 1].events;
-								pollfds[n].revents = pollfds[n + 1].revents;
-								_maxLens[n] = _maxLens[n + 1];
-							}
-							useClient--;
+							Request req(_fdContent[i]);
+							Response resp(pollfds[i].fd);
+							Controller ctl(_servers, req, resp);
 						}
+						catch (const std::exception &e)
+						{
+							std::cerr << e.what() << '\n';
+							continue;
+						}
+
+						_fdContent[i] = "";
+						close(pollfds[i].fd);
+						pollfds[i].fd = 0;
+						pollfds[i].events = 0;
+						pollfds[i].revents = 0;
+						_maxLens[i] = 0;
+						// REALOCAR LOS CLIENTES
+						for (int n = i; n < MAX_CLIENTS - 1; n++)
+						{
+							pollfds[n].fd = pollfds[n + 1].fd;
+							pollfds[n].events = pollfds[n + 1].events;
+							pollfds[n].revents = pollfds[n + 1].revents;
+							_maxLens[n] = _maxLens[n + 1];
+						}
+						useClient--;
+					}
 				}
 			}
 		}
@@ -378,28 +335,21 @@ void WebServer::recivedPoll()
 	socklen_t clilen = sizeof(cli_addr);
 	for (size_t i = 0; i < _poll.size(); i++)
 	{
-		std::cout << "FOR\n";
 		// TODO? realmente necesito saber de donde viene o me vale con el request
 		// TODO* Refactorizar en otra funcion
 		if (_poll[i].revents & POLLIN)
 		{
-			std::cout << "IF\n";
 			int newsockfd = accept(_poll[i].fd, (struct sockaddr *)&cli_addr, &clilen);
 			printf("accept success %s\n", inet_ntoa(cli_addr.sin_addr));
-			std::cout << "newsockfd: " << newsockfd << "\n";
-
 			if (newsockfd < 0)
 				throw myException("Cannot create socket", 0);
 			// close(newsockfd);
 			while (1)
 			{
-				std::cout << "reciv\n";
 				std::memset(&buffer, 0, RECV_BUFFER_SIZE);
 				n = recv(newsockfd, buffer, RECV_BUFFER_SIZE, 0);
-				std::cout << GRN "n: " RESET << n << "\n";
 				if (n == 0)
 				{
-					std::cout << RED "END\n";
 					close(newsockfd);
 				}
 				if (n <= 0)
@@ -419,8 +369,6 @@ void WebServer::recivedPoll()
 			// TODO parsear request y buscar a donde hay que ir y en que server hay que buscar
 			// TODO machear la request con el server y la response
 			// Request req(buffer);
-			std::cout << "CONTENT:\n"
-					  << content << "|" << std::endl;
 
 			std::ifstream file;
 

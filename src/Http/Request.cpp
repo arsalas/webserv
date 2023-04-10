@@ -22,6 +22,7 @@ Request::Request(std::string req)
 {
 	// if (req.empty())
 	// 	throw myException("Empty request", 0);
+	std::cout << "REQ\n" << req << std::endl;
 	tokenRequest(req);
 }
 
@@ -81,23 +82,12 @@ void Request::setMethod(std::vector<std::string> lineVector)
 	std::vector<std::string> newVector;
 	std::vector<std::string>::iterator iter = lineVector.begin();
 
-	// while (iter != lineVector.end() && (*iter).empty())
-	// 	iter++;
-	// if (iter == lineVector.end())
-	// 	throw myException("Incorrect method 1", 501);
-	// newVector = Strings::split(*iter, " ");
-	// iter = newVector.begin();
-	// _method = *iter;
-	std::cout << "line size: " << lineVector.size() << std::endl;
-
 	while (iter != lineVector.end() && ((*iter).find("HTTP/1.1") == std::string::npos))
 	{
-		std::cout << "iter: " << (*iter) << std::endl;
 		iter++;
 	}
 	if (iter == lineVector.end())
 		throw myException("Incorrect method", 501);
-	std::cout << "line: " << (*iter) << std::endl;
 	newVector = Strings::split(*iter, " /");
 	iter = newVector.begin();
 	_method = *iter;
@@ -184,11 +174,10 @@ int Request::errorsToken()
 {
 	if (_method != "DELETE" && _method != "GET" && _method != "POST" && _method != "PUT" && _method != "PATCH")
 	{
-		throw myException("Incorrect method", 501); // TODO ALBERTO, EXCEPCION O RETURN??
-		return (501);								// crear excepcion
+		throw myException("Incorrect method", 501);
 	}
 	if (_http != "HTTP/1.1")
-		// throw InvalidProtocol();
+		throw myException("Incorrect protocol", 505);
 		return (505);
 	return (0);
 }
@@ -319,26 +308,19 @@ std::string setRawBody(std::string str)
 int Request::tokenRequest(std::string req)
 {
 	std::string oldReq = Strings::ltrim(req, "\n");
-	std::cout << "new req: \n"
-			  << oldReq << std::endl;
 	std::vector<std::string> clean = Strings::split(oldReq, "\n");
 
 	bool init = false;
 	req = "";
 	for (size_t i = 0; i < clean.size(); i++)
 	{
-		std::cout << "line: " << clean[i] << std::endl;
 		if (clean[i].find("HTTP/1.1") != std::string::npos)
 		{
-std::cout << "FIND\n";
 			init = true;
 		}
 		if (init)
 			req += clean[i] + "\n";
 	}
-
-	std::cout << "other new req: \n"
-			  << req << std::endl;
 
 	_auxReq = req;
 	// Obtenemos el header

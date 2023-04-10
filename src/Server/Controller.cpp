@@ -11,11 +11,8 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 	try
 	{
 		std::cout << req << std::endl;
-		std::cout << res.getFd() << std::endl;
 		int index = findServer(servers);
 		_server = servers[index];
-		std::cout << "active path: "
-				  << "/" + _req.getPath() << std::endl;
 		_server.setActivePath("/" + _req.getPath());
 		// Metodo no permitido
 		if (!_server.isMethodAllow(req.getMethod()))
@@ -74,16 +71,12 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 
 		std::string path = _server.getPathFolder("/" + _req.getPath());
 
-		std::cout << "PATH: " << path << std::endl;
-
 		std::string ext = File::getExtension(path);
 		if (ext.empty())
 		{
-			std::cout << "empty\n";
 			// Comprobar si tiene autoindex
 			if (_server.haveAutoindex())
 			{
-				std::cout << "TIENE AUTOINDEX\n";
 				try
 				{
 					_res.autoindex(path, _req.getPath());
@@ -105,42 +98,25 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			{
 				if (!Dirs::existDir(path))
 				{
-					std::cout << "NO EXIST\n";
 					break;
 				}
-				// if (!Dirs::existDir(path))
-				// {
-				// 	std::cout << "NO EXIST\n";
-				// 	break;
-				// }
-				std::cout << "index: " << index[i] << std::endl;
-				// std::cout << path << "/" << index[i] << std::endl;
-
-
-				// std::string auxPath = _server.getRoot() + "/" + index[i];
-				// std::cout << "aux: " << auxPath << std::endl;
 
 				std::string auxPath = _server.getPathFolder("/" + _req.getPath()) + "/" + index[i];
-				std::cout << "path auxPath: " << auxPath << std::endl;
 
 				if (Dirs::existDir(auxPath))
 				{
-					std::cout << "EXIST\n";
 					path = auxPath;
 					break;
 				}
 			}
 		}
-		std::cout << "path final: " << path << std::endl;
 		ext = File::getExtension(path);
 
 		// Si definitivamente no tiene extension (COPIADO DE ARRIBA REFACTORIZAR)
 		std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
 		if (ext.empty())
 		{
-			std::cout << "NOT FOUND\n";
 			_res.status(404).sendError(errorPath);
-			// _res.notFound(errorPath);
 			return;
 		}
 

@@ -22,10 +22,6 @@ Server::~Server()
 
 std::string Server::getPathFolder(std::string path)
 {
-
-	// Config *conf = selectConfig(_activePath);
-
-	std::cout << "Folder path: " << path << std::endl;
 	std::vector<std::string> parts = Strings::split(Strings::trim(path, "/"), "/");
 
 	std::map<std::string, Config *> location = _config.getLocation();
@@ -50,12 +46,10 @@ std::string Server::getPathFolder(std::string path)
 			std::string finalPath = (*it).second->getRoot();
 			if ((*it).second->getRoot().empty())
 				finalPath = getRoot();
-			std::cout << "MATCH\n";
 			for (; i < parts.size(); i++)
 			{
 				finalPath += "/" + parts[i];
 			}
-			std::cout << "finalPath-> " << finalPath << std::endl;
 			return finalPath;
 		}
 	}
@@ -214,7 +208,6 @@ std::string Server::includeCGIPath(std::string ext)
 
 Config *Server::selectConfig(std::string path)
 {
-	std::cout << "select path: " << path << std::endl;
 	std::vector<std::string> parts = Strings::split(Strings::trim(path, "/"), "/");
 
 	std::map<std::string, Config *> location = _config.getLocation();

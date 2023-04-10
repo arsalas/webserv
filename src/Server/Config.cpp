@@ -181,7 +181,6 @@ void Config::addLocation(std::string path, Config *location)
 
 void Config::addLimitExcept(std::string method)
 {
-	std::cout << "PARSE: " << method << std::endl;
 	_limitExcept.insert(_limitExcept.end(), method);
 }
 

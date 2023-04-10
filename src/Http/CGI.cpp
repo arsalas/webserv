@@ -87,7 +87,6 @@ void CGI::execute()
 		i++;
 	}
 	env[i] = NULL;
-	std::cout << argv[0] << " " << argv[1] << std::endl;
 	pid_t pid = fork();
 
 	if (pid < 0)
@@ -97,8 +96,6 @@ void CGI::execute()
 
 	if (pid == 0) // CHILD
 	{
-		std::cerr << "CHILD\n";
-		// std::cerr << "FD: " << _fd << std::endl;
 		if (dup2(_fd, 1) < 0)
 		{
 			throw myException("Error in fd", 0);
@@ -110,12 +107,7 @@ void CGI::execute()
 
 	else
 	{
-		// int status;
-
-		// waitpid(pid, &status, WNOHANG);
 		waitpid(pid, NULL, 0);
-		// std::cout << "PADRE STATUS: " << status << std::endl;
-		std::cout << "PADRE FIN: " << std::endl;
 		for (size_t i = 0; env[i]; i++)
 			delete[] env[i];
 		delete[] env;
