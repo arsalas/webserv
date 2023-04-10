@@ -22,7 +22,6 @@ Request::Request(std::string req)
 {
 	// if (req.empty())
 	// 	throw myException("Empty request", 0);
-	std::cout << "REQ\n" << req << std::endl;
 	tokenRequest(req);
 }
 
@@ -178,7 +177,7 @@ int Request::errorsToken()
 	}
 	if (_http != "HTTP/1.1")
 		throw myException("Incorrect protocol", 505);
-		return (505);
+	return (505);
 	return (0);
 }
 
@@ -225,7 +224,6 @@ bool Request::isContentType(void)
 void Request::setPayload(std::vector<std::string> rawBoundary)
 {
 	std::vector<std::string>::iterator iterV = rawBoundary.begin();
-
 	for (; iterV != rawBoundary.end(); iterV++)
 	{
 		if ((*iterV).empty())
@@ -254,6 +252,7 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				std::string aux = (*iterV).substr(startFile, (*iterV).length() - startFile);
 				int end = (aux).find("\"");
 				std::string content = (*iterV).substr(startFile, end);
+
 				// TODO tenemos que ver en que path se crea
 				std::ofstream file(content, std::ios::binary);
 				std::string search = "filename=\"" + content + "\"";
@@ -339,10 +338,10 @@ int Request::tokenRequest(std::string req)
 	setPath(lineVector);
 	setHeader(lineVector);
 	setHostPort(lineVector);
+	setBoundary();
 	if (!isContentType() || _boundary.empty())
 		return 0;
 
-	setBoundary();
 	std::vector<std::string> rawBoundary = Strings::split(rawBody, _boundary);
 	setPayload(rawBoundary);
 
