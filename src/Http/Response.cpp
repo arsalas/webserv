@@ -147,23 +147,25 @@ void Response::autoindex(std::string path, std::string root)
 void Response::cgi(std::string cgiPath, std::string cgiFile, Request req, Config config)
 {
 	CGI cgi(_fd, cgiPath, cgiFile, req, config);
-	status(200);
+	// status(200);
 
 	// std::map<std::string, std::string>::iterator it;
-	std::ostringstream ss;
-	ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
+	// std::ostringstream ss;
+	// ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
+
+
 	// for (it = _headers.begin(); it != _headers.end(); it++)
 	// {
 	// 	ss << it->first << ": " << it->second << std::endl;
 	// }
-	std::string resp = ss.str();
+	// std::string resp = ss.str();
 
 	// try
 	// {
-	send(_fd, resp.c_str(), resp.size(), 0);
+	// send(_fd, resp.c_str(), resp.size(), 0);
 	cgi.execute();
-	char eof[2] = {0, 0};
-	send(_fd,eof, 1, 0);
+	char eof[2] = {4, 0};
+	send(_fd, eof, 1, 0);
 	std::cout << "EOF\n";
 	// 	std::cout << "FIN CGI\n";
 	// }
@@ -172,4 +174,10 @@ void Response::cgi(std::string cgiPath, std::string cgiFile, Request req, Config
 	// 	sendFile("src/Templates/InternalServerError.html");
 	// 	// throw myException();
 	// }
+}
+
+
+int	Response::getFd() const
+{
+	return _fd;
 }

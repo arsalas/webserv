@@ -45,5 +45,6 @@ public:
 	void autoindex(std::string path, std::string root);
 	void cgi(std::string cgiPath, std::string cgiFile, Request req, Config config);
 
+	int	getFd() const;
 
 };

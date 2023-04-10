@@ -98,6 +98,7 @@ void CGI::execute()
 	if (pid == 0) // CHILD
 	{
 		std::cerr << "CHILD\n";
+		// std::cerr << "FD: " << _fd << std::endl;
 		if (dup2(_fd, 1) < 0)
 		{
 			throw myException("Error in fd", 0);

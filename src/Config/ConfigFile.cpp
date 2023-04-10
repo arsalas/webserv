@@ -327,6 +327,17 @@ void ConfigFile::location(std::vector<std::string>::iterator &it, Config *conf)
     locationLoop(it, conf);
 };
 
+/**
+ * @brief REWRITE
+ *
+ * @param it
+ * @param conf
+ */
+void ConfigFile::rewrite(std::vector<std::string>::iterator &it, Config *conf)
+{
+    conf->setRewrite(*it);
+};
+
 void ConfigFile::setTokens(std::vector<std::string>::iterator &it, Config *conf)
 {
     if (*it == "listen")
@@ -349,6 +360,8 @@ void ConfigFile::setTokens(std::vector<std::string>::iterator &it, Config *conf)
         client_max_body_size(++it, conf);
     else if (*it == "autoindex")
         autoindex(++it, conf);
+    else if (*it == "rewrite")
+        rewrite(++it, conf);
 }
 
 /**

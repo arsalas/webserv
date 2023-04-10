@@ -42,7 +42,7 @@ private:
     void servername(std::vector<std::string>::iterator &it, Config *conf);
     void root(std::vector<std::string>::iterator &it, Config *conf);
     void cgi(std::vector<std::string>::iterator &it, Config *conf);
-    void index(std::vector<std::string>::iterator &it,  Config *conf);
+    void index(std::vector<std::string>::iterator &it, Config *conf);
     void location(std::vector<std::string>::iterator &it, Config *conf);
     void locationLoop(std::vector<std::string>::iterator &it, Config *conf);
     void checkValidDirLocation(std::vector<std::string>::iterator &it, Config *conf);
@@ -50,4 +50,5 @@ private:
     void errorPage(std::vector<std::string>::iterator &it, Config *conf);
     void client_max_body_size(std::vector<std::string>::iterator &it, Config *conf);
     void autoindex(std::vector<std::string>::iterator &it, Config *conf);
+    void rewrite(std::vector<std::string>::iterator &it, Config *conf);
 };

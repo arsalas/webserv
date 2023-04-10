@@ -11,6 +11,7 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 	try
 	{
 		std::cout << req << std::endl;
+		std::cout << res.getFd() << std::endl;
 		int index = findServer(servers);
 		_server = servers[index];
 		std::cout << "active path: "
