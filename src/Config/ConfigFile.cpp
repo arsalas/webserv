@@ -160,6 +160,8 @@ void ConfigFile::listen(std::vector<std::string>::iterator &it, Config *conf)
         throw myException("Invalid port", 0);
 
     conf->addListen(std::stoi(*it));
+    if (*(++it) != ";")
+        throw myException("Error in port", 0);
 }
 
 /**

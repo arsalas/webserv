@@ -62,8 +62,8 @@ size_t Response::sendFile(std::string filename)
 	{
 		// TODO esto no va aqui, hay que buscar el path en el server
 		(void)e;
-		status(500);
-		return sendFile("src/Templates/InternalServerError.html");
+		status(404);
+		return sendFile("src/Templates/NotFound.html");
 	}
 }
 size_t Response::attachment(std::string filename)
