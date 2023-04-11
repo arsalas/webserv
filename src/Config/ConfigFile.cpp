@@ -172,6 +172,8 @@ void ConfigFile::listen(std::vector<std::string>::iterator &it, Config *conf)
  */
 void ConfigFile::servername(std::vector<std::string>::iterator &it, Config *conf)
 {
+    while ((*it).empty())
+        it++;
     while (*it != ";")
         conf->addServerName(*it++);
 }
@@ -186,6 +188,8 @@ void ConfigFile::servername(std::vector<std::string>::iterator &it, Config *conf
  */
 void ConfigFile::root(std::vector<std::string>::iterator &it, Config *conf)
 {
+    while ((*it).empty())
+        it++;
     conf->setRoot(*it);
     if (*++it != ";")
         throw myException("Invalid root", 0);
@@ -237,6 +241,8 @@ void ConfigFile::index(std::vector<std::string>::iterator &it, Config *conf)
  */
 void ConfigFile::limitExcept(std::vector<std::string>::iterator &it, Config *conf)
 {
+    if (*it == ";")
+        throw myException("Invalid limit except", 0);
     while (*it != ";")
     {
         if (*it != "POST" && *it != "DELETE" && *it != "GET" && *it != "PUT")
@@ -274,6 +280,8 @@ void ConfigFile::errorPage(std::vector<std::string>::iterator &it, Config *conf)
  */
 void ConfigFile::client_max_body_size(std::vector<std::string>::iterator &it, Config *conf)
 {
+    while ((*it).empty())
+        it++;
     if (it->find_first_not_of("0123456789") != std::string::npos)
         throw myException("Invalid client max body size", 0);
     conf->setClientMaxBodySize(std::stoi(*it));
@@ -337,7 +345,28 @@ void ConfigFile::location(std::vector<std::string>::iterator &it, Config *conf)
  */
 void ConfigFile::rewrite(std::vector<std::string>::iterator &it, Config *conf)
 {
+    while ((*it).empty())
+        it++;
+    if (*it == ";")
+        throw myException("Invalid rewrite", 0);
     conf->setRewrite(*it);
+};
+
+/**
+ * @brief UPLOAD
+ * 
+ * @param it 
+ * @param conf 
+ */
+void ConfigFile::upload(std::vector<std::string>::iterator &it, Config *conf)
+{
+    while ((*it).empty())
+        it++;
+    if (*it == ";")
+        throw myException("Invalid upload", 0);
+    conf->setUpload(*it);
+    if (*(++it) != ";")
+        throw myException("Invalid upload", 0);
 };
 
 void ConfigFile::setTokens(std::vector<std::string>::iterator &it, Config *conf)
@@ -364,6 +393,8 @@ void ConfigFile::setTokens(std::vector<std::string>::iterator &it, Config *conf)
         autoindex(++it, conf);
     else if (*it == "rewrite")
         rewrite(++it, conf);
+    else if (*it == "upload")
+        upload(++it, conf);
 }
 
 /**

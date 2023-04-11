@@ -51,4 +51,5 @@ private:
     void client_max_body_size(std::vector<std::string>::iterator &it, Config *conf);
     void autoindex(std::vector<std::string>::iterator &it, Config *conf);
     void rewrite(std::vector<std::string>::iterator &it, Config *conf);
+    void upload(std::vector<std::string>::iterator &it, Config *conf);
 };
