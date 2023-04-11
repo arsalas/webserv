@@ -254,7 +254,7 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				std::string content = (*iterV).substr(startFile, end);
 
 				// TODO tenemos que ver en que path se crea
-				std::ofstream file(content, std::ios::binary);
+				std::ofstream file("tmp/" + content, std::ios::binary);
 				std::string search = "filename=\"" + content + "\"";
 				int start1 = _auxReq.find(search);
 				// TODO comprobar que lo encuentra
@@ -266,7 +266,7 @@ void Request::setPayload(std::vector<std::string> rawBoundary)
 				file << fileRawContent;
 				file.close();
 				// TODO poner el path correcto, en otra carpeta temporal;
-				fileStruct fileData = {content, contentType, "./"};
+				fileStruct fileData = {content, contentType, "./tmp/"};
 				std::map<std::string, fileStruct>::iterator it = _files.end();
 				_files.insert(it, std::pair<std::string, fileStruct>(name, fileData));
 			}

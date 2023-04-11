@@ -62,7 +62,7 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 			std::map<std::string, fileStruct>::iterator it = files.begin();
 			for (; it != files.end(); it++)
 			{
-				File tmpFile((*it).second.name);
+				File tmpFile("./tmp/" + (*it).second.name);
 				tmpFile.move(pathUpload + "/" + (*it).second.name);
 			}
 
@@ -86,6 +86,7 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 				{
 					// NOT FOUND
 					std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
+
 					_res.status(404).sendError(errorPath);
 
 					// _res.notFound(errorPath);
@@ -114,6 +115,7 @@ Controller::Controller(std::vector<Server> servers, Request req, Response res) :
 
 		// Si definitivamente no tiene extension (COPIADO DE ARRIBA REFACTORIZAR)
 		std::string errorPath = Strings::trim(_server.getErrorPageByStatus(404), "/");
+		std::cout << "error path: " << errorPath << std::endl;
 		if (ext.empty())
 		{
 			_res.status(404).sendError(errorPath);
