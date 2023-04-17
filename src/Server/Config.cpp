@@ -1,34 +1,67 @@
 #include "Config.hpp"
 #include "Http/Request.hpp"
+#include <vector>
 
 Config::Config() : _parent(NULL)
 {
+	// std::vector<int>::iterator ints = _listen.begin();
+	// std::vector<std::string>::iterator strs = _serverName.begin();
+	// std::map<std::string, std::string>::iterator maps = _cgi.begin();
+	// std::map<int, std::string>::iterator error = _errorPage.begin();
+
+	// std::cout << "hola\n";
+	// if (ints != _listen.end())
+	// 	std::cout << "LISTEN: " << *ints << std::endl;
+	// if (strs != _serverName.end())
+	// 	std::cout << "SERVNAME: " << *strs << std::endl;
+	// if (!_root.empty())
+	// 	std::cout << "ROOT: " << _root << std::endl;
+	// if (maps != _cgi.end())
+	// 	std::cout << "CGI: " << maps->first << " | " << maps->second << std::endl;
+	// strs = _index.begin();
+	// if (strs != _index.end())
+	// 	std::cout << "INDEX: " << *strs << std::endl;
+	// // std::cout << "LOCATION: " << getLocation() << std::endl;
+	// strs = _limitExcept.begin();
+	// if (strs != _limitExcept.end())
+	// 	std::cout << "LIMEXP: " << *strs << std::endl;
+	// if (error != _errorPage.end())
+	// 	std::cout << "ERRORPG: " << error->first << " | " << error->second << std::endl;
+	// std::cout << "A.I.: " << getAutoindex() << std::endl;
+	// std::cout << "SIZE: " << getClientMaxBodySize() << std::endl;
+	// std::cout << "UPLOAD?: " << getUpload() << std::endl;
 	// Request re;
 	// addListen(re.getPort());
 	// TODO quitar harcodeo
-	
-	addListen(7001);
+
+	// addListen(7001);
 	// addListen(3000);
 	// addListen(3001);
 	// addListen(3002);
 	// addListen(8080);
 	// addServerName(re.getHost());
-	addServerName("localhost");
-	addCgi(".py", "/usr/bin/python3");
-	setRoot("www");
-	addIndex("index.html");
-	Config * location = new Config(this);
+	// addServerName("localhost");
+	// addCgi(".py", "/usr/bin/python3");
+	// setRoot("www");
+	// addIndex("index.html");
+	// Config *location = new Config(this);
 	// addLocation(re.getPath(), location);
-	addLocation("/data", location);
-	addErrorPage(404, "/404.html");
-	setAutoindex(false);
+	// addLocation("/data", location);
+	// addErrorPage(404, "/src/Templates/NotFound.html");
+	// setAutoindex(false);
 }
 
-Config::Config(Config *parent) : _parent (parent)
+Config::Config(Config *parent) : _parent(parent)
 {
-	setRoot("www/data");
-	addIndex("index.html");
-	addLimitExcept("GET");
+	// setRoot("www/data");
+	// addIndex("index.html");
+	// setUpload("uploads");
+	// setClientMaxBodySize(5000);
+	// addIndex("index.html");
+	// addLimitExcept("GET");
+	// setAutoindex(true);
+	// setRewrite("https://www.liquidweb.com/kb/redirecting-urls-using-nginx/");
+
 	// addLimitExcept(re.getMethod());
 }
 
@@ -48,7 +81,7 @@ Config::~Config()
 	// std::cout << "destr\n";
 }
 
-Config * Config::getParent() const
+Config *Config::getParent() const
 {
 	return _parent;
 }
@@ -108,8 +141,14 @@ std::string Config::getUpload() const
 	return _upload;
 }
 
+std::string Config::getRewrite() const
+{
+	return _rewrite;
+}
+
 void Config::addListen(int listen)
 {
+	std::cout << "--------SET PORT: " << listen << std::endl;
 	_listen.push_back(listen);
 }
 
@@ -163,4 +202,9 @@ void Config::setClientMaxBodySize(float limit)
 void Config::setUpload(std::string path)
 {
 	_upload = path;
+}
+
+void Config::setRewrite(std::string url)
+{
+	_rewrite = url;
 }

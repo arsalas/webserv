@@ -1,14 +1,29 @@
 #include <iostream>
+#include <sstream>
 #include "Log.hpp"
-#include "Http/Request.hpp"
 #include "Utils/Colors.hpp"
 
-void    Log::printLog(std::string method)
+void Log::Message(std::string out)
 {
-    std::cout << RED " [ " << method << " ] " RESET << std::endl;
+	std::cout << out << std::endl;
 }
 
-// void    success(std::string method std::string message)
-// {
+void Log::Info(std::string out)
+{
+	std::cout << BLU "" << out << "\n" RESET;
+}
 
-// }
+void Log::Error(std::string out)
+{
+	std::cout << RED "" << out << "\n" RESET;
+}
+
+void Log::Success(std::string out)
+{
+	std::cout << GRN "" << out << "\n" RESET;
+}
+
+void Log::Warning(std::string out)
+{
+	std::cout << YEL "" << out << "\n" RESET;
+}

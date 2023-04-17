@@ -18,6 +18,11 @@ public:
 	~File();
 
 	std::string toStr();
+	void move(std::string path);
+
+	std::string getExtension();
+	static std::string getExtension(std::string);
+	static std::string getExecPath(std::string path);
 
 	// EXCEPTIONS
 public:

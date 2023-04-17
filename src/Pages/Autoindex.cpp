@@ -4,16 +4,16 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <sstream>
-#include <algorithm>    // std::sort
+#include <algorithm> // std::sort
 #include "Autoindex.hpp"
+#include "Utils/Strings.hpp"
 
-Autoindex::Autoindex() : APage(), _path("")
+Autoindex::Autoindex() : APage(), _path(""), _root("")
 {
 }
 
-Autoindex::Autoindex(std::string path) : APage(), _path(path)
+Autoindex::Autoindex(std::string path, std::string root) : APage(), _path(path), _root(root)
 {
-
 }
 
 Autoindex::~Autoindex()
@@ -32,15 +32,21 @@ std::vector<std::string> Autoindex::readDir() const
 {
 	std::ostringstream ss;
 	std::vector<std::string> dirs;
+	std::cout << _path.c_str();
 	DIR *dirFd = opendir(_path.c_str());
-	// DIR *dirFd = opendir("www");
+	if (!dirFd)
+	{
+		std::cout << "2\n";
+		throw NotFoundException(); 
+	}
+
 	struct dirent *dirFile;
 	while ((dirFile = readdir(dirFd)))
 	{
 		dirs.push_back(std::string(dirFile->d_name));
 	}
 	closedir(dirFd);
- std::sort (dirs.begin(), dirs.end()); 
+	std::sort(dirs.begin(), dirs.end());
 	return dirs;
 }
 
@@ -66,9 +72,24 @@ std::string Autoindex::getBody() const
 	ss << "<body>" << std::endl;
 	ss << "<h1>Index of " << _path << "</h1>" << std::endl;
 	ss << "<hr>" << std::endl;
-	for(unsigned long i = 0; i < dirs.size(); i++)
+	for (unsigned long i = 0; i < dirs.size(); i++)
 	{
-		ss << "<div><a href=\"" << dirs[i] << "\">" << dirs[i] << "</a></div>" << std::endl;
+		if (dirs[i] == ".")
+			ss << "<div><a href=\"/" << _root << "\">" << dirs[i] << "</a></div>" << std::endl;
+		else if (dirs[i] == "..")
+		{
+			if (_root == "")
+				continue;
+			std::vector<std::string> parts = Strings::split(_root, "/");
+			std::string root = "";
+			for (size_t i = 0; i < parts.size() - 1; i++)
+			{
+				root += parts[i];
+			}
+			ss << "<div><a href=\"/" << root << "\">" << dirs[i] << "</a></div>" << std::endl;
+		}
+		else
+			ss << "<div><a href=\"/" << _root << "/" << dirs[i] << "\">" << dirs[i] << "</a></div>" << std::endl;
 	}
 	ss << "<hr>" << std::endl;
 	ss << "</body>" << std::endl;
@@ -81,4 +102,10 @@ std::string Autoindex::getFooter() const
 
 	ss << "</html>" << std::endl;
 	return ss.str();
+}
+
+
+const char *Autoindex::NotFoundException::what() const throw()
+{
+	return "Not found";
 }

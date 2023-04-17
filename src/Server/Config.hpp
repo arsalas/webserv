@@ -6,10 +6,11 @@
 class Config
 {
 private:
-	Config * _parent;
+	Config *_parent;
 	std::vector<int> _listen;
 	std::vector<std::string> _serverName;
 	std::string _root;
+	std::string _rewrite;
 	std::map<std::string, std::string> _cgi;
 	std::vector<std::string> _index;
 	std::map<std::string, Config *> _location;
@@ -32,7 +33,7 @@ public:
 
 public:
 	// GETTERS
-	Config * getParent() const;
+	Config *getParent() const;
 	std::vector<std::string> getServerName() const;
 	std::string getRoot() const;
 	std::map<std::string, std::string> getCgi() const;
@@ -43,18 +44,20 @@ public:
 	bool getAutoindex() const;
 	long getClientMaxBodySize() const;
 	std::string getUpload() const;
+	std::string getRewrite() const;
 
-private:
+public:
 	//  SETTERS
 	void addListen(int listen);
 	void addServerName(std::string serverName);
 	void addCgi(std::string key, std::string value);
-	void setRoot(std::string);
-	void addIndex(std::string);
+	void setRoot(std::string root);
+	void addIndex(std::string index);
 	void addLocation(std::string, Config *location);
 	void addLimitExcept(std::string method);
 	void addErrorPage(int code, std::string path);
 	void setAutoindex(bool autoindex);
 	void setClientMaxBodySize(float limit);
 	void setUpload(std::string path);
+	void setRewrite(std::string url);
 };

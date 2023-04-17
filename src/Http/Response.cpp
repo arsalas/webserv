@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -5,6 +6,9 @@
 #include "Response.hpp"
 #include "Utils/Strings.hpp"
 #include "Utils/File.hpp"
+#include "Utils/Dirs.hpp"
+#include "Pages/Autoindex.hpp"
+#include "CGI.hpp"
 
 Response::Response()
 {
@@ -37,6 +41,7 @@ size_t Response::end()
 {
 	std::string resp = getHeaders();
 	resp += _body;
+
 	return send(_fd, resp.c_str(), resp.size(), 0);
 }
 size_t Response::render(std::string body)
@@ -46,6 +51,7 @@ size_t Response::render(std::string body)
 }
 size_t Response::sendFile(std::string filename)
 {
+	type(_mimeTypes[File::getExtension(filename)]);
 	try
 	{
 		File file(filename);
@@ -54,18 +60,28 @@ size_t Response::sendFile(std::string filename)
 	}
 	catch (const std::exception &e)
 	{
+		// TODO esto no va aqui, hay que buscar el path en el server
 		(void)e;
 		status(404);
-		return sendFile("www/404.html");
+		return sendFile("src/Templates/NotFound.html");
 	}
-
 }
 size_t Response::attachment(std::string filename)
 {
+	type(_mimeTypes[File::getExtension(filename)]);
 	File file(filename);
 	// Con el content-disposition se envian archivos
-	append("Content-Disposition", "attachment; filename=\"picture.html\"");
+	std::string disposition = "attachment; filename=\"" + Dirs::getFilenameFromPath(filename) + "\"";
+	append("Content-Disposition", disposition);
 	_body = file.toStr();
+	status(200);
+	return end();
+}
+
+size_t Response::redirect(std::string url)
+{
+	status(301);
+	_headers["Location"] = url;
 	return end();
 }
 
@@ -83,4 +99,106 @@ Response Response::type(std::string contentType)
 {
 	_headers["Content-Type"] = contentType + "; charset=UTF-8";
 	return *this;
+}
+
+void Response::notAllowed()
+{
+	status(405);
+	sendFile("src/Templates/NotAllowed.html");
+}
+
+void Response::notFound()
+{
+	status(404);
+	sendFile("src/Templates/NotFound.html");
+}
+
+void Response::notFound(std::string path)
+{
+	status(404);
+	sendFile(path);
+}
+
+void Response::limitExced()
+{
+	status(413);
+	sendFile("src/Templates/PayloadTooLarge.html");
+}
+
+void Response::limitExced(std::string path)
+{
+	status(413);
+	sendFile(path);
+}
+
+void Response::sendError(std::string path)
+{
+	sendFile(path);
+}
+
+void Response::autoindex(std::string path, std::string root)
+{
+	status(200);
+	Autoindex autoindex(path, root);
+	render(autoindex.toStr());
+}
+
+void Response::cgi(std::string cgiPath, std::string cgiFile, Request req, Config config)
+{
+	CGI cgi(_fd, cgiPath, cgiFile, req, config);
+	// status(200);
+
+	// std::map<std::string, std::string>::iterator it;
+	// std::ostringstream ss;
+	// ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
+
+
+	// for (it = _headers.begin(); it != _headers.end(); it++)
+	// {
+	// 	ss << it->first << ": " << it->second << std::endl;
+	// }
+	// std::string resp = ss.str();
+
+	// try
+	// {
+	// send(_fd, resp.c_str(), resp.size(), 0);
+	// cgi.execute();
+	// char eof[2] = {4, 0};
+	// send(_fd, eof, 1, 0);
+	// std::cout << "EOF\n";
+	// 	std::cout << "FIN CGI\n";
+	// }
+	// catch(std::exception except)
+	// {
+	// 	sendFile("src/Templates/InternalServerError.html");
+	// 	// throw myException();
+	// }
+
+	status(200);
+
+	std::map<std::string, std::string>::iterator it;
+	std::ostringstream ss;
+	ss << "HTTP/1.1 " << _code << " " << _statusCode[_code] << " " << std::endl;
+	for (it = _headers.begin(); it != _headers.end(); it++)
+	{
+		ss << it->first << ": " << it->second << std::endl;
+	}
+	ss << "\n";
+	std::string resp = ss.str();
+	try
+	{
+		send(_fd, resp.c_str(), resp.size(), 0);
+		cgi.execute();
+	}
+	catch(std::exception except)
+	{
+		sendFile("src/Templates/InternalServerError.html");
+		throw myException("Error in CGI", 0);
+	}
+}
+
+
+int	Response::getFd() const
+{
+	return _fd;
 }

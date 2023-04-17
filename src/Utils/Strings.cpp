@@ -23,49 +23,56 @@ std::string Strings::rtrim(const std::string &s, const std::string &delim)
 std::string Strings::trim(const std::string &s)
 {
 	const std::string delim = " \t";
-	return (Strings::rtrim(Strings::ltrim(s, delim),delim));
+	return (Strings::rtrim(Strings::ltrim(s, delim), delim));
 }
 
 std::string Strings::trim(const std::string &s, const std::string &delim)
 {
-	return (Strings::rtrim(Strings::ltrim(s, delim),delim));
+	return (Strings::rtrim(Strings::ltrim(s, delim), delim));
 }
 
-std::vector<std::string>    Strings::vectorSplit(std::string file, std::string delimiter)
+std::vector<std::string> Strings::split(std::string file, std::string delimiter)
 {
-    std::vector<std::string> auxVector;
-    std::vector<std::string>::iterator  it = auxVector.begin();
-    std::string aux;
-    size_t pos = 0;
+	std::vector<std::string> auxVector;
+	std::vector<std::string>::iterator it = auxVector.begin();
+	std::string aux;
+	size_t pos = 0;
 
-    while ((pos = file.find(delimiter)) != std::string::npos)
-    {
-        aux = file.substr(0, pos);
-        it = auxVector.end();
-        auxVector.insert(it, aux);
-        file.erase(0, pos + delimiter.length());
-    }
-    aux = file.substr(0, pos);
-    it = auxVector.end();
-    auxVector.insert(it, aux);
-    return (auxVector);
+	while ((pos = file.find(delimiter)) != std::string::npos)
+	{
+		aux = file.substr(0, pos);
+		it = auxVector.end();
+		auxVector.insert(it, aux);
+		file.erase(0, pos + delimiter.length());
+	}
+	aux = file.substr(0, pos);
+	it = auxVector.end();
+	auxVector.insert(it, aux);
+	return (auxVector);
 }
 
-std::string    Strings::deleteQuotes(std::string str)
+std::string Strings::deleteQuotes(std::string str)
 {
-    int j = 0;
-    std::string newStr = "";
+	int j = 0;
+	std::string newStr = "";
 
-    if (str.find("\"") != std::string::npos || str.find("'") != std::string::npos)
-    {
-        for (size_t i = 0; i < str.length(); i++)
-        {
-            if (str[i] != '"' && str[i] != '\'')
-            {
-                newStr.push_back(str[i]);
-                j++;
-            }
-        }
-    }
-    return (newStr);
+	if (str.find("\"") != std::string::npos || str.find("'") != std::string::npos)
+	{
+		for (size_t i = 0; i < str.length(); i++)
+		{
+			if (str[i] != '"' && str[i] != '\'')
+			{
+				newStr.push_back(str[i]);
+				j++;
+			}
+		}
+	}
+	return (newStr);
 }
+
+// const std::ifstream Strings::strToIfstream(int number)
+// {
+// 	std::ostringstream ss;
+// 	ss << number;
+// 	return ss.str();
+// }

@@ -9,10 +9,11 @@ class Autoindex : public APage
 
 private:
 	std::string _path;
+	std::string _root;
 
 public:
 	Autoindex();
-	Autoindex(std::string path);
+	Autoindex(std::string path, std::string root);
 	virtual ~Autoindex();
 
 	virtual std::string toStr() const;
@@ -23,4 +24,9 @@ private:
 	std::string getBody() const;
 	std::string getFooter() const;
 
+	// EXCEPTIONS
+	class NotFoundException : public std::exception
+	{
+		virtual const char *what() const throw();
+	};
 };
